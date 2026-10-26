@@ -40,7 +40,7 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 ### D4 — Stack: static site (Astro) on a small VPS, recipe data as the single source of truth
 
-`recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story).
+`recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result {value, unit}` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story), `tin` (shape + dimensions), `bake` (time, temperature).
 
 Rendered from that one file:
 1. recipe page — result in the headline, context block, taxonomy as tags, bake mode toggle,
@@ -53,18 +53,25 @@ Rendered from that one file:
 
 **Rejected:** Gumroad/Teachable (own the asset, no 10% cut, no platform lock-in — but the site stays a *static* site, not a framework project); a CMS/admin panel; a React SPA (5 recipe pages do not need a client-side router); server-side PDF generation (no server to break — render in CI).
 
-### D5 — The calculator: schema fields now, static scale table at launch, interactive scaler with the brooddeeg video
+### D5 — The calculator is a proportional rescaler, not a baker's percentage
 
-**The mistake the meeting caught:** the original plan wanted an interactive baker's-percentage calculator on every page. Baker's percentage is defined relative to flour. Four of the five launch recipes contain no flour — fondant is sugar/glucose/water, tempering is chocolate, meringue is egg white, soezendeeg is anchored on liquid/eggs. A flour-anchored calculator on the fondant page computes a percentage of nothing.
+*Revised 2026-10-26 after the founder clarified the intent (issue #77). The meeting read "calculator" as an interactive **baker's-percentage** calculator, flour-anchored, and judged it inapplicable because four of the five launch recipes contain no flour. That reading was wrong: the intent was never flour-anchored, so the applicability objection is void.*
 
-Therefore, in three steps:
-1. **Gate A (mandatory, ~20 min):** `scale_by` and `scale:false` fields in the schema from day one. Eggs, yeast sachets, gelatine leaves, a vanilla pod and a pinch of salt do not scale linearly and need rounding rules. Adding these later is a data migration.
-2. **Gate A (~2h):** a **static ½× / 1× / 2× table** generated at build time, per recipe, using that recipe's own reference ingredient, with non-scaling items shown as "2 eggs" / "1 sachet of yeast" and no false precision. Zero JavaScript, works with dough on your hands, on a phone, in a kitchen.
-3. **With the brooddeeg video (first recipe with a real flour basis), ~1 day:** the interactive scaler — one input, live rescale, `?ref=500` URL state, `scale:false` respected, mounted in the ingredient block of recipes that have a reference ingredient.
+What the feature actually is:
 
-**This knowingly departs from a founder hard requirement** ("interactive, on every page") and is recorded as a deviation, not a silent cut: the static table delivers the underlying need (scale the recipe) at ~2 hours instead of ~1–2 days, and the interactive version ships with the recipe that actually justifies it.
+1. **Any ingredient is a driver.** Change the amount of one ingredient, every other scalable amount follows proportionally. Items marked `scale: false` do not follow — eggs, yeast sachets, gelatine leaves, a vanilla pod, a pinch of salt — they round.
+2. **The result is a driver, both ways.** "300 gram fondant" and "30 soezen" are inputs, not just labels: ask for 30 soezen and the ingredient list rescales; change an ingredient and the displayed result updates.
+3. **The tin is a driver** (D17) for anything baked in a bakvorm: change the diameter, shape or height and the ingredients rescale on volume.
+4. **Rounding is a rule, not a guess.** Every scaled amount is formatted per ingredient: grams to sensible precision, eggs in halves then wholes, sachets in wholes. No false precision, no "1.333 eggs".
 
-**Rejected:** interactive calculator in Gate A (Chair R1/R2, Pragmatist R1) — inapplicable on 4 of 5 recipes; "calculator on every page" (scope inflation); a traffic gate on the interactive version (Skeptic's original month-3 visit-count gate) — the right gate is content readiness, not traffic, or it ships never.
+Order of work:
+1. **Gate A (~20 min):** the schema fields — `scale`, `scale_by`, `unit` per ingredient, `result {value, unit}`, `tin`, `bake`. Adding these later is a data migration.
+2. **Gate A (~2h):** the **static ½× / 1× / 2× table**, generated at build time per recipe, non-scaling items shown as "2 eggs" / "1 sachet of yeast". Zero JavaScript, works with dough on your hands.
+3. **Weeks 4–6 (~1–2 days):** the **interactive rescaler on every recipe page**. Live rescale, `?ref=500` / `?result=30` URL state, `scale: false` respected, mounted in the ingredient block. Not gated on the brooddeeg video and not gated on traffic — applicability and traffic were never the real constraint, only hours.
+
+**Why the static table still ships:** it is 2 hours against 1–2 days, it works when JavaScript does not, and it is the layout the interactive version plugs into. It is a step, not a substitute.
+
+**Rejected:** a flour-anchored baker's-percentage calculator (the misreading — computes a percentage of nothing on the fondant page); the interactive rescaler in Gate A (the budget is full at 22–26h, and Gate A exists to publish video 1); gating the rescaler on the brooddeeg video or on visit counts (both artificial once the flour premise is gone); the rescaler as a separate calculator page (rescaling belongs where the recipe is).
 
 ### D6 — Email: EU-owned provider (Brevo), hosted audience, weekly CSV export
 
@@ -166,6 +173,16 @@ A `context` block per recipe: what the product actually is, why the technique do
 
 **Rejected:** a separate "kennisbank" section (a second content type to maintain before five recipes exist); context written as SEO padding (readers skip it and so does Google).
 
+### D17 — Tin scaling: a volume factor plus an honest warning, never a silent promise
+
+A recipe with a `tin` field rescales on the tin instead of on an ingredient. Factor = new volume / old volume (round: π·r²·h; square/rectangular: l·w·h; sheet tin: area only, height unchanged). Ingredients scale by that factor; `scale: false` items round.
+
+**Baking time and temperature do not scale by that factor.** Baking time is not linear in size, and pretending it is produces a ruined bake. So the page shows a warning with the factor and the practical rule: within roughly ±15% keep the time and check early; beyond that, lower the temperature and bake longer, with one sentence of explanation. Guidance, clearly labelled, not a guarantee.
+
+**Why:** the founder asked for tin scaling, and the baker who goes from 20 cm to 24 cm with no warning is the one person this feature can hurt. Naming the limit is also what keeps it honest.
+
+**Rejected:** scaling time linearly (wrong, and wrong quietly); hiding the feature when the new tin is far from the original (they will do it anyway, just without help); a separate tin-calculator page (it belongs on the recipe); a "correct time" promise (unverifiable across ovens).
+
 ---
 
 ## 3. Roadmap
@@ -178,7 +195,7 @@ A `context` block per recipe: what the product actually is, why the technique do
 ### Gate A — weeks 1–3, ships video 1 · ~22–26h build
 1. Domain + VPS + Caddy + static Astro deploy. *(3h)*
 2. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
-3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags. *(5h)*
+3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags, mount point for the rescaler. *(5h)*
 4. Print button → print view, "met foto's" / "zonder foto's", QR code to the donate block on both. *(2h)*
 5. Bake mode toggle — Screen Wake Lock, off by default, re-acquired on `visibilitychange`. *(1h)*
 6. Umami self-hosted, cookieless, no cookie banner. *(2h)*
@@ -189,10 +206,10 @@ A `context` block per recipe: what the product actually is, why the technique do
 11. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
 12. Record videos 1 and 2, publish video 1.
 
-**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive calculator, i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
+**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — weeks 4–6), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
 ### Gate B — weeks 4–15, cadence
-- Video 2 (fondant, the flagship) → 3 (brooddeeg, **interactive scaler ships here**) → 4 (tempereren) → 5 (meringue). 1 per 3 weeks.
+- **Interactive rescaler + tin scaling** first (D5, D17), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue). 1 video per 3 weeks, and the rescaler lands before video 2 because it applies to every recipe, not to one.
 - Per-recipe FAQ, tools and context (D16) live as data fields, written while writing the recipe. No "FAQ feature".
 - **Search + filter** by category, difficulty and time, plus site search, as soon as recipe 4 is live. Three recipes do not need facets; four do. *(~1 day)*
 - Affiliate links once bol.com approves. Expect €0–15/month; no module, just fields in the recipe file.
@@ -226,7 +243,8 @@ A `context` block per recipe: what the product actually is, why the technique do
 | Full original plan (calculator, email DB, POD shop, AdSense, English all in year 1) | ~60% too big for 8–10 hours/week; none of it earns before video 1 exists |
 | Gumroad/Teachable instead of a custom site | Loses the clean-design and no-email-wall promise, and 10% of the only revenue that exists |
 | Full brand/design system before launch | Comfortable procrastination; 5 recipe pages do not need it |
-| Interactive calculator at launch, on every page | Inapplicable on 4 of 5 recipes; ~1–2 days for a feature nobody has asked for yet |
+| Flour-anchored baker's-percentage calculator | The meeting's misreading of the founder's calculator: computes a percentage of nothing on four of five recipes |
+| Interactive rescaler in Gate A | Right feature, wrong gate: Gate A exists to publish video 1, and the rescaler is 1–2 days |
 | Own email database + custom unsubscribe at launch | 12h to build a compliance surface for a list of zero; Brevo hosted + CSV export gives the same exit plan for 1h |
 | Resend / Amazon SES | US-owned; the requirement was that the service runs in Europe |
 | Mollie as a week-0 blocker | Requires KvK, and providers review a live site; Stripe covers the gap, KvK runs in parallel |
@@ -244,7 +262,7 @@ A `context` block per recipe: what the product actually is, why the technique do
 ## 6. Still open
 
 1. **KvK fee** — one verifiable number (€52 or €75) from kvk.nl. Two notes disagree; a plan that gets a one-line number wrong gets discounted entirely.
-2. **Founder sign-off on D5** — the static scale table replaces "interactive on every page" for the first five recipes. This is a deliberate deviation from a stated hard requirement and needs a yes.
+2. ~~**Founder sign-off on D5**~~ — **closed 2026-10-26**: the founder overruled the deviation (the calculator is a proportional rescaler, not baker's percentage) and the interactive version ships on every recipe page, weeks 4–6. See D5 and D17.
 3. **Search demand check** — confirm relative Dutch search volume for `soezendeeg maken` vs `banketbakkersfondant maken` before locking the publish order; if fondant dwarfs it, swap videos 1 and 2 and accept the rig risk.
 4. **Donation conversion** — 0.3–1% of engaged visitors at €5–10 is an assumption, not a measurement. First real number after video 1.
 5. **Pumbo/BoekenGilde quote** — required before any book copy or margin figure is written.
@@ -252,6 +270,7 @@ A `context` block per recipe: what the product actually is, why the technique do
 7. **Business structure** — eenmanszaak + KOR assumed. Confirm before the first invoice.
 8. **Whether the founder actually has 8–10 hours/week.** Every date in this document is derived from that number.
 9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
+10. **Baking time/temperature rules for off-size tins (D17)** — the ±15% threshold and the wording of the warning need a baker's judgement, not a guess. One short written rule from the founder before the tin rescaling ships.
 
 ---
 

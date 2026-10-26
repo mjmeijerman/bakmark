@@ -88,6 +88,18 @@ Order of work:
 
 **Rejected:** Resend (US company; an EU region is data residency, not EU jurisdiction — the founder's requirement was that the service runs in Europe); Amazon SES (same objection, plus setup cost); a self-built SQLite/Postgres + unsubscribe system at launch (12h building a compliance surface for a list of zero); manual Proton mailing (no automation, no double opt-in trail).
 
+**Sending setup (checked 2026-10-26, after the founder flagged Brevo's authentication):** Brevo's default infrastructure puts the *envelope* on their own shared domains — return-path `brevosend.com`, tracking and images on `brevolinks.com` — so SPF passes on Brevo's domain, not ours, and that SPF covers every Brevo customer. DKIM is **not** shared: keys are per sending domain in our account (1 TXT or 2 CNAMEs). Sending unauthenticated is no longer possible: Gmail/Yahoo required it from Feb 2024, Microsoft from May 2025.
+
+Therefore:
+
+- **Send from a subdomain, not the root**: `news.<domein>`. Reputation damage stays off the domain that serves the site.
+- **DKIM + DMARC**, always. DMARC starts at `p=none` for two weeks (watch reports), then `p=quarantine`, then `p=reject`.
+- **Branded subdomain** (own domain for return-path, tracking and images, e.g. `mail.news.<domein>`) if the account has the new flow: it makes SPF *aligned* and lets a strict DMARC policy rest on two signals instead of DKIM alone. Optional on shared IPs, strongly recommended, and not yet rolled out to every account — so check, don't assume.
+- **Never add `include:spf.sendinblue.com` to the root domain.** It authorises Brevo's whole shared IP space for the domain that serves the website. Not needed: DKIM carries DMARC alignment.
+- **Shared IP stays.** A dedicated IP is paid and needs warming; at five emails a year it buys nothing.
+
+**The cost of free:** the Brevo logo is added to every email on the Free plan. Removing it is a paid add-on (~€9/month, from Starter up), i.e. ~€108/year against a year-1 income expectation of €100–300. Open question §6.11: accept the logo, pay, or switch provider. The logo is an ESP footer — the brand promise is about ads, tracking walls and paywalls on the site, not about a mail footer — so the default is to accept it for year 1 and revisit when the list has value.
+
 ### D7 — Payment: site first, provider second, KvK in parallel
 
 Sequence: build site + publish video 1 → **apply for Stripe** (supports one-off iDEAL for NL, works as an individual) in week 3–4 → Mollie after KvK and once donations are real. KvK registration runs parallel in weeks 0–1 (KOR on, <€20k turnover → no VAT administration) and blocks nothing.
@@ -281,6 +293,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 8. ~~**Whether the founder actually has 8–10 hours/week.**~~ — **closed 2026-10-26**: not a constraint. There are no dates to derive, only a per-video hour budget (D3).
 9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
 10. **Baking time/temperature rules for off-size tins (D17)** — parked, not blocking. The ±15% threshold and the wording of the warning need a baker's judgement, not a guess. Revisit when there is an opinion to write down; nothing else waits on it.
+11. **Email footer** — accept the Brevo logo on the Free plan, pay ~€9/month to remove it, or move to another EU provider (MailerLite LT, Mailjet FR) whose free tier has no footer branding. Verify branding and free limits before switching; the logo is one line, the migration is an afternoon.
 
 ---
 

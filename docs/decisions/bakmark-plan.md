@@ -2,14 +2,14 @@
 
 Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic), 1 round per part. Supersedes the original draft plan.
 
-**One-line verdict:** the plan as written is a software project wearing a content business costume. Cut it to one video, one recipe page, one PDF, one donate link — then let traffic decide what gets built next.
+**One-line verdict:** the plan as written is a software project wearing a content business costume. Cut it to one video, one recipe page, one print view, one donate link — then let traffic decide what gets built next.
 
 ---
 
 ## 1. What this business is
 
 - **Product:** no-cut (real-time, one-shot) baking videos of complete techniques, with chapters so they work as a real-time guide.
-- **Site:** static, clean, no ads, no email walls, free PDF cheat sheets.
+- **Site:** static, clean, no ads, no email walls. Printable recipe view, a bake mode that keeps the screen awake, findable recipes.
 - **Money, year 1:** voluntary tips. Nothing else is real yet.
 - **Chosen order of operations:** reach first, revenue second, product third. Every technical item is judged by whether it ships a video or moves a viewer one step.
 
@@ -40,12 +40,12 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 ### D4 — Stack: static site (Astro) on a small VPS, recipe data as the single source of truth
 
-`recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, yield.
+`recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story).
 
 Rendered from that one file:
-1. recipe page,
+1. recipe page — result in the headline, context block, taxonomy as tags, bake mode toggle,
 2. YouTube description + chapters (generator script),
-3. print-CSS PDF at build time,
+3. print view, with or without photos, QR code always on the sheet,
 4. later, the interactive scaler's inputs,
 5. per-step photos, extracted from the video with ffmpeg at the step timestamps.
 
@@ -96,11 +96,11 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 
 ### D10 — Funnel: one ask per page
 
-`Dutch long-tail search → video → chapter deep link → recipe page → free PDF (no email wall) → donate directly under the download (€3 / €7 / €15 / €25 + open field) → email for the next recipe → e-book → pre-order`
+`Dutch long-tail search → video → chapter deep link → recipe page → print view (no email wall) → donate directly under the print button (€3 / €7 / €15 / €25 + open field), plus the QR code on the printed sheet → email for the next recipe → e-book → pre-order`
 
 - **Acquisition is search, not retention.** Year-1 traffic is Dutch long-tail ("soezendeeg maken", "banketbakkersfondant maken", "chocolade tempereren seeding"). Title = the literal Dutch query + `| zonder knippen`. Thumbnail = the finished product, close up. This is a bigger lever than any feature in this document.
-- One metric per recipe page: **PDF download rate ≥10%**. Below that the page is the problem, not the traffic.
-- Donation placement is the whole game: under the PDF download, at the moment the recipe worked — not the header, not the footer. On the last page of the PDF too.
+- One metric per recipe page: **print-button click rate ≥10%** (Umami event). Below that the page is the problem, not the traffic.
+- Donation placement is the whole game: under the print button, at the moment the recipe worked — not the header, not the footer. The QR code on the printed sheet carries the same ask into the kitchen.
 - Email: one send per published video. Nothing else.
 
 **Year-1 income expectation: €100–300, all sources.** Budget nothing on it.
@@ -114,12 +114,57 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 | Ingredients, 5 videos incl. failures and test bakes | €150–250 |
 | Props: marble board, backdrop, diffuser | €60–90 |
 | KvK registration (verify the fee on kvk.nl — €52 or €75, do not guess) | €52–75 |
-| Brevo / Umami / Astro / ffmpeg / PDF tooling | €0 |
+| Brevo / Umami / Astro / ffmpeg / print-CSS | €0 |
 | **Year 1 total** | **€370–575**, ≈ €3–5/month recurring |
 
-Build to video 1: **~20–24h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
+Build to video 1: **~22–26h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
 
 **Rejected:** the original €110 one-off budget — it counts hardware and hosting and forgets food, props and registration. Understating it by 4× is how a side project dies in month two.
+
+### D12 — Recipes must be findable: the taxonomy is data from day one, the search UI is not
+
+Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
+
+- **In Gate A:** the fields, ~30 minutes while writing `soezendeeg.json`. Retrofitting a taxonomy over five finished recipes is a data migration.
+- **Not in Gate A:** search and filter. Facets (category, difficulty, time, site search) ship at **recipe 4**. With one to three recipes the home page is simply a list; a search box over three items is decoration.
+
+**Why:** in the first weeks findability is irrelevant, and in month six it is the navigation. The cheap half (the data) is paid once, early; the expensive half (the UI) waits for the content that justifies it.
+
+**Rejected:** search/filter in Gate A (solves a problem the site cannot have yet); free-text tags without a fixed category list (five spellings of "deeg"); search only, no categories (you cannot browse a category you cannot name).
+
+### D13 — No PDF. A print view with a photo choice and a QR code.
+
+The PDF is cut. Printing is handled by a print button that builds a print view from the same data, with one choice: **met foto's** / **zonder foto's**. The donate QR code prints on both variants, always.
+
+**Why:** the PDF only ever existed to be printed. A print view removes a build pipeline (~2h in Gate A plus its maintenance), removes a second artifact per recipe that can go stale, and hands the printer the same sheet. "Zonder foto's" matters because a recipe you are actually cooking from does not want four pages of pictures on the counter.
+
+**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event), and the printed sheet replaces the PDF as the place the donate ask lives last.
+
+**Rejected:** build-time PDF per recipe (removed); print button without the photo choice (the printer gets photos whether they help or not); email-gated PDF (never); relying on the plain browser print (no photo choice, no QR code, no page-break control).
+
+### D14 — The result is the headline: every recipe says what it makes
+
+`result` — "300 gram fondant", "30 soezen" — is shown directly under the title, on the recipe card, in the print view and in the video description. Not in the third paragraph of the intro.
+
+**Why:** it is the first thing a baker needs and the cheapest differentiator on the page: on Rutger's site you have to hunt the text for how much a recipe yields.
+
+**Rejected:** result only in the intro text (that is the problem being fixed); result only in the structured data/SEO block (invisible to the reader).
+
+### D15 — Bake mode: one toggle that keeps the screen awake
+
+A "bakmodus" toggle on the recipe page using the Screen Wake Lock API: off by default, obvious state, a large tap target for wet hands, re-acquired on `visibilitychange`, and silent on unsupported browsers (no nag, no fallback dialog).
+
+**Why:** people bake from a screen for 20+ minutes at a time. A phone that dims after 30 seconds makes the page useless exactly when it is being used. This is a kitchen-use requirement, not a feature.
+
+**Rejected:** telling people to change their phone's sleep setting (a settings tutorial instead of one hour of work); a permanent wake lock (drains the battery of everyone who never asked); a PWA/install prompt as the "solution".
+
+### D16 — Every recipe carries product context
+
+A `context` block per recipe: what the product actually is, why the technique does what it does, when to use it, what goes wrong. 100–200 words, plain Dutch, written while writing the recipe. It is a data field, not a feature.
+
+**Why:** teaching the *why* is what separates this site from a recipe dump, and it is the part of a page that earns links from search. It also gives the video description and the printed sheet something to say beyond a list of ingredients.
+
+**Rejected:** a separate "kennisbank" section (a second content type to maintain before five recipes exist); context written as SEO padding (readers skip it and so does Google).
 
 ---
 
@@ -130,24 +175,26 @@ Build to video 1: **~20–24h**, plus ~12–18h of content and shooting. Per vid
 2. Check KvK status. Not registered → register, KOR on. Verified fee goes in this document.
 3. Fix the publish order (D1) and the cadence (D3).
 
-### Gate A — weeks 1–3, ships video 1 · ~20–24h build
+### Gate A — weeks 1–3, ships video 1 · ~22–26h build
 1. Domain + VPS + Caddy + static Astro deploy. *(3h)*
-2. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, yield. *(2–3h)*
-3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. *(5h)*
-4. Print-CSS → PDF at build time, served as a static file. *(2h)*
-5. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-6. Chapter/description generator — must enforce YouTube's rules: ≥3 timestamps, first at `00:00`, each ≥10s. 20 minutes of unbroken kneading needs 5–6 named phases ("kneden", "rust", "vormen") for skippability. *(2h)*
-7. ffmpeg step-frame extractor. *(1h)*
-8. Brevo hosted form + double opt-in + weekly CSV export. *(1h)*
-9. Donate block under the PDF: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
-10. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
-11. Record videos 1 and 2, publish video 1.
+2. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
+3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags. *(5h)*
+4. Print button → print view, "met foto's" / "zonder foto's", QR code to the donate block on both. *(2h)*
+5. Bake mode toggle — Screen Wake Lock, off by default, re-acquired on `visibilitychange`. *(1h)*
+6. Umami self-hosted, cookieless, no cookie banner. *(2h)*
+7. Chapter/description generator — must enforce YouTube's rules: ≥3 timestamps, first at `00:00`, each ≥10s. 20 minutes of unbroken kneading needs 5–6 named phases ("kneden", "rust", "vormen") for skippability. *(2h)*
+8. ffmpeg step-frame extractor. *(1h)*
+9. Brevo hosted form + double opt-in + weekly CSV export. *(1h)*
+10. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
+11. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
+12. Record videos 1 and 2, publish video 1.
 
-**Not in Gate A:** interactive calculator, i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
+**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive calculator, i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
 ### Gate B — weeks 4–15, cadence
 - Video 2 (fondant, the flagship) → 3 (brooddeeg, **interactive scaler ships here**) → 4 (tempereren) → 5 (meringue). 1 per 3 weeks.
-- Per-recipe FAQ and tools live as data fields, written while writing the recipe. No "FAQ feature".
+- Per-recipe FAQ, tools and context (D16) live as data fields, written while writing the recipe. No "FAQ feature".
+- **Search + filter** by category, difficulty and time, plus site search, as soon as recipe 4 is live. Three recipes do not need facets; four do. *(~1 day)*
 - Affiliate links once bol.com approves. Expect €0–15/month; no module, just fields in the recipe file.
 - Read AVD after video 3. <35% of runtime → video 4 ships hybrid.
 
@@ -188,6 +235,9 @@ Build to video 1: **~20–24h**, plus ~12–18h of content and shooting. Per vid
 | €13,90 net per book in planning | Unverified; colour POD plus 9% VAT can erase it |
 | Livestreams / Patreon / memberships / Discord / comments / user accounts | Each costs maintenance hours that belong to videos 1–5 |
 | 10 videos in year 1 | At 10–12h per video that is 100–120 hours of production; 5 is the honest number |
+| Build-time PDF per recipe | Removed: a print button that builds a print view gives the same sheet, needs no pipeline and cannot go stale |
+| Search/filter UI in Gate A | Three recipes do not need facets. The taxonomy *fields* ship in Gate A; the UI ships at recipe 4 |
+| Screen sleep left to the phone's settings | The page is used with dough on both hands; one hour of wake-lock beats a settings tutorial |
 
 ---
 
@@ -201,6 +251,7 @@ Build to video 1: **~20–24h**, plus ~12–18h of content and shooting. Per vid
 6. **Video length target** — 20 minutes suits chapters and watch hours; 12–15 minutes may suit retention. Decide after the video-1 AVD number.
 7. **Business structure** — eenmanszaak + KOR assumed. Confirm before the first invoice.
 8. **Whether the founder actually has 8–10 hours/week.** Every date in this document is derived from that number.
+9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
 
 ---
 
@@ -209,7 +260,7 @@ Build to video 1: **~20–24h**, plus ~12–18h of content and shooting. Per vid
 1. **Day 1 (2h):** week-0 test take, headphones, verdict on format and audio.
 2. **Day 2 (1h):** KvK status + verified fee; write the number into this file.
 3. **Day 3–4 (6h):** domain, VPS, Astro deploy, `recipes/soezendeeg.json`.
-4. **Day 5–7 (8h):** recipe page template, static scale table, PDF export.
+4. **Day 5–7 (8h):** recipe page template, static scale table, print view, bake mode.
 5. **Day 8 (3h):** Umami, chapter generator, ffmpeg frame extractor.
 6. **Day 9 (2h):** Brevo form, donate block, legal pages.
 7. **Day 10:** shoot take 1 of soezendeeg. Second take if the first one fails — that is normal, not a setback.

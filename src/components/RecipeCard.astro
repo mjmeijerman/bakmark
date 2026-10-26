@@ -1,0 +1,46 @@
+---
+interface Props {
+	href: string;
+	title: string;
+	description: string;
+	imageLabel: string;
+	chips?: string[];
+	concept?: boolean;
+}
+
+const {
+	href,
+	title,
+	description,
+	imageLabel,
+	chips = [],
+	concept = false,
+} = Astro.props;
+---
+
+<a class="recipe-card" href={href}>
+	<div
+		class="placeholder-box"
+		style="--ratio: 16 / 10"
+		role="img"
+		aria-label={`Placeholder: ${imageLabel}`}
+	>
+		<span aria-hidden="true">Placeholder</span>
+		<strong aria-hidden="true">{imageLabel}</strong>
+	</div>
+	{concept && <p><span class="chip chip-concept">Concept</span></p>}
+	<h3>{title}</h3>
+	<p>{description}</p>
+	{
+		chips.length > 0 && (
+			<ul class="chips">
+				{chips.map((chip) => (
+					<li>
+						<span class="chip">{chip}</span>
+					</li>
+				))}
+			</ul>
+		)
+	}
+	<span class="recipe-card-cta" aria-hidden="true">Bekijk het recept →</span>
+</a>

@@ -1,8 +1,13 @@
 ---
+interface Props {
+	heading?: string;
+}
+
+const { heading = "Eén bericht per nieuwe video" } = Astro.props;
 ---
 
 <form class="signup" method="post" action="" data-signup>
-	<h2>Eén bericht per nieuwe video</h2>
+	<h2>{heading}</h2>
 	<label for="email">Je e-mailadres</label>
 	<div class="signup-row">
 		<input
@@ -12,7 +17,6 @@
 			autocomplete="email"
 			inputmode="email"
 			required
-			placeholder="naam@voorbeeld.nl"
 		/>
 		<button type="submit" disabled>Inschrijven</button>
 	</div>

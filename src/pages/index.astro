@@ -2,17 +2,22 @@
 import Layout from "../layouts/Layout.astro";
 import PlaceholderImage from "../components/PlaceholderImage.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
+import RecipeCard from "../components/RecipeCard.astro";
 ---
 
 <Layout
-	title="De Ongeknipte Thuisbakker"
+	title="Bakmark"
 	description="Complete bakingvideo's in één take, zonder montage. Geen advertenties, geen e-maillijst-muur, geen cursus aan het eind."
 >
-	<section class="page-header">
+	<section class="hero">
+		<p class="kicker">De ongeknipte thuisbakker</p>
 		<h1>Bakken zonder knippen.</h1>
 		<p class="lead">
 			Complete bakingvideo's in één take: geen montage, geen versnelling, geen
 			stap overgeslagen.
+		</p>
+		<p class="hero-actions">
+			<a class="button" href="/recepten/soezendeeg">Naar het eerste recept</a>
 		</p>
 	</section>
 
@@ -23,16 +28,22 @@ import NewsletterForm from "../components/NewsletterForm.astro";
 	/>
 
 	<section class="section">
-		<h2>De eerste video: soezendeeg</h2>
-		<p>
-			Soezendeeg is waar het begint. Het is vergevingsgezind, je ziet het
-			rijzen en opbollen, en je kunt het meteen eten.
+		<h2>Nieuwste</h2>
+		<p class="section-lede">
+			De video's en recepten komen hier te staan zodra ze er zijn.
 		</p>
-		<p>
-			De video is nog niet opgenomen. Zodra hij er is, staat het volledige
-			recept hier: met hoofdstukken, een printversie voor op het aanrecht en
-			een bakmodus die je scherm aan laat.
-		</p>
+		<ul class="card-grid">
+			<li>
+				<RecipeCard
+					href="/recepten/soezendeeg"
+					title="Soezendeeg"
+					description="Het eerste recept: soesjes die opbollen in de oven, met de lastige minuut erin."
+					imageLabel="Soesjes, close-up"
+					chips={["45 min", "12 stuks", "basis"]}
+					concept
+				/>
+			</li>
+		</ul>
 	</section>
 
 	<hr class="rule" />
@@ -40,12 +51,15 @@ import NewsletterForm from "../components/NewsletterForm.astro";
 	<section class="section">
 		<h2>Wat je hier niet krijgt</h2>
 		<ul>
-			<li>Geen advertenties, geen sponsorblokken, geen affiliate-links vermomd als advies.</li>
+			<li>Geen advertentienetwerk, geen sponsorblokken, geen pop-ups.</li>
 			<li>Geen e-maillijst-muur voor een recept.</li>
 			<li>Geen cookiebanner, omdat er niets te vragen is.</li>
 			<li>Geen cursus, geen abonnement, geen "premium" recepten.</li>
 		</ul>
-		<p><a href="/waarom">Waarom dit zo is</a></p>
+		<p>
+			Affiliate-links zijn er soms wel. Die staan altijd gemarkeerd en kosten
+			jou niets extra.
+		</p>
 	</section>
 
 	<NewsletterForm />

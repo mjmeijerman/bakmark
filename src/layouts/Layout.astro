@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
-const siteName = "De Ongeknipte Thuisbakker";
+const siteName = "Bakmark";
 const pageTitle = title === siteName ? title : `${title} · ${siteName}`;
 const year = new Date().getFullYear();
 ---
@@ -43,8 +43,13 @@ const year = new Date().getFullYear();
 		</main>
 		<footer class="site-footer">
 			<div class="wrap">
-				<p>© {year} {siteName} · <a href="/contact">Contact en privacy</a></p>
-				<p>Geen advertenties, geen trackingcookies, geen e-maillijst-muur.</p>
+				<a class="site-title" href="/">Bakmark</a>
+				<p>Bakken zonder knippen. Geen advertenties, geen trackingcookies, geen e-maillijst-muur.</p>
+				<p>
+					Soms staat er een affiliate-link. Die is altijd gemarkeerd en kost
+					jou niets extra.
+				</p>
+				<p>© {year} Bakmark · <a href="/contact">Contact en privacy</a></p>
 			</div>
 		</footer>
 	</body>

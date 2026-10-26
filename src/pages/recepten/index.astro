@@ -1,0 +1,58 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import RecipeCard from "../../components/RecipeCard.astro";
+---
+
+<Layout
+	title="Alle recepten"
+	description="Alle recepten op Bakmark, met video's zonder knippen. Filteren en zoeken komt zodra er meer recepten zijn."
+>
+	<section class="hero">
+		<p class="kicker">Recepten</p>
+		<h1>Alle recepten</h1>
+		<p class="lead">
+			Eén recept staat klaar om te testen. De rest volgt zodra de video's
+			zijn opgenomen.
+		</p>
+	</section>
+
+	<section class="section">
+		<h2>Zoeken</h2>
+		<p class="section-lede">
+			Filteren op categorie, tijd en moeilijkheid, plus zoeken, komt zodra er
+			meer dan drie recepten zijn.
+		</p>
+		<form class="signup" role="search" aria-describedby="search-note">
+			<label for="search">Zoek een recept</label>
+			<div class="signup-row">
+				<input
+					id="search"
+					name="q"
+					type="search"
+					placeholder="bijvoorbeeld: soezendeeg"
+					disabled
+				/>
+				<button type="submit" disabled>Zoeken</button>
+			</div>
+			<p class="form-note" id="search-note">
+				Nog niet actief. Zodra er meer recepten zijn, werkt dit veld.
+			</p>
+		</form>
+	</section>
+
+	<section class="section">
+		<h2>Alles</h2>
+		<ul class="card-grid">
+			<li>
+				<RecipeCard
+					href="/recepten/soezendeeg"
+					title="Soezendeeg"
+					description="Soesjes die opbollen in de oven, met de lastige minuut erin."
+					imageLabel="Soesjes, close-up"
+					chips={["45 min", "12 stuks", "basis"]}
+					concept
+				/>
+			</li>
+		</ul>
+	</section>
+</Layout>

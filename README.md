@@ -22,9 +22,11 @@ npm run build   # static site in ./dist
 
 ```text
 /
-├── src/pages/          # routes: /, /waarom, /wie, /hoe-het-werkt, /contact
+├── src/pages/          # /, /recepten, /recepten/soezendeeg, /waarom, /wie,
+│                       # /hoe-het-werkt, /contact
 ├── src/layouts/        # Layout.astro: head, header, footer, theme script
-├── src/components/     # SiteHeader, ThemeToggle, NewsletterForm, PlaceholderImage
+├── src/components/     # SiteHeader, ThemeToggle, NewsletterForm, PlaceholderImage,
+│                       # RecipeCard
 ├── src/styles/         # global.css: tokens + base styles
 ├── docs/design-tokens.md
 ├── public/             # static assets, copied as-is

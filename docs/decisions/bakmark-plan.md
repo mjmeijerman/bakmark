@@ -82,25 +82,30 @@ Order of work:
 
 **Rejected:** a flour-anchored baker's-percentage calculator (the misreading — computes a percentage of nothing on the fondant page); the interactive rescaler in Gate A (the budget is full at 22–26h, and Gate A exists to publish video 1); gating the rescaler on the brooddeeg video or on visit counts (both artificial once the flour premise is gone); the rescaler as a separate calculator page (rescaling belongs where the recipe is).
 
-### D6 — Email: EU-owned provider (Brevo), hosted audience, weekly CSV export
+### D6 — Email: our own mail server on the VPS, no ESP
 
-- Brevo (France), free tier (300 mails/day) is enough for year 1. Hosted list gives double opt-in, unsubscribe and deliverability for €0 and ~1h.
-- **Weekly CSV export** to a git-ignored folder: that export is the exit plan, so migrating to own Postgres later is a data move, not a rebuild.
-- Own database + custom token-based unsubscribe only **above 1,000 contacts**. Below that, "AVG-proof" is satisfied by not holding the data yourself (no controller duties, no retention policy, no breach procedure).
+*Revised 2026-10-26: Brevo is out. Its default envelope (`brevosend.com`) puts SPF on Brevo's shared domain, its tracking runs on `brevolinks.com`, and the Free plan stamps a Brevo logo on every email. The founder wants SPF and DKIM properly ours, and at five sends a year the volume does not justify an ESP. DKIM was never the shared part — those keys are per sending domain; the shared part is the envelope, and the free plan's footer on every mail.*
 
-**Rejected:** Resend (US company; an EU region is data residency, not EU jurisdiction — the founder's requirement was that the service runs in Europe); Amazon SES (same objection, plus setup cost); a self-built SQLite/Postgres + unsubscribe system at launch (12h building a compliance surface for a list of zero); manual Proton mailing (no automation, no double opt-in trail).
+**The stack**
 
-**Sending setup (checked 2026-10-26, after the founder flagged Brevo's authentication):** Brevo's default infrastructure puts the *envelope* on their own shared domains — return-path `brevosend.com`, tracking and images on `brevolinks.com` — so SPF passes on Brevo's domain, not ours, and that SPF covers every Brevo customer. DKIM is **not** shared: keys are per sending domain in our account (1 TXT or 2 CNAMEs). Sending unauthenticated is no longer possible: Gmail/Yahoo required it from Feb 2024, Microsoft from May 2025.
+| Piece | Choice | Why |
+|---|---|---|
+| List + forms + unsubscribe | **Listmonk** (single binary) | Double opt-in, token unsubscribe, bounce handling, CSV export. Our list, our database. |
+| Database | **Postgres 16**, on the VPS | Listmonk requires it. It arrives now instead of "above 1,000 contacts" — so the app-side DB work does not. |
+| Sending | **Postfix + OpenDKIM** | Our IP, our DKIM key, our SPF. No shared envelope, no third party in the path. |
+| Sending domain | `news.<domein>`, DKIM `d=news.<domein>` | Reputation damage stays off the domain that serves the site. |
+| Reverse DNS | `mail.<domein>` | Most providers let you set it; a missing PTR is a spam signal. |
+| Policy | SPF `v=spf1 ip4:<vps-ip> -all`, DMARC `p=none` → `quarantine` → `reject` | Full alignment, both signals ours. |
 
-Therefore:
+**Two pre-flight checks before the VPS is bought** (both decide the provider, not the code): outbound **port 25 is not blocked**, and **reverse DNS is settable**. Cheap hosting often blocks 25; some providers only unblock on request. If either fails, the relay option below becomes the plan.
 
-- **Send from a subdomain, not the root**: `news.<domein>`. Reputation damage stays off the domain that serves the site.
-- **DKIM + DMARC**, always. DMARC starts at `p=none` for two weeks (watch reports), then `p=quarantine`, then `p=reject`.
-- **Branded subdomain** (own domain for return-path, tracking and images, e.g. `mail.news.<domein>`) if the account has the new flow: it makes SPF *aligned* and lets a strict DMARC policy rest on two signals instead of DKIM alone. Optional on shared IPs, strongly recommended, and not yet rolled out to every account — so check, don't assume.
-- **Never add `include:spf.sendinblue.com` to the root domain.** It authorises Brevo's whole shared IP space for the domain that serves the website. Not needed: DKIM carries DMARC alignment.
-- **Shared IP stays.** A dedicated IP is paid and needs warming; at five emails a year it buys nothing.
+**The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly. So send a test to Gmail and Outlook before launch, check placement, and only then point the form at production.
 
-**The cost of free:** the Brevo logo is added to every email on the Free plan. Removing it is a paid add-on (~€9/month, from Starter up), i.e. ~€108/year against a year-1 income expectation of €100–300. Open question §6.11: accept the logo, pay, or switch provider. The logo is an ESP footer — the brand promise is about ads, tracking walls and paywalls on the site, not about a mail footer — so the default is to accept it for year 1 and revisit when the list has value.
+**Escape hatch, one config line:** Listmonk sends through whatever SMTP it is configured with. If deliverability disappoints, point it at a European relay (Scaleway TEM FR, Mailjet FR) and keep everything else — list, forms, double opt-in, unsubscribe, CSV. The relay is the fallback, not the architecture.
+
+**Consequence for the compliance gate:** holding the list means being the data controller from day one — retention rule, breach procedure, a privacy statement that names the mail server. That is now Gate A work, not a >1,000-contact concern.
+
+**Rejected:** Brevo (shared envelope SPF, logo on the free plan); any ESP at launch (the same shared-envelope trade for less control); a full mail suite like Mailu or Postal (more surface than a list of zero needs — Postfix + OpenDKIM is the smallest thing that signs properly); Proton + manual sends (no double opt-in trail, no unsubscribe token); no relay fallback ever (one bad week becomes a broken funnel with no way out).
 
 ### D7 — Payment: site first, provider second, KvK in parallel
 
@@ -138,14 +143,14 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 | Item | Cost |
 |---|---|
 | Hardware: floor tripod + overhead arm + ring light, DSP lavalier | €85–110 |
-| Domain + VPS, year 1 | €25–40 |
+| Domain + VPS, year 1 (2 GB is the floor now: Postgres + Listmonk + Postfix) | €60–85 |
 | Ingredients, 5 videos incl. failures and test bakes | €150–250 |
 | Props: marble board, backdrop, diffuser | €60–90 |
 | KvK registration (verify the fee on kvk.nl — €52 or €75, do not guess) | €52–75 |
 | Brevo / Umami / Astro / ffmpeg / print-CSS | €0 |
-| **Year 1 total** | **€370–575**, ≈ €3–5/month recurring |
+| **Year 1 total** | **€405–615**, ≈ €3–5/month recurring |
 
-Build to video 1: **~27–33h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
+Build to video 1: **~32–40h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
 
 **Rejected:** the original €110 one-off budget — it counts hardware and hosting and forgets food, props and registration. Understating it by 4× is how a side project dies in month two.
 
@@ -240,7 +245,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 2. Check KvK status. Not registered → register, KOR on. Verified fee goes in this document.
 3. Fix the publish order (D1) and the cadence (D3).
 
-### Gate A — ships video 1 · ~27–33h of work, in order, no dates
+### Gate A — ships video 1 · ~32–40h of work, in order, no dates
 1. **Local site**: Astro project on `localhost` — page shell, build script, README. No domain, no VPS, no TLS. *(1h)*
 2. Design draft (D18): type scale, colour tokens incl. dark mode, and the home / waarom / wie / hoe-het-werkt pages. No recipes yet. *(4–6h)*
 3. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
@@ -251,12 +256,12 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 8. ffmpeg step-frame extractor. *(1h)*
 9. **Deploy**: domain + VPS + Caddy + TLS, publish the build that already works locally. *(3h)*
 10. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-11. Brevo hosted form + double opt-in + weekly CSV export. *(1h)*
+11. Postgres + Listmonk + Postfix/OpenDKIM on the VPS: double opt-in form, token unsubscribe, bounce mailbox, weekly CSV export. Verify SPF/DKIM/DMARC with a real send to Gmail and Outlook. *(6–8h)*
 12. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
 13. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
 14. Record videos 1 and 2, publish video 1.
 
-**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — after Gate A), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
+**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — after Gate A), i18n routes, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
 ### Gate B — after video 1: the rescaler, then videos 2–5
 - **Interactive rescaler** first (D5), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue), each when it is recorded and edited. The rescaler lands before video 2 because it applies to every recipe, not to one. Tin scaling (D17) is parked and is not part of Gate B.
@@ -268,7 +273,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 ### Gate C — gated on evidence, no dates
 | Build | Gate to pass first |
 |---|---|
-| Own Postgres + token unsubscribe | >1,000 contacts |
+| Own unsubscribe tokens + app-side subscriber DB | >1,000 contacts (Postgres already runs for Listmonk; this replaces Listmonk, not adds a database) |
 | i18n route prefix | 5 videos live (locale file from day 1, zero English content) |
 | €9 PDF e-book to the warm list | ≥500 subs; <30 sales → stop, no cookbook |
 | POD pre-order page (no shop integration, no stock) | ≥1,500 subs + e-book validated + written Pumbo quote |
@@ -322,7 +327,6 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 8. ~~**Whether the founder actually has 8–10 hours/week.**~~ — **closed 2026-10-26**: not a constraint. There are no dates to derive, only a per-video hour budget (D3).
 9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
 10. **Baking time/temperature rules for off-size tins (D17)** — parked, not blocking. The ±15% threshold and the wording of the warning need a baker's judgement, not a guess. Revisit when there is an opinion to write down; nothing else waits on it.
-11. **Email footer** — accept the Brevo logo on the Free plan, pay ~€9/month to remove it, or move to another EU provider (MailerLite LT, Mailjet FR) whose free tier has no footer branding. Verify branding and free limits before switching; the logo is one line, the migration is an afternoon.
 
 ---
 

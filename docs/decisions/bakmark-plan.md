@@ -99,7 +99,9 @@ Order of work:
 
 **Two pre-flight checks before the VPS is bought** (both decide the provider, not the code): outbound **port 25 is not blocked**, and **reverse DNS is settable**. Cheap hosting often blocks 25; some providers only unblock on request. If either fails, the relay option below becomes the plan.
 
-**The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly. So send a test to Gmail and Outlook before launch, check placement, and only then point the form at production.
+**The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly.
+
+**The test, before the form goes live:** send to a **mail-tester.com** address and require **≥9/10** (SPF, DKIM and DMARC all pass, no blocklist hits, no HTML/spam traps), then send to a real Gmail and a real Outlook address and check the folder it lands in. Both, every time the MTA config changes — a signature that passes in mail-tester but lands in Gmail's spam is still a broken funnel.
 
 **Escape hatch, one config line:** Listmonk sends through whatever SMTP it is configured with. If deliverability disappoints, point it at a European relay (Scaleway TEM FR, Mailjet FR) and keep everything else — list, forms, double opt-in, unsubscribe, CSV. The relay is the fallback, not the architecture.
 
@@ -256,7 +258,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 8. ffmpeg step-frame extractor. *(1h)*
 9. **Deploy**: domain + VPS + Caddy + TLS, publish the build that already works locally. *(3h)*
 10. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-11. Postgres + Listmonk + Postfix/OpenDKIM on the VPS: double opt-in form, token unsubscribe, bounce mailbox, weekly CSV export. Verify SPF/DKIM/DMARC with a real send to Gmail and Outlook. *(6–8h)*
+11. Postgres + Listmonk + Postfix/OpenDKIM on the VPS: double opt-in form, token unsubscribe, bounce mailbox, weekly CSV export. Verify with mail-tester.com (≥9/10) plus a real Gmail and Outlook send. *(6–8h)*
 12. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
 13. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
 14. Record videos 1 and 2, publish video 1.

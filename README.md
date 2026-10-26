@@ -1,6 +1,6 @@
 # bakmark
 
-Source for **De Ongeknipte Thuisbakker** — a static Astro site.
+Source for **Bakmark** — a static Astro site.
 
 ## Requirements
 

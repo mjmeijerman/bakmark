@@ -97,7 +97,13 @@ Order of work:
 | Reverse DNS | `mail.<domein>` | Most providers let you set it; a missing PTR is a spam signal. |
 | Policy | SPF `v=spf1 ip4:<vps-ip> -all`, DMARC `p=none` → `quarantine` → `reject` | Full alignment, both signals ours. |
 
-**Two pre-flight checks before the VPS is bought** (both decide the provider, not the code): outbound **port 25 is not blocked**, and **reverse DNS is settable**. Cheap hosting often blocks 25; some providers only unblock on request. If either fails, the relay option below becomes the plan.
+**Pre-flight on the actual box** (2026-10-26: the VPS is a LeaseWeb VPS with a dedicated IP, so provider choice is settled):
+
+- **Reverse DNS: solved.** LeaseWeb lets us set the PTR ourselves in the Customer Portal → IP management; it defaults to `hosted-by.leaseweb.com`. Set it to `mail.<domein>` before the first send.
+- **Outbound port 25: unverified.** Test it on the server before installing Postfix — `nc -vz -w5 gmail-smtp-in.l.google.com 25`. If it is filtered, ask LeaseWeb support for the unblock procedure; if they refuse, the relay option below becomes the plan.
+- **IP reputation: check it, do not assume.** The IP already has history from whatever ran on it: `https://multirbl.valli.org/lookup/<ip>`. A listed IP is a different problem from a cold one, and worth knowing before the double opt-in mail is the first thing it sends.
+
+If the port-25 test fails, the relay option below becomes the plan.
 
 **The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly.
 

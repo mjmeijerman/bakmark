@@ -19,7 +19,7 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 ### D1 — Video 1 is soezendeeg. Publish order: soezendeeg → fondant → brooddeeg → chocolade tempereren → Italiaanse meringue
 
-**Why:** the first take is a rig-and-audio experiment; burning the flagship (fondant) on it is wasteful. Soezendeeg is forgiving, has a visible payoff (it puffs), and finishes in a photogenic product. Fondant — the founder's actual thesis, and the highest-intent Dutch search query of the five — lands as video 2, with a proven production chain.
+**Why:** the first take is a rig-and-audio experiment; burning the flagship (fondant) on it is wasteful. Soezendeeg is forgiving, has a visible payoff (it puffs), and finishes in a photogenic product. Fondant — the founder's actual thesis, and the highest-intent Dutch search query of the five once corrected from `banketbakkersfondant maken` to `fondant maken` — lands as video 2, with a proven production chain. See [`search-demand-soezendeeg-vs-fondant.md`](search-demand-soezendeeg-vs-fondant.md).
 
 **Rejected:** fondant as video 1 (Pragmatist's position). It is the best *thesis*, but the worst *pilot*: 20+ minutes of white-on-white sugar work with the highest on-camera failure rate, shot on an untested rig. Fondant as flagship is preserved; fondant as first take is not.
 
@@ -112,7 +112,7 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 
 `Dutch long-tail search → video → chapter deep link → recipe page → print view (no email wall) → donate directly under the print button (€3 / €7 / €15 / €25 + open field), plus the QR code on the printed sheet → email for the next recipe → e-book → pre-order`
 
-- **Acquisition is search, not retention.** Year-1 traffic is Dutch long-tail ("soezendeeg maken", "banketbakkersfondant maken", "chocolade tempereren seeding"). Title = the literal Dutch query + `| zonder knippen`. Thumbnail = the finished product, close up. This is a bigger lever than any feature in this document.
+- **Acquisition is search, not retention.** Year-1 traffic is Dutch long-tail ("soezendeeg maken", "fondant maken", "chocolade tempereren seeding"). Title = the literal Dutch query + `| zonder knippen`. Thumbnail = the finished product, close up. This is a bigger lever than any feature in this document.
 - One metric per recipe page: **print-button click rate ≥10%** (Umami event). Below that the page is the problem, not the traffic.
 - Donation placement is the whole game: under the print button, at the moment the recipe worked — not the header, not the footer. The QR code on the printed sheet carries the same ask into the kitchen.
 - Email: one send per published video. Nothing else.
@@ -273,7 +273,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 
 1. **KvK fee** — one verifiable number (€52 or €75) from kvk.nl. Two notes disagree; a plan that gets a one-line number wrong gets discounted entirely.
 2. ~~**Founder sign-off on D5**~~ — **closed 2026-10-26**: the founder overruled the deviation (the calculator is a proportional rescaler, not baker's percentage) and the interactive version ships on every recipe page, weeks 4–6. See D5 and D17.
-3. **Search demand check** — confirm relative Dutch search volume for `soezendeeg maken` vs `banketbakkersfondant maken` before locking the publish order; if fondant dwarfs it, swap videos 1 and 2 and accept the rig risk.
+3. ~~**Search demand check**~~ — **done, see [`search-demand-soezendeeg-vs-fondant.md`](search-demand-soezendeeg-vs-fondant.md).** `banketbakkersfondant maken` is not a query (zero Google Trends signal in 262 weeks, zero autocomplete suggestions). The real term is `fondant maken` (~100× `soezendeeg maken` on the 5-year average). Publish order does **not** change — the swap condition was traffic-driven and the traffic argument for video 1 was never the point; the rig argument stands. Video 2's keyword changes to `fondant maken`. Remaining open: the search-volume assumption cannot be validated at these magnitudes, so re-check with Search Console impressions after video 1.
 4. **Donation conversion** — 0.3–1% of engaged visitors at €5–10 is an assumption, not a measurement. First real number after video 1.
 5. **Pumbo/BoekenGilde quote** — required before any book copy or margin figure is written.
 6. **Video length target** — 20 minutes suits chapters and watch hours; 12–15 minutes may suit retention. Decide after the video-1 AVD number.

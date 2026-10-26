@@ -1,0 +1,33 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+const path = Astro.url.pathname;
+const links = [
+	{ href: "/", label: "Home" },
+	{ href: "/waarom", label: "Waarom" },
+	{ href: "/wie", label: "Wie" },
+	{ href: "/hoe-het-werkt", label: "Hoe het werkt" },
+	{ href: "/contact", label: "Contact" },
+];
+---
+
+<header class="site-header wrap">
+	<a class="site-title" href="/">De Ongeknipte Thuisbakker</a>
+	<nav aria-label="Hoofdnavigatie">
+		<ul class="site-nav">
+			{
+				links.map((link) => (
+					<li>
+						<a
+							href={link.href}
+							aria-current={path === link.href ? "page" : undefined}
+						>
+							{link.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<ThemeToggle />
+</header>

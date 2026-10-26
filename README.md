@@ -22,8 +22,14 @@ npm run build   # static site in ./dist
 
 ```text
 /
-├── src/pages/     # routes; index.astro is /
-├── public/        # static assets, copied as-is
+├── src/pages/          # routes: /, /waarom, /wie, /hoe-het-werkt, /contact
+├── src/layouts/        # Layout.astro: head, header, footer, theme script
+├── src/components/     # SiteHeader, ThemeToggle, NewsletterForm, PlaceholderImage
+├── src/styles/         # global.css: tokens + base styles
+├── docs/design-tokens.md
+├── public/             # static assets, copied as-is
 ├── astro.config.mjs
 └── package.json
 ```
+
+Design tokens and typography are documented in [`docs/design-tokens.md`](docs/design-tokens.md).

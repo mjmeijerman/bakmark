@@ -1,0 +1,51 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+const siteName = "De Ongeknipte Thuisbakker";
+const pageTitle = title === siteName ? title : `${title} · ${siteName}`;
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="nl">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="color-scheme" content="light dark" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<title>{pageTitle}</title>
+		<script is:inline>
+			// Apply a stored choice before the page paints. No stored choice means
+			// follow prefers-color-scheme, which the CSS does on its own.
+			(function () {
+				try {
+					var theme = localStorage.getItem("theme");
+					if (theme === "light" || theme === "dark") {
+						document.documentElement.dataset.theme = theme;
+					}
+				} catch (error) {}
+			})();
+		</script>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Naar de inhoud</a>
+		<SiteHeader />
+		<main id="main" class="wrap">
+			<slot />
+		</main>
+		<footer class="site-footer">
+			<div class="wrap">
+				<p>© {year} {siteName} · <a href="/contact">Contact en privacy</a></p>
+				<p>Geen advertenties, geen trackingcookies, geen e-maillijst-muur.</p>
+			</div>
+		</footer>
+	</body>
+</html>

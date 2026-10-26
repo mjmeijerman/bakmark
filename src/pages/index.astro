@@ -1,15 +1,52 @@
 ---
+import Layout from "../layouts/Layout.astro";
+import PlaceholderImage from "../components/PlaceholderImage.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
 ---
 
-<html lang="nl">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>De Ongeknipte Thuisbakker</title>
-	</head>
-	<body>
-		<h1>De Ongeknipte Thuisbakker</h1>
-		<p>Placeholder. De eerste video komt eraan.</p>
-	</body>
-</html>
+<Layout
+	title="De Ongeknipte Thuisbakker"
+	description="Complete bakingvideo's in één take, zonder montage. Geen advertenties, geen e-maillijst-muur, geen cursus aan het eind."
+>
+	<section class="page-header">
+		<h1>Bakken zonder knippen.</h1>
+		<p class="lead">
+			Complete bakingvideo's in één take: geen montage, geen versnelling, geen
+			stap overgeslagen.
+		</p>
+	</section>
+
+	<PlaceholderImage
+		label="Close-up van het eindresultaat"
+		caption="Hier komt het gebakken resultaat, close en scherp. Geen stockfoto, geen styling die je thuis niet haalt."
+		ratio="16 / 10"
+	/>
+
+	<section class="section">
+		<h2>De eerste video: soezendeeg</h2>
+		<p>
+			Soezendeeg is waar het begint. Het is vergevingsgezind, je ziet het
+			rijzen en opbollen, en je kunt het meteen eten.
+		</p>
+		<p>
+			De video is nog niet opgenomen. Zodra hij er is, staat het volledige
+			recept hier: met hoofdstukken, een printversie voor op het aanrecht en
+			een bakmodus die je scherm aan laat.
+		</p>
+	</section>
+
+	<hr class="rule" />
+
+	<section class="section">
+		<h2>Wat je hier niet krijgt</h2>
+		<ul>
+			<li>Geen advertenties, geen sponsorblokken, geen affiliate-links vermomd als advies.</li>
+			<li>Geen e-maillijst-muur voor een recept.</li>
+			<li>Geen cookiebanner, omdat er niets te vragen is.</li>
+			<li>Geen cursus, geen abonnement, geen "premium" recepten.</li>
+		</ul>
+		<p><a href="/waarom">Waarom dit zo is</a></p>
+	</section>
+
+	<NewsletterForm />
+</Layout>

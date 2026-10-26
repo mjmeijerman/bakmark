@@ -1,0 +1,22 @@
+---
+interface Props {
+	label: string;
+	caption?: string;
+	ratio?: string;
+}
+
+const { label, caption, ratio = "3 / 2" } = Astro.props;
+---
+
+<figure class="placeholder">
+	<div
+		class="placeholder-box"
+		style={`--ratio: ${ratio}`}
+		role="img"
+		aria-label={`Placeholder: ${label}`}
+	>
+		<span aria-hidden="true">Placeholder</span>
+		<strong aria-hidden="true">{label}</strong>
+	</div>
+	{caption && <figcaption>{caption}</figcaption>}
+</figure>

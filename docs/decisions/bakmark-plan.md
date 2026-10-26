@@ -175,6 +175,8 @@ A `context` block per recipe: what the product actually is, why the technique do
 
 ### D17 — Tin scaling: a volume factor plus an honest warning, never a silent promise
 
+> **Status: parked (2026-10-26).** The time/temperature rule below has no decision yet — the founder is not ready to make one. The tin feature waits on it and sits at the bottom of Gate C. Nothing in Gate A or Gate B depends on it; the rescaler (D5) ships without it.
+
 A recipe with a `tin` field rescales on the tin instead of on an ingredient. Factor = new volume / old volume (round: π·r²·h; square/rectangular: l·w·h; sheet tin: area only, height unchanged). Ingredients scale by that factor; `scale: false` items round.
 
 **Baking time and temperature do not scale by that factor.** Baking time is not linear in size, and pretending it is produces a ruined bake. So the page shows a warning with the factor and the practical rule: within roughly ±15% keep the time and check early; beyond that, lower the temperature and bake longer, with one sentence of explanation. Guidance, clearly labelled, not a guarantee.
@@ -209,7 +211,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 **Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — weeks 4–6), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
 ### Gate B — weeks 4–15, cadence
-- **Interactive rescaler + tin scaling** first (D5, D17), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue). 1 video per 3 weeks, and the rescaler lands before video 2 because it applies to every recipe, not to one.
+- **Interactive rescaler** first (D5), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue). 1 video per 3 weeks, and the rescaler lands before video 2 because it applies to every recipe, not to one. Tin scaling (D17) is parked and is not part of Gate B.
 - Per-recipe FAQ, tools and context (D16) live as data fields, written while writing the recipe. No "FAQ feature".
 - **Search + filter** by category, difficulty and time, plus site search, as soon as recipe 4 is live. Three recipes do not need facets; four do. *(~1 day)*
 - Affiliate links once bol.com approves. Expect €0–15/month; no module, just fields in the recipe file.
@@ -223,6 +225,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 | €9 PDF e-book to the warm list | ≥500 subs; <30 sales → stop, no cookbook |
 | POD pre-order page (no shop integration, no stock) | ≥1,500 subs + e-book validated + written Pumbo quote |
 | English: subtitles first, voice-cloning second | proven English demand; disclose the cloning when it happens |
+| Tin scaling (D17) — parked | a decision on baking time/temperature for off-size tins. Not blocking anything |
 
 ---
 
@@ -270,7 +273,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 7. **Business structure** — eenmanszaak + KOR assumed. Confirm before the first invoice.
 8. **Whether the founder actually has 8–10 hours/week.** Every date in this document is derived from that number.
 9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
-10. **Baking time/temperature rules for off-size tins (D17)** — the ±15% threshold and the wording of the warning need a baker's judgement, not a guess. One short written rule from the founder before the tin rescaling ships.
+10. **Baking time/temperature rules for off-size tins (D17)** — parked, not blocking. The ±15% threshold and the wording of the warning need a baker's judgement, not a guess. Revisit when there is an opinion to write down; nothing else waits on it.
 
 ---
 

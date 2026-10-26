@@ -131,7 +131,7 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 | Brevo / Umami / Astro / ffmpeg / print-CSS | €0 |
 | **Year 1 total** | **€370–575**, ≈ €3–5/month recurring |
 
-Build to video 1: **~22–26h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
+Build to video 1: **~26–32h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
 
 **Rejected:** the original €110 one-off budget — it counts hardware and hosting and forgets food, props and registration. Understating it by 4× is how a side project dies in month two.
 
@@ -192,6 +192,31 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 
 **Rejected:** scaling time linearly (wrong, and wrong quietly); hiding the feature when the new tin is far from the original (they will do it anyway, just without help); a separate tin-calculator page (it belongs on the recipe); a "correct time" promise (unverifiable across ovens).
 
+### D18 — The first pages: with no recipes yet, the site has to say what it is
+
+**Pages before recipe 1 exists**
+
+| Page | What is on it |
+|---|---|
+| Home | What this is, in one sentence. The no-cut promise. The finished product, close up. The recipe that is coming. Newsletter. |
+| Waarom | The manifesto, short: no cuts, no ads, no email wall, no course upsell. One page, no scrolling essay. |
+| Wie | One photo, one paragraph. Why baking, why uncut. No CV, no mission-vision-values. |
+| Hoe het werkt | No cuts, chapters work as a real-time guide, print view, free, tips only. Answers "what's the catch" before it is asked. |
+| Contact / privacy | The legal minimum (D11 list), in plain Dutch. |
+
+The recipe list appears as a section the moment recipe 1 exists; until then the home page carries a "coming" note, not a fake grid.
+
+**Design constraints, in priority order**
+
+1. **Clean** — no banners, no cookie wall, no popups, no newsletter modal, one ask per page (D10).
+2. **Readable for everyone** — body text ≥17px, line length ~65ch, WCAG AA contrast minimum, real heading order, visible focus states, works at 200% zoom, no colour-only meaning. A recipe site is read in a kitchen by people who are tired.
+3. **Dark mode** — `prefers-color-scheme` by default, plus a toggle that remembers. Tokens from day one; retrofitting dark mode means touching every component.
+4. **Cozy** — warm paper tone rather than pure white, one accent colour, generous whitespace, a serif for headings, nothing that looks like a SaaS dashboard. Cozy is a bias toward warmth and quiet, not decoration.
+
+**Why now, before recipes:** the recipe page template (Gate A) is built on this type scale, these tokens and this layout. Doing the design draft after the template means rebuilding the template.
+
+**Rejected:** a full brand/design system before launch (comfortable procrastination — five pages do not need it); dark mode "later" (a retrofit across every component); a landing page showing a recipe grid that does not exist (looks empty, and it lies); a cooking-blog look (stock-photo hero, three-column cards, sidebar ads) — that is the thing this site is against.
+
 ---
 
 ## 3. Roadmap
@@ -201,21 +226,22 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 2. Check KvK status. Not registered → register, KOR on. Verified fee goes in this document.
 3. Fix the publish order (D1) and the cadence (D3).
 
-### Gate A — ships video 1 · ~22–26h of work, in order, no dates
+### Gate A — ships video 1 · ~26–32h of work, in order, no dates
 1. Domain + VPS + Caddy + static Astro deploy. *(3h)*
-2. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
-3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags, mount point for the rescaler. *(5h)*
-4. Print button → print view, "met foto's" / "zonder foto's", QR code to the donate block on both. *(2h)*
-5. Bake mode toggle — Screen Wake Lock, off by default, re-acquired on `visibilitychange`. *(1h)*
-6. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-7. Chapter/description generator — must enforce YouTube's rules: ≥3 timestamps, first at `00:00`, each ≥10s. 20 minutes of unbroken kneading needs 5–6 named phases ("kneden", "rust", "vormen") for skippability. *(2h)*
-8. ffmpeg step-frame extractor. *(1h)*
-9. Brevo hosted form + double opt-in + weekly CSV export. *(1h)*
-10. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
-11. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
-12. Record videos 1 and 2, publish video 1.
+2. Design draft (D18): type scale, colour tokens incl. dark mode, and the home / waarom / wie / hoe-het-werkt pages. No recipes yet. *(4–6h)*
+3. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
+4. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags, mount point for the rescaler. *(5h)*
+5. Print button → print view, "met foto's" / "zonder foto's", QR code to the donate block on both. *(2h)*
+6. Bake mode toggle — Screen Wake Lock, off by default, re-acquired on `visibilitychange`. *(1h)*
+7. Umami self-hosted, cookieless, no cookie banner. *(2h)*
+8. Chapter/description generator — must enforce YouTube's rules: ≥3 timestamps, first at `00:00`, each ≥10s. 20 minutes of unbroken kneading needs 5–6 named phases ("kneden", "rust", "vormen") for skippability. *(2h)*
+9. ffmpeg step-frame extractor. *(1h)*
+10. Brevo hosted form + double opt-in + weekly CSV export. *(1h)*
+11. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
+12. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
+13. Record videos 1 and 2, publish video 1.
 
-**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — weeks 4–6), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
+**Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — after Gate A), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
 ### Gate B — after video 1: the rescaler, then videos 2–5
 - **Interactive rescaler** first (D5), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue), each when it is recorded and edited. The rescaler lands before video 2 because it applies to every recipe, not to one. Tin scaling (D17) is parked and is not part of Gate B.

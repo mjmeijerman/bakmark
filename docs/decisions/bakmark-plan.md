@@ -19,7 +19,7 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 ### D1 — Video 1 is soezendeeg. Publish order: soezendeeg → fondant → brooddeeg → chocolade tempereren → Italiaanse meringue
 
-**Why:** the first take is a rig-and-audio experiment; burning the flagship (fondant) on it is wasteful. Soezendeeg is forgiving, has a visible payoff (it puffs), and finishes in a photogenic product. Fondant — the founder's actual thesis, and the highest-intent Dutch search query of the five — lands as video 2, three weeks later, with a proven production chain.
+**Why:** the first take is a rig-and-audio experiment; burning the flagship (fondant) on it is wasteful. Soezendeeg is forgiving, has a visible payoff (it puffs), and finishes in a photogenic product. Fondant — the founder's actual thesis, and the highest-intent Dutch search query of the five — lands as video 2, with a proven production chain.
 
 **Rejected:** fondant as video 1 (Pragmatist's position). It is the best *thesis*, but the worst *pilot*: 20+ minutes of white-on-white sugar work with the highest on-camera failure rate, shot on an untested rig. Fondant as flagship is preserved; fondant as first take is not.
 
@@ -31,12 +31,19 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 **Rejected:** hybrid from the start (Skeptic R1); a retention-percentage gate (both, withdrawn).
 
-### D3 — Cadence: 1 video per 3 weeks, 5 videos in 15 weeks, 1-video buffer
+### D3 — No calendar cadence: a video ships when it is recorded, five videos is the count, not a promise
 
-- Per-video budget: **10–12 hours** (prep, 2–4 takes, cleanup, page, PDF, description, step-photo extraction, thumbnail). A failed no-cut take cannot be rescued in an edit — it is a full reshoot, which is what kills the "1 per 2 weeks" fantasy.
-- Record videos 1 and 2 before publishing video 1. The buffer is what survives a bad week.
+*Revised 2026-10-26: the founder confirmed there is no deadline. Output is elastic — more free time means more videos, less means fewer.*
 
-**Rejected:** 1 video / 2 weeks (Pragmatist, Skeptic) — arithmetically incompatible with their own 10–12h/video estimate at 8–10 usable hours per week. A 6th video in year 1 is upside, not a plan.
+- **There is no target date anywhere in this plan, and no cadence to hit.** The order is fixed (D1); the timing is not.
+- **Per-video budget stays 10–12 hours** (prep, 2–4 takes, cleanup, page, description, step-photo extraction, thumbnail). Not a deadline, just the honest size of a video, which is what makes any estimate trustworthy.
+- **Record videos 1 and 2 before publishing video 1.** That is a buffer against a bad week, not a schedule: it means a second video exists before the first one can disappoint.
+- **The only pacing rule left is operating rule 1** (§4): no new feature ships while the next video is unrecorded. That is enough to keep the project from turning into a repo with no videos in it.
+- Five videos in year 1 is the expected count at 8–10 spare hours per week. More hours, more videos; fewer, fewer. A sixth is upside, never a plan.
+
+**Why:** a deadline nobody asked for gets invented justification for itself — the earlier version then rejected faster cadences *arithmetically*, which quietly turned an elastic hobby into a missed schedule. Order without dates keeps the discipline and drops the guilt.
+
+**Rejected:** 1 video per 3 weeks (a self-imposed deadline, and the reason the plan spent a paragraph defending its own arithmetic); 1 video per 2 weeks (same, worse); batching takes to "catch up later" (uncut takes do not batch — a bad take is a reshoot, not an edit).
 
 ### D4 — Stack: static site (Astro) on a small VPS, recipe data as the single source of truth
 
@@ -175,6 +182,8 @@ A `context` block per recipe: what the product actually is, why the technique do
 
 ### D17 — Tin scaling: a volume factor plus an honest warning, never a silent promise
 
+> **Status: parked (2026-10-26).** The time/temperature rule below has no decision yet — the founder is not ready to make one. The tin feature waits on it and sits at the bottom of Gate C. Nothing in Gate A or Gate B depends on it; the rescaler (D5) ships without it.
+
 A recipe with a `tin` field rescales on the tin instead of on an ingredient. Factor = new volume / old volume (round: π·r²·h; square/rectangular: l·w·h; sheet tin: area only, height unchanged). Ingredients scale by that factor; `scale: false` items round.
 
 **Baking time and temperature do not scale by that factor.** Baking time is not linear in size, and pretending it is produces a ruined bake. So the page shows a warning with the factor and the practical rule: within roughly ±15% keep the time and check early; beyond that, lower the temperature and bake longer, with one sentence of explanation. Guidance, clearly labelled, not a guarantee.
@@ -187,12 +196,12 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 
 ## 3. Roadmap
 
-### Gate 0 — week 0, ~4h, €0
+### Gate 0 — first ~4h, €0
 1. **3-minute silent no-cut test take** (phone, extractor hood on, one light source, soezendeeg). Watch it back on headphones. This is the €0 gate on both the format and the audio chain — and on whether a €25 lavalier beats the extractor fan at all.
 2. Check KvK status. Not registered → register, KOR on. Verified fee goes in this document.
 3. Fix the publish order (D1) and the cadence (D3).
 
-### Gate A — weeks 1–3, ships video 1 · ~22–26h build
+### Gate A — ships video 1 · ~22–26h of work, in order, no dates
 1. Domain + VPS + Caddy + static Astro deploy. *(3h)*
 2. `recipes/soezendeeg.json` first: ingredients with `scale_by`/`scale:false`, steps with `id`/`duration`/`t=`/photo frame, tools, FAQ, `result`, `yield`, `category`, `tags`, `difficulty`, `time`, `context`. *(2–3h)*
 3. Recipe page template + static ½×/1×/2× scale table + step photos from video frames. `result` directly under the title, context block at the top, taxonomy as visible tags, mount point for the rescaler. *(5h)*
@@ -208,14 +217,14 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 
 **Not in Gate A:** search/filter pages (D12 — they ship at recipe 4), interactive rescaler (D5 — weeks 4–6), i18n routes, own email DB, affiliate module, AdSense, English anything, livestreams, accounts/comments.
 
-### Gate B — weeks 4–15, cadence
-- **Interactive rescaler + tin scaling** first (D5, D17), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue). 1 video per 3 weeks, and the rescaler lands before video 2 because it applies to every recipe, not to one.
+### Gate B — after video 1: the rescaler, then videos 2–5
+- **Interactive rescaler** first (D5), then video 2 (fondant, the flagship) → 3 (brooddeeg) → 4 (tempereren) → 5 (meringue), each when it is recorded and edited. The rescaler lands before video 2 because it applies to every recipe, not to one. Tin scaling (D17) is parked and is not part of Gate B.
 - Per-recipe FAQ, tools and context (D16) live as data fields, written while writing the recipe. No "FAQ feature".
 - **Search + filter** by category, difficulty and time, plus site search, as soon as recipe 4 is live. Three recipes do not need facets; four do. *(~1 day)*
 - Affiliate links once bol.com approves. Expect €0–15/month; no module, just fields in the recipe file.
 - Read AVD after video 3. <35% of runtime → video 4 ships hybrid.
 
-### Gate C — months 8–12, gated on evidence
+### Gate C — gated on evidence, no dates
 | Build | Gate to pass first |
 |---|---|
 | Own Postgres + token unsubscribe | >1,000 contacts |
@@ -223,6 +232,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 | €9 PDF e-book to the warm list | ≥500 subs; <30 sales → stop, no cookbook |
 | POD pre-order page (no shop integration, no stock) | ≥1,500 subs + e-book validated + written Pumbo quote |
 | English: subtitles first, voice-cloning second | proven English demand; disclose the cloning when it happens |
+| Tin scaling (D17) — parked | a decision on baking time/temperature for off-size tins. Not blocking anything |
 
 ---
 
@@ -268,13 +278,13 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 5. **Pumbo/BoekenGilde quote** — required before any book copy or margin figure is written.
 6. **Video length target** — 20 minutes suits chapters and watch hours; 12–15 minutes may suit retention. Decide after the video-1 AVD number.
 7. **Business structure** — eenmanszaak + KOR assumed. Confirm before the first invoice.
-8. **Whether the founder actually has 8–10 hours/week.** Every date in this document is derived from that number.
+8. ~~**Whether the founder actually has 8–10 hours/week.**~~ — **closed 2026-10-26**: not a constraint. There are no dates to derive, only a per-video hour budget (D3).
 9. **QR code target and size** — does it encode the donate block anchor or the Stripe payment link, and does it still scan at ~2 cm on a home printer? Test on paper, not on screen.
-10. **Baking time/temperature rules for off-size tins (D17)** — the ±15% threshold and the wording of the warning need a baker's judgement, not a guess. One short written rule from the founder before the tin rescaling ships.
+10. **Baking time/temperature rules for off-size tins (D17)** — parked, not blocking. The ±15% threshold and the wording of the warning need a baker's judgement, not a guess. Revisit when there is an opinion to write down; nothing else waits on it.
 
 ---
 
-## 7. First 10 working days
+## 7. The first ~24 hours, in order
 
 1. **Day 1 (2h):** week-0 test take, headphones, verdict on format and audio.
 2. **Day 2 (1h):** KvK status + verified fee; write the number into this file.
@@ -283,5 +293,7 @@ A recipe with a `tin` field rescales on the tin instead of on an ingredient. Fac
 5. **Day 8 (3h):** Umami, chapter generator, ffmpeg frame extractor.
 6. **Day 9 (2h):** Brevo form, donate block, legal pages.
 7. **Day 10:** shoot take 1 of soezendeeg. Second take if the first one fails — that is normal, not a setback.
+
+The **Day** numbers are sequence, not calendar dates — a slow week moves the sequence, it does not put the plan behind.
 
 **Then:** publish video 1, and the next feature is not allowed until video 2 is recorded.

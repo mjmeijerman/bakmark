@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PlaceholderImage from "../components/PlaceholderImage.astro";
+import { allRecipes, formatMinutes, recipeChips } from "../lib/recipes";
 import NewsletterForm from "../components/NewsletterForm.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 ---
@@ -32,16 +33,20 @@ import RecipeCard from "../components/RecipeCard.astro";
 			De video's en recepten komen hier te staan zodra ze er zijn.
 		</p>
 		<ul class="card-grid">
-			<li>
-				<RecipeCard
-					href="/recepten/soezendeeg"
-					title="Soezendeeg"
-					description="Het eerste recept: soesjes die opbollen in de oven, stap voor stap in echte tijd."
-					imageLabel="Soesjes, close-up"
-					chips={["45 min", "12 stuks", "basis"]}
-					concept
-				/>
-			</li>
+			{
+				allRecipes().map((recipe) => (
+					<li>
+						<RecipeCard
+							href={`/recepten/${recipe.slug}`}
+							title={recipe.title}
+							description={recipe.subtitle}
+							imageLabel={`${recipe.result.unit}, close-up`}
+							chips={recipeChips(recipe)}
+							concept={!recipe.verified}
+						/>
+					</li>
+				))
+			}
 		</ul>
 	</section>
 

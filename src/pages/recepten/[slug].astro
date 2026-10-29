@@ -1,0 +1,177 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import NewsletterForm from "../../components/NewsletterForm.astro";
+import {
+	allRecipes,
+	formatAmount,
+	formatMinutes,
+	recipeChips,
+	type Recipe,
+} from "../../lib/recipes";
+
+export function getStaticPaths() {
+	return allRecipes().map((recipe) => ({
+		params: { slug: recipe.slug },
+		props: { recipe },
+	}));
+}
+
+const { recipe } = Astro.props as { recipe: Recipe };
+const chips = recipeChips(recipe);
+const bake = recipe.bake;
+---
+
+<Layout
+	title={recipe.title}
+	description={`${recipe.title}: ${recipe.result.value} ${recipe.result.unit}. ${recipe.subtitle}`}
+>
+	<article>
+		<section class="hero">
+			<p class="kicker">{recipe.verified ? "Recept" : "Concept · nog niet geverifieerd"}</p>
+			<h1>{recipe.title}</h1>
+			<p class="recipe-result">{recipe.subtitle}</p>
+			<ul class="chips recipe-meta">
+				{chips.map((chip) => <li><span class="chip">{chip}</span></li>)}
+				{!recipe.verified && <li><span class="chip chip-concept">Concept</span></li>}
+			</ul>
+			<p class="recipe-summary">
+				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
+			</p>
+		</section>
+
+		{!recipe.verified && (
+			<p class="verified-note">
+				<strong>Nog niet geverifieerd.</strong> {recipe.verified_note}
+			</p>
+		)}
+
+		<div
+			class="placeholder-box recipe-video"
+			style="--ratio: 16 / 9"
+			role="img"
+			aria-label={`Placeholder: video van ${recipe.title.toLowerCase()} in één take`}
+		>
+			<span aria-hidden="true">Placeholder</span>
+			<strong aria-hidden="true">Video: {recipe.title.toLowerCase()} in één take</strong>
+		</div>
+
+		<section class="section">
+			<h2>Waarom dit werkt</h2>
+			<p>{recipe.context}</p>
+			<ul class="chips">
+				{recipe.tags.map((tag) => <li><span class="chip">{tag}</span></li>)}
+			</ul>
+		</section>
+
+		<section class="section">
+			<h2>Ingrediënten</h2>
+			<ul class="ingredients">
+				{recipe.ingredients.map((i) => (
+					<li>
+						<span>
+							{i.name}
+							{i.note && <span class="ingredient-note">{i.note}</span>}
+						</span>
+						<span class="amount">{formatAmount(i)}</span>
+					</li>
+				))}
+			</ul>
+			<p class="form-note">
+				Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en
+				kost jou niets extra.
+			</p>
+		</section>
+
+		<section class="section">
+			<h2>Bakken</h2>
+			<dl class="bake">
+				<div><dt>Ovenstand</dt><dd>{bake.mode} · {bake.rack}</dd></div>
+				<div><dt>Temperatuur</dt><dd>{bake.temperature} °C (hetelucht {bake.temperature_hetelucht} °C)</dd></div>
+				<div><dt>Baktijd</dt><dd>{formatMinutes(bake.time.min)} – {formatMinutes(bake.time.max)}</dd></div>
+				<div><dt>Klaar wanneer</dt><dd>{bake.done_when}</dd></div>
+				<div><dt>Ovendeur</dt><dd>{bake.door}</dd></div>
+				<div><dt>Nadrogen</dt><dd>{formatMinutes(bake.afterbake.duration)}, deur op een kier</dd></div>
+			</dl>
+			<p class="form-note">{bake.time_note}</p>
+		</section>
+
+		<section class="section">
+			<h2>Stappen</h2>
+			<ol class="steps">
+				{recipe.steps.map((step) => (
+					<li id={step.id}>
+						<p><strong>{step.title}</strong></p>
+						<p>{step.text}</p>
+						{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
+						{step.tips?.length ? (
+							<ul class="step-tips">
+								{step.tips.map((tip) => <li>{tip}</li>)}
+							</ul>
+						) : null}
+					</li>
+				))}
+			</ol>
+			<p class="form-note">
+				Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit
+				de opname, met de echte tijden en de volgorde van de video.
+			</p>
+		</section>
+
+		{recipe.mislukt?.length ? (
+			<section class="section">
+				<h2>Als het mislukt</h2>
+				<table class="mislukt">
+					<thead>
+						<tr><th>Symptoom</th><th>Oorzaak</th><th>Oplossing</th></tr>
+					</thead>
+					<tbody>
+						{recipe.mislukt.map((m) => (
+							<tr><td>{m.symptoom}</td><td>{m.oorzaak}</td><td>{m.fix}</td></tr>
+						))}
+					</tbody>
+				</table>
+			</section>
+		) : null}
+
+		<section class="section">
+			<h2>Veelgestelde vragen</h2>
+			<div class="faq">
+				{recipe.faq.map((f) => (
+					<details>
+						<summary>{f.q}</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+
+		<section class="section">
+			<h2>Printen</h2>
+			<p>
+				De printfunctie komt met de video: met of zonder foto's en met de
+				juiste paginering voor op het aanrecht.
+			</p>
+			<p>
+				<button class="button" type="button" disabled>Printversie volgt</button>
+			</p>
+		</section>
+
+		<section class="callout">
+			<h2>Een fooi?</h2>
+			<p>
+				De recepten en video's zijn gratis. Wie er iets aan heeft, kan een
+				fooi achterlaten. Wie dat niet doet, merkt daar niets van.
+			</p>
+			<ul class="tips">
+				<li><span class="tip-amount">€3</span></li>
+				<li><span class="tip-amount">€7</span></li>
+				<li><span class="tip-amount">€15</span></li>
+				<li><span class="tip-amount">€25</span></li>
+				<li><span class="tip-amount">Eigen bedrag</span></li>
+			</ul>
+			<p class="form-note">Placeholder: de betaallink komt er bij de eerste video.</p>
+		</section>
+	</article>
+
+	<NewsletterForm heading="Nieuwsbrief" />
+</Layout>

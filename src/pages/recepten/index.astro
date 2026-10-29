@@ -6,8 +6,10 @@ import {
 	CATEGORIES,
 	DIFFICULTY_SCALE,
 	ROLE_LABELS,
+	SORT_OPTIONS,
 	TIME_BUCKETS,
 	allRecipes,
+	publishedValue,
 	recipeChips,
 	searchText,
 	type Recipe,
@@ -165,6 +167,14 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 
 		<p class="filter-status" id="filter-note" aria-live="polite">
 			<span data-count>{recipes.length} recepten</span>
+			<label class="sort-control">
+				<span>Volgorde</span>
+				<select data-sort>
+					{SORT_OPTIONS.map((option, index) => (
+						<option value={option.id} selected={index === 0}>{option.label}</option>
+					))}
+				</select>
+			</label>
 		</p>
 	</div>
 
@@ -176,6 +186,8 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 					data-role={recipe.role}
 					data-difficulty={recipe.difficulty}
 					data-minutes={minutes(recipe)}
+					data-published={publishedValue(recipe)}
+					data-title={recipe.title.toLocaleLowerCase("nl")}
 					data-search-text={searchText(recipe)}
 				>
 					<RecipeCard
@@ -212,6 +224,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 	const panel = document.querySelector<HTMLDetailsElement>("[data-filter-panel]");
 	const summaryState = document.querySelector<HTMLElement>("[data-summary-state]");
 	const feedback = document.querySelector<HTMLElement>("[data-feedback]");
+	const sort = document.querySelector<HTMLSelectElement>("[data-sort]");
 	const header = document.querySelector<HTMLElement>(".site-header");
 
 	if (form && results && empty && counter && reset && search && panel && summaryState) {
@@ -316,6 +329,11 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			}
 			const query = params.get("q");
 			if (query) search.value = query;
+			// Frontmatter imports are not available in a client script, so the valid
+			// values come from the rendered <option> list.
+			const order = params.get("sorteer");
+			const known = sort ? Array.from(sort.options).map((option) => option.value) : [];
+			if (sort && order && known.includes(order)) sort.value = order;
 		};
 
 		const writeUrl = () => {
@@ -326,9 +344,25 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			}
 			const query = search.value.trim();
 			if (query) params.set("q", query);
+			if (sort && sort.value !== "nieuwste") params.set("sorteer", sort.value);
 			const suffix = params.toString();
 			const url = suffix ? `${window.location.pathname}?${suffix}` : window.location.pathname;
 			window.history.replaceState(null, "", url);
+		};
+
+		// Order is a view, not a filter: the same cards, rearranged. Newest first
+		// is the default because a catalogue is read as "what is new here".
+		const comparators: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+			nieuwste: (a, b) => Number(b.dataset.published ?? 0) - Number(a.dataset.published ?? 0),
+			az: (a, b) => (a.dataset.title ?? "").localeCompare(b.dataset.title ?? "", "nl"),
+			moeilijkheid: (a, b) => Number(a.dataset.difficulty ?? 0) - Number(b.dataset.difficulty ?? 0),
+			tijd: (a, b) => Number(a.dataset.minutes ?? 0) - Number(b.dataset.minutes ?? 0),
+		};
+
+		const sortCards = () => {
+			const compare = comparators[sort?.value ?? "nieuwste"] ?? comparators.nieuwste;
+			const sorted = [...cards].sort(compare);
+			for (const card of sorted) results.append(card);
 		};
 
 		const apply = ({ syncUrl = true }: { syncUrl?: boolean } = {}) => {
@@ -365,7 +399,10 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			reset.hidden = active === 0;
 			summaryState.textContent = active > 0 ? `${active} actief` : "";
 			panel.classList.toggle("has-active", active > 0);
-			if (syncUrl) writeUrl();
+			if (syncUrl) {
+				sortCards();
+				writeUrl();
+			}
 		};
 
 		const say = (message: string) => {
@@ -412,6 +449,8 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 				say("Geen recepten met dit trefwoord. Wis het zoekveld of een filter om breder te zoeken.");
 			}
 		});
+
+		sort?.addEventListener("change", () => apply());
 
 		// Enter used to submit the form and reload the page, which threw the query
 		// away. Enter now keeps the term, closes the panel and shows the results.

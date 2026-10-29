@@ -5,6 +5,7 @@ import DifficultyBadge from "../../components/DifficultyBadge.astro";
 import {
 	DIFFICULTY_SCALE,
 	allRecipes,
+	formatDate,
 	formatMinutes,
 	recipeChips,
 	recipeRoutes,
@@ -62,7 +63,7 @@ const factorLabel = (factor: number) =>
 				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
 			</p>
 			<p class="print-only">
-				{formatMinutes(activeTime)} actief · moeilijkheid {recipe.difficulty}/{DIFFICULTY_SCALE}
+				{formatMinutes(activeTime)} actief · moeilijkheid {recipe.difficulty}/{DIFFICULTY_SCALE}{recipe.published ? ` · geplaatst ${formatDate(recipe.published)}` : ""}
 				{bakeGroups.length ? ` · ${bakeGroups[0].recipe.bake.temperature} °C` : ""}
 			</p>
 		</section>
@@ -179,10 +180,10 @@ const factorLabel = (factor: number) =>
 					{group.ingredients.length ? (
 						<ul class="ingredients">
 							{group.ingredients.map((i) => (
-								<li data-ingredient={`${group.recipe.slug}:${i.id}`}>
+								<li data-gather={`${group.recipe.slug}:${i.id}`}>
 									<input
 										type="checkbox"
-										class="ingredient-check"
+										class="gather-check"
 										id={`check-${group.recipe.slug}-${i.id}`}
 										aria-label={`${i.name} verzameld`}
 									/>
@@ -217,9 +218,17 @@ const factorLabel = (factor: number) =>
 				<h2>Benodigdheden</h2>
 				<ul class="tools">
 					{tools.map((tool) => (
-						<li>
-							<span>{tool.name}</span>
-							{tool.note ? <span class="form-note">{tool.note}</span> : null}
+						<li data-gather={`tool:${tool.name}`}>
+							<input
+								type="checkbox"
+								class="gather-check"
+								id={`check-tool-${tool.name.replace(/\s+/g, "-").toLowerCase()}`}
+								aria-label={`${tool.name} klaargezet`}
+							/>
+							<div>
+								<span>{tool.name}</span>
+								{tool.note ? <span class="form-note">{tool.note}</span> : null}
+							</div>
 						</li>
 					))}
 				</ul>
@@ -359,10 +368,10 @@ const factorLabel = (factor: number) =>
 		if (event.key === "Escape") closeNotes();
 	});
 
-	// Ingredient checkboxes: what you already put on the counter. Kept in
+	// Checkboxes for ingredients and tools: what is already on the counter. Kept in
 	// localStorage so a reload mid-recipe does not lose the list; nothing leaves
 	// the browser.
-	const checks = Array.from(document.querySelectorAll<HTMLInputElement>(".ingredient-check"));
+	const checks = Array.from(document.querySelectorAll<HTMLInputElement>(".gather-check"));
 	if (checks.length) {
 		const key = `bakmark:checks:${window.location.pathname}`;
 		type Store = Record<string, boolean>;
@@ -377,7 +386,7 @@ const factorLabel = (factor: number) =>
 
 		const saved = read();
 		for (const box of checks) {
-			const id = box.closest<HTMLElement>("[data-ingredient]")?.dataset.ingredient ?? box.id;
+			const id = box.closest<HTMLElement>("[data-gather]")?.dataset.gather ?? box.id;
 			box.checked = Boolean(saved[id]);
 			box.closest("li")?.classList.toggle("is-checked", box.checked);
 			box.addEventListener("change", () => {

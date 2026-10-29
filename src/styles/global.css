@@ -1429,7 +1429,7 @@
 		gap: var(--space-2);
 	}
 
-	.ingredient-check {
+	.gather-check {
 		width: 1.15rem;
 		height: 1.15rem;
 		margin: 0;
@@ -1453,10 +1453,16 @@
 
 	.tools li {
 		display: grid;
-		gap: 0.1rem;
-		justify-items: start;
+		grid-template-columns: auto 1fr;
+		align-items: baseline;
+		gap: var(--space-2);
 		padding-block: var(--space-1);
 		border-bottom: 1px dashed var(--border);
+	}
+
+	.tools li.is-checked span {
+		text-decoration: line-through;
+		opacity: 0.55;
 	}
 
 	.tools .form-note {
@@ -1477,5 +1483,38 @@
 		clip: rect(0 0 0 0);
 		white-space: nowrap;
 		border: 0;
+	}
+}
+
+/* Sort control inside the sticky filter bar. */
+@layer components {
+	.filter-status {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.sort-control {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+	}
+
+	.sort-control span {
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sort-control select {
+		font: inherit;
+		font-size: var(--text-sm);
+		padding: 0.25rem 0.4rem;
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--text);
 	}
 }

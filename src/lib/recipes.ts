@@ -60,6 +60,8 @@ export interface Recipe {
 	verified: boolean;
 	verified_note?: string;
 	video?: Video;
+	/** ISO date the recipe went live. Default sort order is newest first. */
+	published?: string;
 	result: { value: number; unit: string; note?: string };
 	yield?: Record<string, unknown>;
 	category: string;
@@ -249,7 +251,7 @@ export const DIFFICULTY_SCALE = 5;
 /** Words beat a fraction: "gemiddeld" needs no translation, "3/5" does. */
 export const DIFFICULTY_WORDS = [
 	"makkelijk",
-	"te doen",
+	"goed te doen",
 	"gemiddeld",
 	"lastig",
 	"gevorderd",
@@ -288,6 +290,26 @@ export const TIME_BUCKETS = [
 	{ id: "middel", label: "30-60 min", min: 1800, max: 3600 },
 	{ id: "lang", label: "langer dan 1 uur", min: 3600, max: Number.POSITIVE_INFINITY },
 ] as const;
+
+export const SORT_OPTIONS = [
+	{ id: "nieuwste", label: "Nieuwste eerst" },
+	{ id: "az", label: "Alfabetisch" },
+	{ id: "moeilijkheid", label: "Makkelijk eerst" },
+	{ id: "tijd", label: "Snelst klaar" },
+] as const;
+
+export type SortId = (typeof SORT_OPTIONS)[number]["id"];
+
+/** Sort key for a recipe; unknown dates sort last, never first. */
+export const publishedValue = (recipe: Recipe) =>
+	recipe.published ? Date.parse(recipe.published) : 0;
+
+export const formatDate = (iso?: string) => {
+	if (!iso) return "";
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return iso;
+	return new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" }).format(date);
+};
 
 export const formatMinutes = (seconds: number) => {
 	const min = Math.round(seconds / 60);

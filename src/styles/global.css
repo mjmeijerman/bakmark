@@ -1081,6 +1081,16 @@
 		padding-block: 1pt;
 	}
 
+	/* The disclosure markers belong to the screen: paper cannot be clicked. */
+	details.collapsible > summary::after,
+	.step-extra::before {
+		content: none !important;
+	}
+
+	details.collapsible > summary {
+		padding-block: 0.2rem;
+	}
+
 	/* On paper the number comes from the <ol> itself. The screen badge is a
 	   fixed-size grid box, and that clipped its own digit in the print pass. */
 	.steps {

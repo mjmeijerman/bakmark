@@ -214,7 +214,7 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 | Facet | Source | Why not a category |
 |---|---|---|
 | Rol (basisrecept / eindproduct) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Renamed twice in D20: "gerecht" reads as a savoury dinner, "afgewerkt" reads as a chore. The finished bake is the eindproduct. |
-| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". Shown as five chef's hats, filled up to the level: "3/5" needs translating, a row of hats does not. |
+| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". Shown as five mixing bowls, filled up to the level: "3/5" needs translating, a row of bowls does not. (Four silhouettes were drawn and rendered at chip size before this one: a chef's hat read as a mushroom, a whisk as two letters, a rolling pin as a dash, a spoon as a lollipop. A semicircle with a rim is the only one that survives being 1.3rem wide.) |
 | — | — | The facet label for `role` was "Rol", which is a database word, not a baker's word. It is **"Soort recept"** now, with two values: a basisrecept is used by other recipes; an eindproduct is what you serve. A third value only earns its place if a recipe is neither — a pure technique with no product. |
 | Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
 | Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |

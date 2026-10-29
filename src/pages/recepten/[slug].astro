@@ -184,3 +184,25 @@ const bake = recipe.bake;
 
 	<NewsletterForm heading="Nieuwsbrief" />
 </Layout>
+
+<script>
+	// One ingredient note open at a time, and a click or Escape anywhere else
+	// closes it. <details> does the toggling itself; this only adds dismissal,
+	// so the notes still work with JavaScript off.
+	const notes = document.querySelectorAll<HTMLDetailsElement>("details.ingredient-info");
+
+	const closeNotes = (keep?: Element) => {
+		notes.forEach((note) => {
+			if (note !== keep) note.open = false;
+		});
+	};
+
+	document.addEventListener("click", (event) => {
+		const target = event.target as Element | null;
+		closeNotes(target?.closest("details.ingredient-info") ?? undefined);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") closeNotes();
+	});
+</script>

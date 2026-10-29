@@ -1,0 +1,30 @@
+---
+interface Props {
+	/** Filled hats. */
+	level: number;
+	scale?: number;
+}
+
+const { level, scale = 5 } = Astro.props;
+---
+
+<span class="difficulty-icons" aria-hidden="true">
+	{
+		Array.from({ length: scale }, (_, index) => (
+			<svg
+				class:list={["difficulty-icon", index < level ? "is-on" : "is-off"]}
+				viewBox="0 0 24 24"
+				focusable="false"
+			>
+				<path
+					d="M12 2.4c-2.5 0-4.6 1.6-4.9 3.8a3.7 3.7 0 0 0 1.6 7h6.6a3.7 3.7 0 0 0 1.6-7c-.3-2.2-2.4-3.8-4.9-3.8Z"
+					fill="currentColor"
+				/>
+				<path
+					d="M8.3 13.6h7.4v4.1a1 1 0 0 1-1 1H9.3a1 1 0 0 1-1-1Z"
+					fill="currentColor"
+				/>
+			</svg>
+		))
+	}
+</span>

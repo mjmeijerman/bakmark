@@ -214,7 +214,8 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 | Facet | Source | Why not a category |
 |---|---|---|
 | Rol (basisrecept / eindproduct) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Renamed twice in D20: "gerecht" reads as a savoury dinner, "afgewerkt" reads as a chore. The finished bake is the eindproduct. |
-| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". |
+| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". Shown as five chef's hats, filled up to the level: "3/5" needs translating, a row of hats does not. |
+| — | — | The facet label for `role` was "Rol", which is a database word, not a baker's word. It is **"Soort recept"** now, with two values: a basisrecept is used by other recipes; an eindproduct is what you serve. A third value only earns its place if a recipe is neither — a pure technique with no product. |
 | Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
 | Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
 | Gebruikt in | `components[]`, reverse | Unique to this model. Answers "what can I make with this basisrecept" and turns the component graph into navigation. |
@@ -223,7 +224,12 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 **Every value is clickable, with a live count.** *Revised twice on 2026-10-29.* The ≥2 rule is dropped: greying out a value with one recipe refused a reader who knew what they wanted. Counts are now **context-aware** — each chip shows how many recipes its value holds under the other facets and the search term, so picking "basistechniek" drops "eindproduct" to 0 and the numbers under category stay honest (2, 3, 1) instead of all collapsing to the current total.
 
-**You cannot filter yourself into an empty list.** A chip whose count is 0 in the current context is disabled, so the combinations that would return nothing are unreachable by clicking. The only way to reach zero results is to hand-edit the query string, and then the empty state offers the reset. Zero-value *categories* still render nothing at all.
+**You cannot filter yourself into an empty list.** Two rules, both needed, because the first one alone was not enough:
+
+1. A chip is disabled unless picking it would still show at least one recipe. That test is the **union** (this facet's current values *plus* the candidate), not the chip's own count: with "basistechniek" and "room & vulling" already selected, a chip whose own value holds recipes still has to prove the combined filter is non-empty.
+2. Every click is a transaction. If the result is somehow empty anyway — deselection can do it, since two facets can each hold recipes while their intersection holds none — the previous selection is restored and a line says the combination was reverted.
+
+A random walk of 400 clicks over the live UI never left the list empty, and the revert fired once, so the second rule is not decoration. Only a hand-edited query string can still land on zero, and there the empty state offers the reset. Zero-value *categories* render nothing at all.
 
 **Two different numbers, on purpose:** a chip counts its own value; the counter under the panel counts the union ("5 van 6"). A chip is not a prediction of the result total, it is a description of the value — and the union is what facets are OR'd into.
 

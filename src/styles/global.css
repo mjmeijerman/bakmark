@@ -1359,3 +1359,34 @@
 		outline: none;
 	}
 }
+
+/* Difficulty chips: whisk icons, filled up to the level. */
+@layer components {
+	.filter-chip-difficulty {
+		gap: var(--space-1);
+	}
+
+	.difficulty-icons {
+		display: inline-flex;
+		align-items: center;
+		gap: 1px;
+	}
+
+	.difficulty-icon {
+		width: 1rem;
+		height: 1rem;
+		flex: none;
+	}
+
+	.difficulty-icon.is-on {
+		color: currentColor;
+	}
+
+	.difficulty-icon.is-off {
+		opacity: 0.25;
+	}
+
+	.filter-feedback {
+		color: var(--accent);
+	}
+}

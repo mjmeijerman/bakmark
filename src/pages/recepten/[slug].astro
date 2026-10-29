@@ -27,26 +27,30 @@ const bake = recipe.bake;
 >
 	<article>
 		<section class="hero">
-			<p class="kicker">{recipe.verified ? "Recept" : "Concept · nog niet geverifieerd"}</p>
+			<p class="kicker no-print">{recipe.verified ? "Recept" : "Concept · nog niet geverifieerd"}</p>
 			<h1>{recipe.title}</h1>
 			<p class="recipe-result">{recipe.subtitle}</p>
-			<ul class="chips recipe-meta">
+			<ul class="chips recipe-meta no-print">
 				{chips.map((chip) => <li><span class="chip">{chip}</span></li>)}
 				{!recipe.verified && <li><span class="chip chip-concept">Concept</span></li>}
 			</ul>
 			<p class="recipe-summary">
 				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
 			</p>
+			<p class="print-only">
+				{formatMinutes(recipe.time.total)} · {bake.temperature} °C · {bake.mode} ·
+				moeilijkheid {recipe.difficulty}/3
+			</p>
 		</section>
 
 		{!recipe.verified && (
-			<p class="verified-note">
+			<p class="verified-note no-print">
 				<strong>Nog niet geverifieerd.</strong> {recipe.verified_note}
 			</p>
 		)}
 
 		<div
-			class="placeholder-box recipe-video"
+			class="placeholder-box recipe-video no-print"
 			style="--ratio: 16 / 9"
 			role="img"
 			aria-label={`Placeholder: video van ${recipe.title.toLowerCase()} in één take`}
@@ -55,7 +59,7 @@ const bake = recipe.bake;
 			<strong aria-hidden="true">Video: {recipe.title.toLowerCase()} in één take</strong>
 		</div>
 
-		<section class="section">
+		<section class="section no-print">
 			<h2>Waarom dit werkt</h2>
 			<p>{recipe.context}</p>
 			<ul class="chips">
@@ -85,7 +89,7 @@ const bake = recipe.bake;
 					</li>
 				))}
 			</ul>
-			<p class="form-note">
+			<p class="form-note no-print">
 				Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en
 				kost jou niets extra.
 			</p>
@@ -101,14 +105,15 @@ const bake = recipe.bake;
 				<div><dt>Ovendeur</dt><dd>{bake.door}</dd></div>
 				<div><dt>Nadrogen</dt><dd>{formatMinutes(bake.afterbake.duration)}, deur op een kier</dd></div>
 			</dl>
-			<p class="form-note">{bake.time_note}</p>
+			<p class="form-note no-print">{bake.time_note}</p>
 		</section>
 
 		<section class="section">
 			<h2>Stappen</h2>
 			<ol class="steps">
-				{recipe.steps.map((step) => (
+				{recipe.steps.map((step, index) => (
 					<li id={step.id}>
+						<span class="step-num" aria-hidden="true">{index + 1}</span>
 						<p><strong>{step.title}</strong></p>
 						<p>{step.text}</p>
 						{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
@@ -120,14 +125,14 @@ const bake = recipe.bake;
 					</li>
 				))}
 			</ol>
-			<p class="form-note">
+			<p class="form-note no-print">
 				Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit
 				de opname, met de echte tijden en de volgorde van de video.
 			</p>
 		</section>
 
 		{recipe.mislukt?.length ? (
-			<section class="section">
+			<section class="section no-print">
 				<h2>Als het mislukt</h2>
 				<table class="mislukt">
 					<thead>
@@ -142,7 +147,7 @@ const bake = recipe.bake;
 			</section>
 		) : null}
 
-		<section class="section">
+		<section class="section no-print">
 			<h2>Veelgestelde vragen</h2>
 			<div class="faq">
 				{recipe.faq.map((f) => (
@@ -154,18 +159,18 @@ const bake = recipe.bake;
 			</div>
 		</section>
 
-		<section class="section">
+		<section class="section no-print">
 			<h2>Printen</h2>
 			<p>
-				De printfunctie komt met de video: met of zonder foto's en met de
-				juiste paginering voor op het aanrecht.
+				De printversie houdt alleen de ingrediënten en de stappen over, zonder
+				uitleg en zonder foto's. Twee kantjes op het aanrecht, niet meer.
 			</p>
 			<p>
-				<button class="button" type="button" disabled>Printversie volgt</button>
+				<button class="button" type="button" data-print>Print dit recept</button>
 			</p>
 		</section>
 
-		<section class="callout">
+		<section class="callout no-print">
 			<h2>Een fooi?</h2>
 			<p>
 				De recepten en video's zijn gratis. Wie er iets aan heeft, kan een
@@ -205,4 +210,8 @@ const bake = recipe.bake;
 	document.addEventListener("keydown", (event) => {
 		if (event.key === "Escape") closeNotes();
 	});
+
+	// Print view is this page with the explanations hidden by @media print.
+	// One button, no second artifact that can drift from the data.
+	document.querySelector("[data-print]")?.addEventListener("click", () => window.print());
 </script>

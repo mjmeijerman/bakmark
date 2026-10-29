@@ -160,15 +160,17 @@ Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active 
 
 **Rejected:** search/filter in Gate A (solves a problem the site cannot have yet); free-text tags without a fixed category list (five spellings of "deeg"); search only, no categories (you cannot browse a category you cannot name).
 
-### D13 — No PDF. A print view with a photo choice and a QR code.
+### D13 — No PDF. A print view of the recipe, and nothing else on the sheet.
 
-The PDF is cut. Printing is handled by a print button that builds a print view from the same data, with one choice: **met foto's** / **zonder foto's**. The donate QR code prints on both variants, always.
+*Revised 2026-10-29: the met foto's / zonder foto's choice is dropped. The sheet carries the ingredients and the steps, and nothing else — no photos, no explanations, no FAQ, no navigation.*
 
-**Why:** the PDF only ever existed to be printed. A print view removes a build pipeline (~2h in Gate A plus its maintenance), removes a second artifact per recipe that can go stale, and hands the printer the same sheet. "Zonder foto's" matters because a recipe you are actually cooking from does not want four pages of pictures on the counter.
+The PDF is cut. Printing is handled by a print button that prints the recipe page itself, with `@media print` hiding everything that is not the recipe. Two A4 sides on the counter.
 
-**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event), and the printed sheet replaces the PDF as the place the donate ask lives last.
+**Why:** the PDF only ever existed to be printed, and a print view removes a build pipeline plus a second artifact per recipe that can go stale. The photo choice goes too: a sheet you cook from wants the ingredients and the steps, and a photo of the finished product costs ink and a page without helping. The *why* behind each step stays on screen, where you read it once; on paper it is a second page of text you will not read with dough on your hands.
 
-**Rejected:** build-time PDF per recipe (removed); print button without the photo choice (the printer gets photos whether they help or not); email-gated PDF (never); relying on the plain browser print (no photo choice, no QR code, no page-break control).
+**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event). The donate ask sits directly under the print button on the page; the printed sheet itself carries no QR code yet, because there is no donate link to encode — add it when the Stripe link exists.
+
+**Rejected:** build-time PDF per recipe (removed); a photo yes/no choice (ink and pages for nothing); explanations and FAQ on paper (duplicates the page, lengthens the sheet); email-gated PDF (never); relying on the plain browser print with no print stylesheet (navigation, newsletter and video placeholder end up on the sheet).
 
 ### D14 — The result is the headline: every recipe says what it makes
 

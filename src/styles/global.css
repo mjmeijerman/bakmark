@@ -702,7 +702,6 @@
 	}
 
 	.steps {
-		counter-reset: step;
 		margin: var(--space-4) 0;
 		padding: 0;
 		list-style: none;
@@ -715,9 +714,9 @@
 		margin-bottom: var(--space-4);
 	}
 
-	.steps li::before {
-		counter-increment: step;
-		content: counter(step);
+	/* The number is real text, not a CSS counter: counters are the first thing
+	   a print stylesheet loses, and the number is what you follow on paper. */
+	.steps .step-num {
 		position: absolute;
 		left: 0;
 		top: 0.1em;
@@ -930,5 +929,148 @@
 
 	.faq details p {
 		margin: var(--space-2) 0 0;
+	}
+}
+
+/* Print view: ingredients and steps only. No explanations, no photos, no
+   navigation, no newsletter. Same page, same data — nothing to keep in sync. */
+@layer components {
+	.print-only {
+		display: none;
+	}
+}
+
+@media print {
+	:root {
+		color-scheme: light;
+		--bg: #fff;
+		--surface: #fff;
+		--surface-warm: #fff;
+		--text: #000;
+		--muted: #333;
+		--border: #bbb;
+		--border-strong: #888;
+		--accent: #000;
+		--accent-deep: #000;
+		--on-accent: #fff;
+	}
+
+	@page {
+		size: A4;
+		margin: 16mm;
+	}
+
+	body {
+		background: #fff;
+		color: #000;
+		font-size: 11pt;
+		line-height: 1.45;
+	}
+
+	.no-print,
+	.site-header,
+	.site-footer,
+	.skip-link,
+	.signup,
+	.placeholder-box,
+	.verified-note,
+	.step-why,
+	.step-tips,
+	.faq,
+	.ingredient-info {
+		display: none !important;
+	}
+
+	.wrap,
+	main {
+		max-width: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.print-only {
+		display: block;
+	}
+
+	h1 {
+		font-size: 22pt;
+		margin: 0 0 0.2rem;
+	}
+
+	h2 {
+		font-size: 13pt;
+		margin: 1.2rem 0 0.4rem;
+		break-after: avoid;
+		page-break-after: avoid;
+	}
+
+	.hero {
+		padding: 0 0 0.75rem;
+	}
+
+	.recipe-result {
+		font-size: 11pt;
+		margin: 0 0 0.2rem;
+	}
+
+	.recipe-summary {
+		font-size: 10pt;
+		color: #333;
+		margin: 0;
+	}
+
+	.print-only {
+		font-size: 10pt;
+		color: #333;
+		margin: 0.35rem 0 0;
+	}
+
+	a {
+		color: #000;
+		text-decoration: none;
+	}
+
+	.ingredients,
+	.bake,
+	.steps {
+		max-width: none;
+		margin-block: 0.4rem 0.8rem;
+	}
+
+	.ingredients li {
+		gap: 1rem;
+		padding-block: 2pt;
+		border-bottom: 1px solid #ddd;
+	}
+
+	.ingredients li:first-child {
+		border-top: none;
+	}
+
+	.bake > div {
+		border-bottom: 1px solid #ddd;
+		padding-block: 1pt;
+	}
+
+	/* On paper the number comes from the <ol> itself. The screen badge is a
+	   fixed-size grid box, and that clipped its own digit in the print pass. */
+	.steps {
+		list-style: decimal;
+		padding-left: 1.4rem;
+	}
+
+	.steps li {
+		padding-left: 0;
+		break-inside: avoid;
+		page-break-inside: avoid;
+		margin-bottom: 0.7rem;
+	}
+
+	.steps .step-num {
+		display: none;
+	}
+
+	.section {
+		margin-block: 0.9rem 0;
 	}
 }

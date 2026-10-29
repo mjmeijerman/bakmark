@@ -34,7 +34,16 @@ export interface ComponentLink {
 	/** Or ask for a quantity in the component's result unit; factor is derived. */
 	amount?: number;
 	unit?: string;
+	/** Named preset of the component, for a different composition with the same steps. */
+	variant?: string;
 	note?: string;
+}
+
+export interface Variant {
+	label: string;
+	note?: string;
+	/** Ingredient id → amount. Omitted ids keep the base amount; 0 drops the ingredient. */
+	ingredients?: Record<string, number>;
 }
 
 export interface Video {
@@ -59,6 +68,8 @@ export interface Recipe {
 	time: { active: number; oven?: number; afterbake?: number; total: number; note?: string };
 	context: string;
 	ingredients: Ingredient[];
+	/** Same steps, different composition: the milk/water split, for instance. */
+	variants?: Record<string, Variant>;
 	components?: ComponentLink[];
 	bake?: Record<string, any>;
 	tin?: unknown;
@@ -120,6 +131,8 @@ export interface ResolvedIngredient extends Ingredient {
 
 export interface ResolvedGroup {
 	recipe: Recipe;
+	variant?: string;
+	variantLabel?: string;
 	/** Cumulative factor: this component's links multiplied all the way down. */
 	factor: number;
 	link?: ComponentLink;
@@ -141,6 +154,25 @@ const round = (value: number) =>
 export const formatAmount = (i: { amount: number; unit: string; amount_display?: string }) =>
 	i.amount_display ?? `${String(i.amount).replace(".", ",")} ${i.unit}`;
 
+/** Apply a named variant: override amounts by ingredient id, drop what goes to 0. */
+const applyVariant = (recipe: Recipe, variant?: string): Ingredient[] => {
+	if (!variant) return recipe.ingredients;
+	const preset = recipe.variants?.[variant];
+	if (!preset) {
+		throw new Error(
+			`Recipe "${recipe.slug}" has no variant "${variant}". Known: ${Object.keys(recipe.variants ?? {}).join(", ") || "none"}.`,
+		);
+	}
+	return recipe.ingredients
+		.map((ingredient) => {
+			const override = preset.ingredients?.[ingredient.id];
+			if (typeof override !== "number") return ingredient;
+			const { amount_display: _dropped, ...rest } = ingredient;
+			return { ...rest, amount: override };
+		})
+		.filter((ingredient) => ingredient.amount > 0);
+};
+
 const scaleIngredient = (ingredient: Ingredient, factor: number): ResolvedIngredient => {
 	const scalable = ingredient.scale !== false;
 	const amount = scalable ? round(ingredient.amount * factor) : ingredient.amount;
@@ -160,7 +192,15 @@ export function resolveRecipe(root: Recipe): ResolvedRecipe {
 	const groups: ResolvedGroup[] = [];
 	const visiting: string[] = [];
 
-	const walk = (recipe: Recipe, factor: number, depth: number, link?: ComponentLink, nested = false) => {
+	const walk = (
+		recipe: Recipe,
+		factor: number,
+		depth: number,
+		link?: ComponentLink,
+		nested = false,
+		variant?: string,
+	) => {
+		const variantLabel = variant ? recipe.variants?.[variant]?.label : undefined;
 		if (visiting.includes(recipe.slug)) {
 			throw new Error(`Recipe cycle: ${[...visiting, recipe.slug].join(" → ")}`);
 		}
@@ -168,14 +208,16 @@ export function resolveRecipe(root: Recipe): ResolvedRecipe {
 
 		for (const child of recipe.components ?? []) {
 			const component = loadRecipe(child.ref);
-			walk(component, factor * factorFor(component, child), depth + 1, child, true);
+			walk(component, factor * factorFor(component, child), depth + 1, child, true, child.variant);
 		}
 
 		groups.push({
 			recipe,
 			factor,
 			link,
-			ingredients: recipe.ingredients.map((ingredient) => scaleIngredient(ingredient, factor)),
+			variant,
+			variantLabel,
+			ingredients: applyVariant(recipe, variant).map((ingredient) => scaleIngredient(ingredient, factor)),
 			steps: recipe.steps,
 			depth,
 			nested,

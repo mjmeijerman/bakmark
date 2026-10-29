@@ -52,7 +52,7 @@
 			"grams": 100,
 			"scale": true,
 			"scale_by": "volume",
-			"note": "Voor een steviger deeg (croquembouche, soezenkrans): 200 ml water en 0 ml melk."
+			"note": "In de watervariant is dit het enige vocht: 200 ml, geen melk."
 		},
 		{
 			"id": "boter",
@@ -280,5 +280,17 @@
 			"fix": "beslag tot V-consistentie brengen, puntjes platdrukken met een natte vinger"
 		}
 	],
+	"variants": {
+		"klassiek": {
+			"label": "melk + water",
+			"note": "De standaard: 100 ml melk en 100 ml water. Zachtere structuur en mooiere kleur.",
+			"ingredients": { "melk": 100, "water": 100 }
+		},
+		"water": {
+			"label": "alleen water",
+			"note": "200 ml water en geen melk. Steviger deeg dat minder kleurt: voor grote soezen, Bossche bollen, een croquembouche of een soezenkrans.",
+			"ingredients": { "melk": 0, "water": 200 }
+		}
+	},
 	"components": []
 }

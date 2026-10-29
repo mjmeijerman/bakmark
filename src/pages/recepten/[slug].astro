@@ -76,6 +76,25 @@ const factorLabel = (factor: number) =>
 			</ul>
 		</section>
 
+		{recipe.variants && Object.keys(recipe.variants).length ? (
+			<section class="section no-print">
+				<h2>Varianten</h2>
+				<p class="section-lede">
+					Dezelfde stappen, een andere samenstelling. Een recept dat dit
+					basisrecept gebruikt, kiest de variant; pas je de stappen aan, dan
+					verandert dat in alle varianten mee.
+				</p>
+				<dl class="variants">
+					{Object.entries(recipe.variants).map(([key, variant]) => (
+						<div>
+							<dt>{variant.label}</dt>
+							<dd>{variant.note}{key === "klassiek" ? " (standaard)" : ""}</dd>
+						</div>
+					))}
+				</dl>
+			</section>
+		) : null}
+
 		{composed && (
 			<section class="section no-print">
 				<h2>Opbouw</h2>
@@ -104,7 +123,9 @@ const factorLabel = (factor: number) =>
 					{composed && (
 						<h3>
 							{group.recipe.title}
-							<span class="muted">{factorLabel(group.factor)}</span>
+							<span class="muted">
+								{group.variantLabel ? `${group.variantLabel} ` : ""}{factorLabel(group.factor)}
+							</span>
 							{groupIndex > 0 || group.recipe.slug !== canonical ? (
 								<a class="group-link no-print" href={`/recepten/${group.recipe.slug}`}>
 									basisrecept
@@ -171,6 +192,7 @@ const factorLabel = (factor: number) =>
 					{composed && (
 						<h3>
 							{group.recipe.title}
+							{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
 							<a class="group-link no-print" href={`/recepten/${group.recipe.slug}`}>
 								eigen pagina
 							</a>

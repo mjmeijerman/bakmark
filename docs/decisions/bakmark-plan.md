@@ -186,9 +186,14 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 | `components[]` | `{ ref, factor }` or `{ ref, amount, unit }`. With `amount` the factor is derived from the linked recipe's own `result`, so "300 g banketbakkersroom" stays readable and the 1:1 in Zwitserse room is visible in the data. |
 | `result` | Every recipe states what one batch makes, in a unit. This is what makes `amount` links possible at all. |
 | `aliases[]` | Extra slugs that render the same page. `soezenbeslag` answers to `soezendeeg`, because that is the search query. |
+| `variants{}` | Named presets of one recipe: `{ label, note, ingredients: { id: amount } }`. Same steps, different composition. A link picks one with `variant: "water"`. |
 | `video` | Per recipe, including components: `{status, youtube_id}`. Every basisrecept gets its own uncut video and its own page. |
 
 **Rendering:** a build-time resolver walks the tree depth-first and flattens it, so a component's steps always come before the steps that assemble it. Ingredient amounts are multiplied by the cumulative factor; `scale: false` items (salt, a vanilla pod, a baking sheet) do not scale. Cycles throw at build time instead of hanging. The page shows one ingredient block and one step block per component, each linking to its own page.
+
+**Variants, not forks:** the dough is 100 ml milk plus 100 ml water by default, and 200 ml water for a firmer dough — the difference between a soesje and a Bossche bol. That is not a second recipe: the steps, the timings and the failure modes are identical. So `soezenbeslag` declares a `water` variant that sets milk to 0 and water to 200, and a link asks for it by name. Fork it into `soezenbeslag-water` instead and the day the dough gets fixed, half the site is stale. Same mechanism covers any "same technique, other mix" case.
+
+**What still lives on the derived recipe:** things that are genuinely different, not parameterised — the size of the pipe, the filling, a glaze, the chocolate. Bossche bollen are therefore `ref soesjes (variant groot)` plus `ref slagroom` plus a glaze component, not a variant of `soesjes`.
 
 **Why references and not a shared ingredient file:** the user's actual requirement is that a fix to the dough lands in every recipe. Options were a shared ingredient library (only ingredients shared, steps still duplicated), a preprocessor that pastes files together (a second artifact, like the PDF), or references resolved at build time. References are the only version where the *steps* and the *timings* are shared too, and they cost one field.
 

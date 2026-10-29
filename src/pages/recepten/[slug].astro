@@ -236,7 +236,9 @@ const factorLabel = (factor: number) =>
 
 		<section class="section">
 			<h2>Ingrediënten</h2>
-			{groups.map((group, groupIndex) => (
+			{groups
+				.filter((group) => group.ingredients.length > 0)
+				.map((group, groupIndex) => (
 				<div class="ingredient-group">
 					{composed && (
 						<h3>
@@ -252,13 +254,9 @@ const factorLabel = (factor: number) =>
 						</h3>
 					)}
 					{group.recipe.components?.length ? (
-						<p class="form-note">
-							{group.recipe.ingredients.length
-								? "Bovenop de basisrecepten hierboven, plus:"
-								: "Alles uit de basisrecepten hierboven."}
-						</p>
+						<p class="form-note">Bovenop de basisrecepten hierboven, plus:</p>
 					) : null}
-					{group.ingredients.length ? (
+					{(
 						<ul class="ingredients">
 							{group.ingredients.map((i) => (
 								<li data-gather={`${group.recipe.slug}:${i.id}`}>
@@ -285,7 +283,7 @@ const factorLabel = (factor: number) =>
 								</li>
 							))}
 						</ul>
-					) : null}
+					)}
 				</div>
 			))}
 			<p class="form-note no-print">

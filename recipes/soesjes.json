@@ -32,17 +32,7 @@
 		"wait": 600
 	},
 	"context": "Het bakken is waar kookdeeg soezendeeg wordt: het water in het beslag verandert in stoom, de stoom neemt veel meer ruimte in dan water, en die druk blaast elk dopje van binnen uit hol. Twee dingen beslissen of dat lukt. De wand moet stevig genoeg zijn voordat de hitte eruit gaat, dus de deur blijft dicht tot de laatste vijf minuten. En de doppen moeten los van elkaar staan, zodat de hete lucht er langs kan en de zijkanten ook garen. Alles wat daarna komt — vullen, glaceren, stapelen — is mogelijk omdat er een holte is.",
-	"ingredients": [
-		{
-			"id": "papier",
-			"name": "bakpapier of siliconenmatje",
-			"amount": 1,
-			"unit": "vel",
-			"amount_display": "1 vel",
-			"scale": false,
-			"note": "Siliconenmatjes met voorgedrukte cirkels geven gelijke maten."
-		}
-	],
+	"ingredients": [],
 	"components": [
 		{
 			"ref": "soezenbeslag",
@@ -78,6 +68,12 @@
 			"name": "bakplaat",
 			"required": true,
 			"affiliate": null
+		},
+		{
+			"name": "bakpapier of siliconenmatje",
+			"required": true,
+			"affiliate": null,
+			"note": "Siliconenmatjes met voorgedrukte cirkels geven gelijke maten."
 		},
 		{
 			"name": "pollepel",

@@ -91,6 +91,21 @@ export interface Recipe {
 
 const cache = new Map<string, Recipe>();
 
+/** Things that belong under "benodigdheden", not in a shopping list. */
+const TOOL_WORDS = ["papier", "bakplaat", "spuitzak", "garde", "spatel", "pan ", "folie", "weegschaal"];
+
+const assertIngredientsAreFood = (recipe: Recipe) => {
+	for (const ingredient of recipe.ingredients ?? []) {
+		const name = ingredient.name.toLowerCase();
+		const tool = TOOL_WORDS.find((word) => name.includes(word));
+		if (tool) {
+			throw new Error(
+				`Recipe "${recipe.slug}" lists "${ingredient.name}" as an ingredient, but it is a tool. Move it to tools[].`,
+			);
+		}
+	}
+};
+
 export function loadRecipe(slug: string): Recipe {
 	const cached = cache.get(slug);
 	if (cached) return cached;
@@ -101,6 +116,7 @@ export function loadRecipe(slug: string): Recipe {
 	} catch {
 		throw new Error(`Recipe "${slug}" not found in recipes/. A component link points nowhere.`);
 	}
+	assertIngredientsAreFood(recipe);
 	cache.set(slug, recipe);
 	return recipe;
 }

@@ -34,7 +34,9 @@ import RecipeCard from "../components/RecipeCard.astro";
 		</p>
 		<ul class="card-grid">
 			{
-				allRecipes().map((recipe) => (
+				allRecipes()
+					.filter((recipe) => recipe.role === "gerecht")
+					.map((recipe) => (
 					<li>
 						<RecipeCard
 							href={`/recepten/${recipe.slug}`}

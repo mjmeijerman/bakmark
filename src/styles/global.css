@@ -1074,3 +1074,43 @@
 		margin-block: 0.9rem 0;
 	}
 }
+
+/* Composed recipes: one block per basisrecept, in dependency order. */
+@layer components {
+	.parts {
+		margin: var(--space-3) 0;
+		padding: 0;
+		list-style: none;
+		max-width: var(--measure);
+	}
+
+	.parts li {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		justify-content: space-between;
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.parts li:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.ingredient-group + .ingredient-group,
+	.step-group + .step-group {
+		margin-top: var(--space-5);
+	}
+
+	.ingredient-group h3,
+	.step-group h3 {
+		font-size: var(--text-h3);
+		margin-bottom: var(--space-2);
+	}
+
+	.group-link {
+		margin-left: var(--space-2);
+		font-size: var(--text-sm);
+		font-weight: 400;
+	}
+}

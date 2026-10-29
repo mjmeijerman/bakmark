@@ -1,0 +1,122 @@
+{
+	"slug": "soesjes-met-zwitserse-room",
+	"title": "Soesjes met Zwitserse room",
+	"subtitle": "Holle soesjes gevuld met banketbakkersroom en slagroom",
+	"role": "gerecht",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf gemaakt. De hoeveelheden volgen uit de basisrecepten; de vulstap is nog niet getest.",
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"result": {
+		"value": 30,
+		"unit": "gevulde soesjes",
+		"note": "Ongeveer 20 g room per soesje. Meer room per soesje? Verhoog de hoeveelheid Zwitserse room, niet de soesjes."
+	},
+	"category": "gebak",
+	"tags": [
+		"soesjes",
+		"zwitserse room",
+		"soezen",
+		"gebak",
+		"vulling"
+	],
+	"difficulty": 2,
+	"time": {
+		"active": 600,
+		"total": 9000,
+		"note": "Ongeveer 2,5 uur van leeg aanrecht tot gevulde soesjes, waarvan het meeste wachten en bakken is."
+	},
+	"context": "Dit is hetzelfde beslag als in het losse soezenrecept, dezelfde soesjes, en dezelfde room als op de twee basispagina's — geen tweede versie die uit de pas kan lopen. Verander je iets aan het beslag, dan verandert het hier mee. De enige eigen stap is het vullen, en die is vooral een kwestie van timing: een soesje dat te vroeg gevuld wordt, wordt zacht, en een soesje dat je te lang laat staan ook.",
+	"ingredients": [],
+	"components": [
+		{
+			"ref": "soesjes",
+			"amount": 30,
+			"unit": "soesjes",
+			"note": "Afgekoeld, niet gevuld."
+		},
+		{
+			"ref": "zwitserse-room",
+			"amount": 600,
+			"unit": "g",
+			"note": "Direct uit de koelkast verwerken."
+		}
+	],
+	"tools": [
+		{
+			"name": "spuitzak met kartelmondje 8-10 mm",
+			"required": false,
+			"affiliate": null,
+			"note": "Of een scherp mes en een theelepel."
+		},
+		{
+			"name": "poedersuiker",
+			"required": false,
+			"affiliate": null,
+			"note": "Om te bestuiven, vlak voor het serveren."
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Soesjes klaarzetten",
+			"duration": 120,
+			"t": null,
+			"photo": null,
+			"text": "Laat de soesjes volledig afkoelen op een rooster. Prik met een klein mesje of een punt van het spuitmondje een gaatje in de onderkant, of snijd ze horizontaal doormidden.",
+			"why": "Vullen van onderen houdt de bovenkant heel en geeft een gelijkmatige vulling. Doormidden snijden gaat sneller en is makkelijker vol te krijgen, maar dan wordt de wand eerder zacht.",
+			"tips": [
+				"Vul pas als ze echt koud zijn; warme soesjes slaan vocht neer en worden taai."
+			]
+		},
+		{
+			"id": "stap-2",
+			"title": "Vullen",
+			"duration": 420,
+			"t": null,
+			"photo": null,
+			"text": "Doe de Zwitserse room in een spuitzak met kartelmondje en spuit elk soesje van onderen vol, tot je weerstand voelt en de room er niet meer in gaat. Of lepel de room in de doorgesneden soesjes.",
+			"why": "Tot je weerstand voelt: een half gevuld soesje smaakt naar lucht. Te ver doorduwen barst de wand.",
+			"tips": [
+				"Ongeveer 20 g per soesje; bij 30 soesjes is dat precies 600 g room."
+			]
+		},
+		{
+			"id": "stap-3",
+			"title": "Serveren",
+			"duration": 60,
+			"t": null,
+			"photo": null,
+			"text": "Bestuif met poedersuiker en serveer binnen twee uur. Bewaar ze tot die tijd in de koelkast en haal ze 15-30 minuten voor het serveren eruit.",
+			"why": "De room is koud en de wand neemt vocht op. Langer dan een dag gevuld bewaard worden de soesjes zacht en verliezen ze hun bite.",
+			"tips": [
+				"Ongevulde soesjes kun je een week luchtdicht bewaren; vul pas op de dag zelf."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Hoeveel room gaat er in één soesje?",
+			"a": "Ongeveer 20 gram. Bij 30 soesjes is dat 600 gram Zwitserse room, precies één batch van dat basisrecept."
+		},
+		{
+			"q": "Kan ik de soesjes van tevoren vullen?",
+			"a": "Beter niet. Gevuld blijven ze een dag goed in de koelkast, maar de wand wordt zacht. Bak en vul op de dag dat je ze eet, of bewaar de onderdelen apart."
+		}
+	],
+	"mislukt": [
+		{
+			"symptoom": "zachte, taaie soesjes",
+			"oorzaak": "te vroeg gevuld of te lang bewaard",
+			"fix": "vullen als ze koud zijn, binnen twee uur serveren"
+		},
+		{
+			"symptoom": "soesje barst bij het vullen",
+			"oorzaak": "te hard geduwd of te dunne wand",
+			"fix": "rustig spuiten tot weerstand, en de soesjes goudbruin en goed gedroogd afbakken"
+		}
+	],
+	"inspired_by": []
+}

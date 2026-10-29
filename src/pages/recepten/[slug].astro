@@ -2,23 +2,30 @@
 import Layout from "../../layouts/Layout.astro";
 import NewsletterForm from "../../components/NewsletterForm.astro";
 import {
-	allRecipes,
-	formatAmount,
 	formatMinutes,
 	recipeChips,
+	recipeRoutes,
+	resolveRecipe,
+	totalTime,
 	type Recipe,
 } from "../../lib/recipes";
 
 export function getStaticPaths() {
-	return allRecipes().map((recipe) => ({
-		params: { slug: recipe.slug },
-		props: { recipe },
+	return recipeRoutes().map(({ slug, recipe }) => ({
+		params: { slug },
+		props: { recipe, canonical: recipe.slug },
 	}));
 }
 
-const { recipe } = Astro.props as { recipe: Recipe };
+const { recipe, canonical } = Astro.props as { recipe: Recipe; canonical: string };
+const { groups } = resolveRecipe(recipe);
+const composed = groups.length > 1;
 const chips = recipeChips(recipe);
-const bake = recipe.bake;
+const activeTime = totalTime({ root: recipe, groups });
+const bakeGroups = groups.filter((group) => group.recipe.bake);
+const direct = groups.filter((group) => group.depth === 1);
+const factorLabel = (factor: number) =>
+	factor !== 1 ? ` ×${String(Math.round(factor * 100) / 100).replace(".", ",")}` : "";
 ---
 
 <Layout
@@ -27,7 +34,9 @@ const bake = recipe.bake;
 >
 	<article>
 		<section class="hero">
-			<p class="kicker no-print">{recipe.verified ? "Recept" : "Concept · nog niet geverifieerd"}</p>
+			<p class="kicker no-print">
+				{recipe.verified ? recipe.category : "Concept · nog niet geverifieerd"}
+			</p>
 			<h1>{recipe.title}</h1>
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">
@@ -38,8 +47,8 @@ const bake = recipe.bake;
 				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
 			</p>
 			<p class="print-only">
-				{formatMinutes(recipe.time.total)} · {bake.temperature} °C · {bake.mode} ·
-				moeilijkheid {recipe.difficulty}/3
+				{formatMinutes(activeTime)} actief · moeilijkheid {recipe.difficulty}/3
+				{bakeGroups.length ? ` · ${bakeGroups[0].recipe.bake.temperature} °C` : ""}
 			</p>
 		</section>
 
@@ -67,64 +76,123 @@ const bake = recipe.bake;
 			</ul>
 		</section>
 
+		{composed && (
+			<section class="section no-print">
+				<h2>Opbouw</h2>
+				<p class="section-lede">
+					Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen
+					pagina en een eigen video, en wijzigingen daar werken hier direct
+					door.
+				</p>
+				<ul class="parts">
+					{direct.map((group) => (
+						<li>
+							<a href={`/recepten/${group.recipe.slug}`}>{group.recipe.title}</a>
+							<span class="muted">
+								{group.recipe.result.value} {group.recipe.result.unit}{factorLabel(group.factor)}
+							</span>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+
 		<section class="section">
 			<h2>Ingrediënten</h2>
-			<ul class="ingredients">
-				{recipe.ingredients.map((i) => (
-					<li>
-						<div class="ingredient-name">
-							{i.name}
-							{i.note && (
-								<details class="ingredient-info">
-									<summary aria-label={`Meer over ${i.name}`}>
-										<span aria-hidden="true">i</span>
-									</summary>
-									<div class="ingredient-info-panel">
-										<p>{i.note}</p>
+			{groups.map((group, groupIndex) => (
+				<div class="ingredient-group">
+					{composed && (
+						<h3>
+							{group.recipe.title}
+							<span class="muted">{factorLabel(group.factor)}</span>
+							{groupIndex > 0 || group.recipe.slug !== canonical ? (
+								<a class="group-link no-print" href={`/recepten/${group.recipe.slug}`}>
+									basisrecept
+								</a>
+							) : null}
+						</h3>
+					)}
+					{group.recipe.components?.length ? (
+						<p class="form-note">
+							{group.recipe.ingredients.length
+								? "Bovenop de basisrecepten hierboven, plus:"
+								: "Alles uit de basisrecepten hierboven."}
+						</p>
+					) : null}
+					{group.ingredients.length ? (
+						<ul class="ingredients">
+							{group.ingredients.map((i) => (
+								<li>
+									<div class="ingredient-name">
+										{i.name}
+										{i.note && (
+											<details class="ingredient-info">
+												<summary aria-label={`Meer over ${i.name}`}>
+													<span aria-hidden="true">i</span>
+												</summary>
+												<div class="ingredient-info-panel">
+													<p>{i.note}</p>
+												</div>
+											</details>
+										)}
 									</div>
-								</details>
-							)}
-						</div>
-						<span class="amount">{formatAmount(i)}</span>
-					</li>
-				))}
-			</ul>
+									<span class="amount">{i.amount_display}</span>
+								</li>
+							))}
+						</ul>
+					) : null}
+				</div>
+			))}
 			<p class="form-note no-print">
 				Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en
 				kost jou niets extra.
 			</p>
 		</section>
 
-		<section class="section">
-			<h2>Bakken</h2>
-			<dl class="bake">
-				<div><dt>Ovenstand</dt><dd>{bake.mode} · {bake.rack}</dd></div>
-				<div><dt>Temperatuur</dt><dd>{bake.temperature} °C (hetelucht {bake.temperature_hetelucht} °C)</dd></div>
-				<div><dt>Baktijd</dt><dd>{formatMinutes(bake.time.min)} – {formatMinutes(bake.time.max)}</dd></div>
-				<div><dt>Klaar wanneer</dt><dd>{bake.done_when}</dd></div>
-				<div><dt>Ovendeur</dt><dd>{bake.door}</dd></div>
-				<div><dt>Nadrogen</dt><dd>{formatMinutes(bake.afterbake.duration)}, deur op een kier</dd></div>
-			</dl>
-			<p class="form-note no-print">{bake.time_note}</p>
-		</section>
+		{bakeGroups.map((group) => (
+			<section class="section">
+				<h2>Bakken{composed ? ` — ${group.recipe.title.toLowerCase()}` : ""}</h2>
+				<dl class="bake">
+					<div><dt>Ovenstand</dt><dd>{group.recipe.bake.mode} · {group.recipe.bake.rack}</dd></div>
+					<div><dt>Temperatuur</dt><dd>{group.recipe.bake.temperature} °C (hetelucht {group.recipe.bake.temperature_hetelucht} °C)</dd></div>
+					<div><dt>Baktijd</dt><dd>{formatMinutes(group.recipe.bake.time.min)} – {formatMinutes(group.recipe.bake.time.max)}</dd></div>
+					<div><dt>Klaar wanneer</dt><dd>{group.recipe.bake.done_when}</dd></div>
+					<div><dt>Ovendeur</dt><dd>{group.recipe.bake.door}</dd></div>
+					<div><dt>Nadrogen</dt><dd>{formatMinutes(group.recipe.bake.afterbake.duration)}, deur op een kier</dd></div>
+				</dl>
+				<p class="form-note no-print">{group.recipe.bake.time_note}</p>
+			</section>
+		))}
 
 		<section class="section">
 			<h2>Stappen</h2>
-			<ol class="steps">
-				{recipe.steps.map((step, index) => (
-					<li id={step.id}>
-						<span class="step-num" aria-hidden="true">{index + 1}</span>
-						<p><strong>{step.title}</strong></p>
-						<p>{step.text}</p>
-						{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
-						{step.tips?.length ? (
-							<ul class="step-tips">
-								{step.tips.map((tip) => <li>{tip}</li>)}
-							</ul>
-						) : null}
-					</li>
-				))}
-			</ol>
+			{groups.map((group) => (
+				<div class="step-group">
+					{composed && (
+						<h3>
+							{group.recipe.title}
+							<a class="group-link no-print" href={`/recepten/${group.recipe.slug}`}>
+								eigen pagina
+							</a>
+						</h3>
+					)}
+					<ol class="steps">
+						{group.steps.map((step, index) => (
+							<li id={`${group.recipe.slug}-${step.id}`}>
+								<span class="step-num" aria-hidden="true">{index + 1}</span>
+								<p><strong>{step.title}</strong></p>
+								<p>{step.text}</p>
+								{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
+								{step.tips?.length ? (
+									<ul class="step-tips">
+										{step.tips.map((tip) => <li>{tip}</li>)}
+									</ul>
+								) : null}
+							</li>
+						))}
+					</ol>
+				</div>
+			))}
 			<p class="form-note no-print">
 				Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit
 				de opname, met de echte tijden en de volgorde van de video.
@@ -147,17 +215,19 @@ const bake = recipe.bake;
 			</section>
 		) : null}
 
-		<section class="section no-print">
-			<h2>Veelgestelde vragen</h2>
-			<div class="faq">
-				{recipe.faq.map((f) => (
-					<details>
-						<summary>{f.q}</summary>
-						<p>{f.a}</p>
-					</details>
-				))}
-			</div>
-		</section>
+		{recipe.faq?.length ? (
+			<section class="section no-print">
+				<h2>Veelgestelde vragen</h2>
+				<div class="faq">
+					{recipe.faq.map((f) => (
+						<details>
+							<summary>{f.q}</summary>
+							<p>{f.a}</p>
+						</details>
+					))}
+				</div>
+			</section>
+		) : null}
 
 		<section class="section no-print">
 			<h2>Printen</h2>

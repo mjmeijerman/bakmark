@@ -172,6 +172,32 @@ The PDF is cut. Printing is handled by a print button that prints the recipe pag
 
 **Rejected:** build-time PDF per recipe (removed); a photo yes/no choice (ink and pages for nothing); explanations and FAQ on paper (duplicates the page, lengthens the sheet); email-gated PDF (never); relying on the plain browser print with no print stylesheet (navigation, newsletter and video placeholder end up on the sheet).
 
+### D19 — Recipes reference recipes; a component exists once
+
+*Added 2026-10-29. Extends the D4 schema.*
+
+A recipe is either a **basisrecept** (its own ingredients and steps) or a **gerecht** that lists `components`: links to other recipes by slug. Nothing is copied. Changing `soezenbeslag.json` changes every recipe that uses it, which is the whole point: soesjes, eclairs, Paris-Brest and a filled soesje all share one dough.
+
+**The model:**
+
+| Field | Meaning |
+|---|---|
+| `role` | `basis` or `gerecht`. The home page shows gerechten; `/recepten` shows everything, basisrecepten marked as such. |
+| `components[]` | `{ ref, factor }` or `{ ref, amount, unit }`. With `amount` the factor is derived from the linked recipe's own `result`, so "300 g banketbakkersroom" stays readable and the 1:1 in Zwitserse room is visible in the data. |
+| `result` | Every recipe states what one batch makes, in a unit. This is what makes `amount` links possible at all. |
+| `aliases[]` | Extra slugs that render the same page. `soezenbeslag` answers to `soezendeeg`, because that is the search query. |
+| `video` | Per recipe, including components: `{status, youtube_id}`. Every basisrecept gets its own uncut video and its own page. |
+
+**Rendering:** a build-time resolver walks the tree depth-first and flattens it, so a component's steps always come before the steps that assemble it. Ingredient amounts are multiplied by the cumulative factor; `scale: false` items (salt, a vanilla pod, a baking sheet) do not scale. Cycles throw at build time instead of hanging. The page shows one ingredient block and one step block per component, each linking to its own page.
+
+**Why references and not a shared ingredient file:** the user's actual requirement is that a fix to the dough lands in every recipe. Options were a shared ingredient library (only ingredients shared, steps still duplicated), a preprocessor that pastes files together (a second artifact, like the PDF), or references resolved at build time. References are the only version where the *steps* and the *timings* are shared too, and they cost one field.
+
+**Consequence for D5:** the rescaler operates on the flat resolved list, and rounding happens per component, not per page. Asking for 60 soesjes doubles the dough and both fillings, and the `factor` shown per block explains where the numbers came from.
+
+**Consequence for D1:** five videos instead of one. Soezenbeslag, soesjes, banketbakkersroom, slagroom and Zwitserse room are each a technique with its own payoff, which fits the format better than one 20-minute video that hides four of them.
+
+**Rejected:** copying ingredients into each recipe (drift, and the requirement was explicitly the opposite); only sharing ingredients, not steps (the timing is the part that gets fixed); a template/include system in the build (another artifact that can go stale); one mega-recipe with all five techniques inline (no separate page, no separate video, no reuse).
+
 ### D14 — The result is the headline: every recipe says what it makes
 
 `result` — "300 gram fondant", "30 soezen" — is shown directly under the title, on the recipe card, in the print view and in the video description. Not in the third paragraph of the intro.

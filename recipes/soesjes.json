@@ -1,0 +1,148 @@
+{
+	"slug": "soesjes",
+	"title": "Soesjes",
+	"subtitle": "Soezenbeslag afbakken tot holle, krokante soesjes",
+	"role": "basis",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf getimed en gebakken. Tijden en temperaturen zijn startwaarden, geen gemeten waarden.",
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"result": {
+		"value": 30,
+		"unit": "soesjes",
+		"note": "25-35 soesjes van 3-4 cm, of 8-10 grote soezen, of 10-12 eclairs."
+	},
+	"category": "basistechniek",
+	"tags": [
+		"soesjes",
+		"soezen",
+		"afbakken",
+		"kookdeeg",
+		"basisrecept"
+	],
+	"difficulty": 2,
+	"time": {
+		"active": 600,
+		"oven": 1800,
+		"afterbake": 600,
+		"total": 3000,
+		"note": "10 min opspuiten en afbakken klaarzetten, 20-30 min oven, 10 min nadrogen."
+	},
+	"context": "Het bakken is waar kookdeeg soezendeeg wordt: het water in het beslag verandert in stoom, de stoom neemt veel meer ruimte in dan water, en die druk blaast elk dopje van binnen uit hol. Twee dingen beslissen of dat lukt. De wand moet stevig genoeg zijn voordat de hitte eruit gaat, dus de deur blijft dicht tot de laatste vijf minuten. En de doppen moeten los van elkaar staan, zodat de hete lucht er langs kan en de zijkanten ook garen. Alles wat daarna komt — vullen, glaceren, stapelen — is mogelijk omdat er een holte is.",
+	"ingredients": [
+		{
+			"id": "papier",
+			"name": "bakpapier of siliconenmatje",
+			"amount": 1,
+			"unit": "vel",
+			"amount_display": "1 vel",
+			"scale": false,
+			"note": "Siliconenmatjes met voorgedrukte cirkels geven gelijke maten."
+		}
+	],
+	"components": [
+		{
+			"ref": "soezenbeslag",
+			"amount": 700,
+			"unit": "g"
+		}
+	],
+	"bake": {
+		"mode": "boven-onder",
+		"temperature": 210,
+		"temperature_hetelucht": 200,
+		"rack": "midden",
+		"preheat": 900,
+		"preheat_note": "Volledig voorverwarmd, minimaal 15 minuten.",
+		"trays": 1,
+		"trays_note": "Eén bakplaat per keer. Twee platen werken niet met boven-/onderwarmte en zijn met hetelucht ook lastig.",
+		"time": {
+			"min": 1200,
+			"max": 1800
+		},
+		"time_note": "Kleine soesjes 20-25 min, grote soezen 25-30 min. Steeds vanaf goudbruin, niet vanaf de klok.",
+		"done_when": "Goudbruin over het hele oppervlak, geen bleke of zachte plekken.",
+		"door": "dicht tot de laatste 5 minuten, dan kort open om stoom te laten ontsnappen",
+		"afterbake": {
+			"duration": 600,
+			"door": "kier",
+			"door_note": "Pollepel tussen de deur. Laat de soesjes nadrogen en steviger worden."
+		}
+	},
+	"tin": null,
+	"tools": [
+		{
+			"name": "bakplaat",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "pollepel",
+			"required": false,
+			"affiliate": null,
+			"note": "Om de ovendeur op een kier te houden."
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Opspuiten en afbakken",
+			"duration": 900,
+			"t": null,
+			"photo": null,
+			"text": "Spuit doppen van 3-4 cm met 3-4 cm ruimte ertussen op bakpapier en druk opstaande puntjes plat met een natte vinger. Bak op 210 °C boven-/onderwarmte (hetelucht 200 °C), midden in de oven, één bakplaat per keer: kleine soesjes 20-25 min, grote soezen 25-30 min. Open de deur niet tot de laatste 5 minuten; open hem dan kort zodat de stoom ontsnapt.",
+			"why": "De doppen zetten ongeveer dubbel zo breed uit. Staan ze dichter dan 3 cm op elkaar, dan raken ze elkaar en blijven de raakvlakken bleek en zacht, want daar komt geen hete lucht. En een geopende deur in de eerste twintig minuten kost de stoom die de soesjes omhoog houdt.",
+			"tips": [
+				"Bleek = niet gaar = na het bakken inzakken.",
+				"Twijfel je? Laat ze staan. Er is geen straf voor een minuut te lang.",
+				"Tekenen met een glas op de achterkant van het bakpapier geeft gelijke maten."
+			]
+		},
+		{
+			"id": "stap-2",
+			"title": "Nadrogen",
+			"duration": 600,
+			"t": null,
+			"photo": null,
+			"text": "Haal de soesjes pas uit de oven als ze goudbruin zijn en laat ze daarna nog 10 minuten in de oven staan met de deur op een kier, bijvoorbeeld met een pollepel ertussen.",
+			"why": "In die tien minuten ontsnapt het laatste vocht en droogt de wand verder. Dat is het verschil tussen een soesje dat een uur later nog knapperig is en een dat zacht wordt.",
+			"tips": [
+				"Ze mogen niet afkoelen op het aanrecht voordat ze gaar-droog zijn; dan zakken ze in."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Waarom zakken mijn soesjes in?",
+			"a": "Bijna altijd omdat ze te bleek uit de oven kwamen, of omdat de deur te vroeg open ging. In beide gevallen was de wand nog niet stevig genoeg. Langer bakken tot goudbruin en daarna tien minuten nadrogen met de deur op een kier lost het op."
+		},
+		{
+			"q": "Kan ik twee bakplaten tegelijk bakken?",
+			"a": "Met boven-/onderwarmte niet: de bovenste plaat gaart sneller dan de onderste. Met hetelucht kan het soms, maar het blijft lastig en de plaat die je er halverwege uithaalt zakt in. Bak liever één plaat per keer."
+		},
+		{
+			"q": "Kan ik soesjes van tevoren bakken?",
+			"a": "Ja. Ongevuld blijven ze luchtdicht op kamertemperatuur ongeveer een week goed en zijn ze prima in te vriezen. Pas vullen vlak voor het serveren, anders wordt de wand zacht."
+		}
+	],
+	"mislukt": [
+		{
+			"symptoom": "ingezakt na het bakken",
+			"oorzaak": "te bleek uit de oven, of deur te vroeg open",
+			"fix": "bakken tot goudbruin, daarna 10 min nadrogen met de deur op een kier"
+		},
+		{
+			"symptoom": "opengebarsten bovenkant",
+			"oorzaak": "beslag te dik, of puntjes niet platgedrukt",
+			"fix": "beslag tot V-consistentie brengen, puntjes platdrukken met een natte vinger"
+		},
+		{
+			"symptoom": "bleke, zachte raakvlakken",
+			"oorzaak": "doppen te dicht op elkaar",
+			"fix": "minimaal 3-4 cm ruimte, één plaat per keer"
+		}
+	],
+	"inspired_by": []
+}

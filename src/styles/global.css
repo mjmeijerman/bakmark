@@ -877,6 +877,34 @@
 		margin: 0;
 	}
 
+	.step-extra {
+		margin-top: var(--space-1);
+	}
+
+	.step-extra > summary {
+		cursor: pointer;
+		font-size: var(--text-sm);
+		color: var(--accent);
+		list-style: none;
+	}
+
+	.step-extra > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.step-extra > summary::before {
+		content: "+ ";
+	}
+
+	.step-extra[open] > summary::before {
+		content: "− ";
+	}
+
+	.step-extra > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
 	.step-why {
 		padding-left: var(--space-3);
 		border-left: 2px solid var(--accent);
@@ -974,6 +1002,7 @@
 	.signup,
 	.placeholder-box,
 	.verified-note,
+	.step-extra,
 	.step-why,
 	.step-tips,
 	.faq,
@@ -1555,5 +1584,55 @@
 	.time-table .muted {
 		font-weight: 400;
 		font-size: var(--text-sm);
+	}
+}
+
+/* Collapsible recipe sections: the reasoning folds away, the steps do not. */
+@layer components {
+	details.collapsible {
+		border-top: 1px solid var(--border);
+	}
+
+	details.collapsible > summary {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding-block: var(--space-4);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	details.collapsible > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	details.collapsible > summary h2 {
+		margin: 0;
+		font-size: var(--text-h2);
+	}
+
+	details.collapsible > summary::after {
+		content: "+";
+		margin-left: auto;
+		font-size: 1.4rem;
+		line-height: 1;
+		color: var(--accent);
+	}
+
+	details.collapsible[open] > summary::after {
+		content: "−";
+	}
+
+	details.collapsible > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	details.collapsible .section-body {
+		padding-bottom: var(--space-4);
+	}
+
+	details.collapsible .section-body > :last-child {
+		margin-bottom: 0;
 	}
 }

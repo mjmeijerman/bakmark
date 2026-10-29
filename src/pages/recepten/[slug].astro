@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import NewsletterForm from "../../components/NewsletterForm.astro";
 import DifficultyBadge from "../../components/DifficultyBadge.astro";
+import RecipeSection from "../../components/RecipeSection.astro";
 import {
 	DIFFICULTY_SCALE,
 	allRecipes,
@@ -90,17 +91,15 @@ const factorLabel = (factor: number) =>
 			<strong aria-hidden="true">Video: {recipe.title.toLowerCase()} in één take</strong>
 		</div>
 
-		<section class="section no-print">
-			<h2>Waarom dit werkt</h2>
+		<RecipeSection title="Waarom dit werkt" noPrint>
 			<p>{recipe.context}</p>
 			<ul class="chips">
 				{recipe.tags.map((tag) => <li><span class="chip">{tag}</span></li>)}
 			</ul>
-		</section>
+		</RecipeSection>
 
 		{recipe.variants && Object.keys(recipe.variants).length ? (
-			<section class="section no-print">
-				<h2>Varianten</h2>
+			<RecipeSection title="Varianten" noPrint>
 				<p class="section-lede">
 					Dezelfde stappen, een andere samenstelling. Een recept dat dit
 					basisrecept gebruikt, kiest de variant; pas je de stappen aan, dan
@@ -114,12 +113,11 @@ const factorLabel = (factor: number) =>
 						</div>
 					))}
 				</dl>
-			</section>
+			</RecipeSection>
 		) : null}
 
 		{composed && (
-			<section class="section no-print">
-				<h2>Opbouw</h2>
+			<RecipeSection title="Opbouw" noPrint>
 				<p class="section-lede">
 					Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen
 					pagina en een eigen video, en wijzigingen daar werken hier direct
@@ -135,12 +133,11 @@ const factorLabel = (factor: number) =>
 						</li>
 					))}
 				</ul>
-			</section>
+			</RecipeSection>
 		)}
 
 		{usedBy.length ? (
-			<section class="section no-print">
-				<h2>Gebruikt in</h2>
+			<RecipeSection title="Gebruikt in" noPrint>
 				<p class="section-lede">
 					Deze pagina is de bron. Elk recept hieronder gebruikt dit
 					basisrecept, dus een wijziging hier werkt daar direct door.
@@ -156,11 +153,10 @@ const factorLabel = (factor: number) =>
 						</li>
 					))}
 				</ul>
-			</section>
+			</RecipeSection>
 		) : null}
 
-		<section class="section">
-			<h2>Tijdsindeling</h2>
+		<RecipeSection title="Tijdsindeling">
 			<p class="section-lede">
 				Waar de tijd naartoe gaat, per onderdeel. Actief is met je handen in het
 				beslag; oven en wacht lopen vanzelf door.
@@ -232,10 +228,9 @@ const factorLabel = (factor: number) =>
 					koelen terwijl je het beslag maakt.
 				</p>
 			)}
-		</section>
+		</RecipeSection>
 
-		<section class="section">
-			<h2>Ingrediënten</h2>
+		<RecipeSection title="Ingrediënten">
 			{groups
 				.filter((group) => group.ingredients.length > 0)
 				.map((group, groupIndex) => (
@@ -286,15 +281,10 @@ const factorLabel = (factor: number) =>
 					)}
 				</div>
 			))}
-			<p class="form-note no-print">
-				Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en
-				kost jou niets extra.
-			</p>
-		</section>
+		</RecipeSection>
 
 		{tools.length ? (
-			<section class="section">
-				<h2>Benodigdheden</h2>
+			<RecipeSection title="Benodigdheden">
 				<ul class="tools">
 					{tools.map((tool) => (
 						<li data-gather={`tool:${tool.name}`}>
@@ -311,7 +301,11 @@ const factorLabel = (factor: number) =>
 						</li>
 					))}
 				</ul>
-			</section>
+				<p class="form-note no-print">
+					Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en
+					kost jou niets extra.
+				</p>
+			</RecipeSection>
 		) : null}
 
 		{bakeGroups.map((group) => (
@@ -348,11 +342,16 @@ const factorLabel = (factor: number) =>
 								<span class="step-num" aria-hidden="true">{index + 1}</span>
 								<p><strong>{step.title}</strong></p>
 								<p>{step.text}</p>
-								{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
-								{step.tips?.length ? (
-									<ul class="step-tips">
-										{step.tips.map((tip) => <li>{tip}</li>)}
-									</ul>
+								{step.why || step.tips?.length ? (
+									<details class="step-extra">
+										<summary>Waarom en tips</summary>
+										{step.why && <p class="step-why"><strong>Waarom:</strong> {step.why}</p>}
+										{step.tips?.length ? (
+											<ul class="step-tips">
+												{step.tips.map((tip) => <li>{tip}</li>)}
+											</ul>
+										) : null}
+									</details>
 								) : null}
 							</li>
 						))}
@@ -481,6 +480,19 @@ const factorLabel = (factor: number) =>
 			});
 		}
 	}
+
+	// Collapsed sections would print as headings with nothing under them: a
+	// sheet cannot be clicked. Open them for the print pass and restore after.
+	const collapsibles = Array.from(document.querySelectorAll<HTMLDetailsElement>("details.collapsible"));
+	let reopened: HTMLDetailsElement[] = [];
+	window.addEventListener("beforeprint", () => {
+		reopened = collapsibles.filter((details) => !details.open);
+		for (const details of reopened) details.open = true;
+	});
+	window.addEventListener("afterprint", () => {
+		for (const details of reopened) details.open = false;
+		reopened = [];
+	});
 
 	// Print view is this page with the explanations hidden by @media print.
 	// One button, no second artifact that can drift from the data.

@@ -54,8 +54,8 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 		<p class="kicker">Recepten</p>
 		<h1>Alle recepten</h1>
 		<p class="lead">
-			Basisrecepten en de afgewerkte recepten die eruit volgen. Elk onderdeel
-			heeft een eigen pagina en een eigen video.
+			Basisrecepten en de eindproducten die eruit volgen. Elk onderdeel heeft
+			een eigen pagina en een eigen video.
 		</p>
 	</section>
 
@@ -66,7 +66,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 				<span class="filter-summary-state" data-summary-state></span>
 			</summary>
 
-			<form class="filters" data-filters aria-describedby="filter-note">
+			<form class="filters" data-filters role="search" aria-describedby="filter-note">
 				<p class="search-row">
 					<label for="search">Zoek op trefwoord</label>
 					<input
@@ -161,12 +161,12 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			</form>
 		</details>
 
-		<p class="filter-status" id="filter-note">
+		<p class="filter-status" id="filter-note" aria-live="polite">
 			<span data-count>{recipes.length} recepten</span>
 		</p>
 	</div>
 
-	<section class="section">
+	<section class="section" data-results-section>
 		<ul class="card-grid" data-results>
 			{recipes.map((recipe) => (
 				<li
@@ -203,6 +203,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 	const empty = document.querySelector<HTMLElement>("[data-empty]");
 	const counter = document.querySelector<HTMLElement>("[data-count]");
 	const reset = document.querySelector<HTMLButtonElement>("[data-reset]");
+	const resultsSection = document.querySelector<HTMLElement>("[data-results-section]");
 	const search = document.querySelector<HTMLInputElement>("[data-search]");
 	const panel = document.querySelector<HTMLDetailsElement>("[data-filter-panel]");
 	const summaryState = document.querySelector<HTMLElement>("[data-summary-state]");
@@ -305,6 +306,19 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 		}
 
 		search.addEventListener("input", apply);
+
+		// Enter used to submit the form and reload the page, which threw the query
+		// away. Enter now keeps the term, closes the panel and shows the results.
+		form.addEventListener("submit", (event) => {
+			event.preventDefault();
+			apply();
+			panel.open = false;
+			if (resultsSection) {
+				resultsSection.tabIndex = -1;
+				resultsSection.focus({ preventScroll: true });
+				resultsSection.scrollIntoView({ block: "start", behavior: "smooth" });
+			}
+		});
 
 		reset.addEventListener("click", () => {
 			selected.clear();

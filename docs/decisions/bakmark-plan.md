@@ -213,7 +213,7 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 | Facet | Source | Why not a category |
 |---|---|---|
-| Rol (basisrecept / afgewerkt recept) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Originally "gerecht", renamed in D20: in Dutch that reads as a savoury dinner, not a finished bake. |
+| Rol (basisrecept / eindproduct) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Renamed twice in D20: "gerecht" reads as a savoury dinner, "afgewerkt" reads as a chore. The finished bake is the eindproduct. |
 | Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". |
 | Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
 | Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
@@ -229,7 +229,23 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 **Keyword search covers the whole recipe, not just the title:** the search blob is built at build time from title, subtitle, role, category, tags, ingredient names, component names, every step title and text, and the FAQ questions. A search box without that data would only find titles. Two-character terms match at a word start (`ei` finds eieren, not kleiner); four characters or more match anywhere, because Dutch compounds would otherwise hide `room` inside `banketbakkersroom`.
 
+**Enter keeps the query.** The form submitted and reloaded the page, which wiped the search field. Enter now prevents the submit, closes the panel so the results are visible, and moves focus to the result list. The input keeps its value, and the query stays in the DOM when the panel is closed.
+
 **Known limitation:** matching is literal, so "soes" finds "soesjes" and "soesje" but not a misspelling, and there is no ranking — with six recipes the count is the ranking. Revisit at ~40 recipes, where a real index (Pagefind) is cheaper than hand-rolled scoring.
+
+### D21 — The catalogue gets pagination, not infinite scroll
+
+*Added 2026-10-29. Nothing is built yet; this records the trigger and the shape.*
+
+Today there is nothing to paginate: six recipes, one page, and the filter narrows client-side. The trigger is **more than 24 recipes**, which is one screen of cards per row-count at three columns.
+
+**Shape when it lands:** static routes `/recepten`, `/recepten/2`, `/recepten/3`, generated at build time, carrying the same filters as `?categorie=…&moeilijkheid=…` so a narrowed view is linkable and crawlable.
+
+**Why pagination and not infinite scroll:** a recipe catalogue is browsed by looking for one thing, and it is shared as a link. Pagination gives every recipe a URL a search engine reaches without scrolling, works with the back button, keeps the footer reachable, and prints. Infinite scroll breaks all four and buys nothing here — the list is short by nature, and a reader who reaches the end of page 1 wants page 2, not a spinner. A "meer laden" button is the acceptable middle ground *if* the URL updates; it is not the default.
+
+**Cost note for the filter at that size:** the client-side filter is O(n) over rendered cards — 6 today, ~few ms at 200, since the search blobs average under 1 KB. Beyond roughly 200 cards the cost is rendering, not matching, so pagination is what fixes it, not a bigger index.
+
+**Rejected:** infinite scroll (breaks crawlability, back button, footer); client-side pagination over one giant HTML page (defeats the crawlability argument); a database-backed search before Pagefind is tried (static index, no server).
 
 **Rejected:** multi-value categories (lying counts); occasion and diet as categories (they multiply the list and every recipe collects three of them); a search box as the primary navigation (there are six recipes; facets are faster than typing and they teach the catalogue); a filter UI before recipe 4 (D12 — the data shipped first; the UI arrives when there is something to filter); difficulty 1–3 (no room to distinguish "folding cream" from "tempering custard").
 

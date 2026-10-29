@@ -55,7 +55,7 @@ export interface Recipe {
 	slug: string;
 	title: string;
 	subtitle: string;
-	role: "basis" | "afgewerkt";
+	role: "basis" | "eindproduct";
 	aliases?: string[];
 	verified: boolean;
 	verified_note?: string;
@@ -246,10 +246,10 @@ export const categoryLabel = (id: string) =>
 
 export const DIFFICULTY_SCALE = 5;
 
-/** "gerecht" read as a savoury dinner; a finished bake is "afgewerkt". */
+/** "gerecht" read as a savoury dinner; the finished bake is the "eindproduct". */
 export const ROLE_LABELS: Record<Recipe["role"], string> = {
 	basis: "basisrecept",
-	afgewerkt: "afgewerkt recept",
+	eindproduct: "eindproduct",
 };
 
 export const roleLabel = (role: Recipe["role"]) => ROLE_LABELS[role] ?? role;

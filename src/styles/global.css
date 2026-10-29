@@ -1339,3 +1339,23 @@
 		outline-offset: 1px;
 	}
 }
+
+/* Recipe grid centred, and cheap to scroll once there are many cards. */
+@layer components {
+	.card-grid {
+		justify-content: center;
+	}
+
+	.card-grid > li {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 30rem;
+	}
+
+	[data-results-section] {
+		scroll-margin-top: calc(var(--header-height, 6.5rem) + var(--space-4));
+	}
+
+	[data-results-section]:focus-visible {
+		outline: none;
+	}
+}

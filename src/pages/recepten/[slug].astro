@@ -68,10 +68,19 @@ const bake = recipe.bake;
 			<ul class="ingredients">
 				{recipe.ingredients.map((i) => (
 					<li>
-						<span>
+						<div class="ingredient-name">
 							{i.name}
-							{i.note && <span class="ingredient-note">{i.note}</span>}
-						</span>
+							{i.note && (
+								<details class="ingredient-info">
+									<summary aria-label={`Meer over ${i.name}`}>
+										<span aria-hidden="true">i</span>
+									</summary>
+									<div class="ingredient-info-panel">
+										<p>{i.note}</p>
+									</div>
+								</details>
+							)}
+						</div>
 						<span class="amount">{formatAmount(i)}</span>
 					</li>
 				))}

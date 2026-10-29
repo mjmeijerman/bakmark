@@ -14,7 +14,7 @@
 		"unit": "g",
 		"note": "Genoeg voor 30 soesjes, ongeveer 20 g per soesje."
 	},
-	"category": "basistechniek",
+	"category": "room-vulling",
 	"tags": [
 		"zwitserse room",
 		"crème légère",
@@ -22,7 +22,7 @@
 		"vulling",
 		"basisrecept"
 	],
-	"difficulty": 1,
+	"difficulty": 2,
 	"time": {
 		"active": 600,
 		"total": 600,

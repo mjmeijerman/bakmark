@@ -14,7 +14,7 @@
 		"unit": "g",
 		"note": "Genoeg voor 30 soesjes of één tompoesbodem van 24 cm."
 	},
-	"category": "basistechniek",
+	"category": "room-vulling",
 	"tags": [
 		"banketbakkersroom",
 		"pastry cream",
@@ -22,7 +22,7 @@
 		"vulling",
 		"basisrecept"
 	],
-	"difficulty": 2,
+	"difficulty": 3,
 	"time": {
 		"active": 900,
 		"total": 3600,

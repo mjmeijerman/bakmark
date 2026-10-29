@@ -2,11 +2,14 @@
 import Layout from "../../layouts/Layout.astro";
 import NewsletterForm from "../../components/NewsletterForm.astro";
 import {
+	DIFFICULTY_SCALE,
+	allRecipes,
 	formatMinutes,
 	recipeChips,
 	recipeRoutes,
 	resolveRecipe,
 	totalTime,
+	usedIn,
 	type Recipe,
 } from "../../lib/recipes";
 
@@ -24,6 +27,8 @@ const chips = recipeChips(recipe);
 const activeTime = totalTime({ root: recipe, groups });
 const bakeGroups = groups.filter((group) => group.recipe.bake);
 const direct = groups.filter((group) => group.depth === 1);
+const usedBy = usedIn(recipe.slug);
+const titles = new Map(allRecipes().map((r) => [r.slug, r.title]));
 const factorLabel = (factor: number) =>
 	factor !== 1 ? ` ×${String(Math.round(factor * 100) / 100).replace(".", ",")}` : "";
 ---
@@ -41,13 +46,14 @@ const factorLabel = (factor: number) =>
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">
 				{chips.map((chip) => <li><span class="chip">{chip}</span></li>)}
+				<li><span class="chip">moeilijkheid {recipe.difficulty}/{DIFFICULTY_SCALE}</span></li>
 				{!recipe.verified && <li><span class="chip chip-concept">Concept</span></li>}
 			</ul>
 			<p class="recipe-summary">
 				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
 			</p>
 			<p class="print-only">
-				{formatMinutes(activeTime)} actief · moeilijkheid {recipe.difficulty}/3
+				{formatMinutes(activeTime)} actief · moeilijkheid {recipe.difficulty}/{DIFFICULTY_SCALE}
 				{bakeGroups.length ? ` · ${bakeGroups[0].recipe.bake.temperature} °C` : ""}
 			</p>
 		</section>
@@ -115,6 +121,27 @@ const factorLabel = (factor: number) =>
 				</ul>
 			</section>
 		)}
+
+		{usedBy.length ? (
+			<section class="section no-print">
+				<h2>Gebruikt in</h2>
+				<p class="section-lede">
+					Deze pagina is de bron. Elk recept hieronder gebruikt dit
+					basisrecept, dus een wijziging hier werkt daar direct door.
+				</p>
+				<ul class="parts">
+					{usedBy.map(({ recipe: user, via }) => (
+						<li>
+							<a href={`/recepten/${user.slug}`}>{user.title}</a>
+							<span class="muted">
+								{user.result.value} {user.result.unit}
+								{via ? `, via ${titles.get(via) ?? via}` : ""}
+							</span>
+						</li>
+					))}
+				</ul>
+			</section>
+		) : null}
 
 		<section class="section">
 			<h2>Ingrediënten</h2>

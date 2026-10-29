@@ -230,6 +230,28 @@ export function resolveRecipe(root: Recipe): ResolvedRecipe {
 	return { root, groups };
 }
 
+/** Fixed list (D20). One category per recipe; facets carry the rest. */
+export const CATEGORIES = [
+	{ id: "basistechniek", label: "basistechniek" },
+	{ id: "deeg-beslag", label: "deeg & beslag" },
+	{ id: "room-vulling", label: "room & vulling" },
+	{ id: "gebak", label: "gebak" },
+	{ id: "brood", label: "brood" },
+	{ id: "chocolade", label: "chocolade" },
+	{ id: "hartig", label: "hartig" },
+] as const;
+
+export const categoryLabel = (id: string) =>
+	CATEGORIES.find((category) => category.id === id)?.label ?? id;
+
+export const DIFFICULTY_SCALE = 5;
+
+export const TIME_BUCKETS = [
+	{ id: "kort", label: "tot 30 min", min: 0, max: 1800 },
+	{ id: "middel", label: "30-60 min", min: 1800, max: 3600 },
+	{ id: "lang", label: "langer dan 1 uur", min: 3600, max: Number.POSITIVE_INFINITY },
+] as const;
+
 export const formatMinutes = (seconds: number) => {
 	const min = Math.round(seconds / 60);
 	if (min < 60) return `${min} min`;
@@ -241,9 +263,39 @@ export const formatMinutes = (seconds: number) => {
 export const recipeChips = (r: Recipe) => [
 	formatMinutes(r.time.total),
 	`${r.result.value} ${r.result.unit}`,
-	r.category,
+	categoryLabel(r.category),
 	...(r.role === "basis" ? ["basisrecept"] : []),
 ];
+
+/**
+ * Reverse lookup for the component graph: which recipes use this one, directly
+ * and through another component. This is the navigation no recipe site has.
+ */
+export function usedIn(slug: string): { recipe: Recipe; via: string | null }[] {
+	const all = allRecipes();
+	const found: { recipe: Recipe; via: string | null }[] = [];
+	const seen = new Set([slug]);
+	let frontier = [slug];
+
+	while (frontier.length) {
+		const next: string[] = [];
+		for (const current of frontier) {
+			for (const candidate of all) {
+				if (seen.has(candidate.slug)) continue;
+				if (!(candidate.components ?? []).some((link) => link.ref === current)) continue;
+				seen.add(candidate.slug);
+				next.push(candidate.slug);
+				found.push({
+					recipe: candidate,
+					via: current === slug ? null : current,
+				});
+			}
+		}
+		frontier = next;
+	}
+
+	return found;
+}
 
 /** Total time of the whole tree, so a composite does not under-promise. */
 export const totalTime = (resolved: ResolvedRecipe) =>

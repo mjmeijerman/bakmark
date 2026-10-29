@@ -1141,3 +1141,96 @@
 		font-size: var(--text-sm);
 	}
 }
+
+/* Facet filters on /recepten. Server-rendered list, client-side narrowing;
+   with JavaScript off every chip is inert and the full list stays. */
+@layer components {
+	.filters {
+		margin-top: var(--space-3);
+	}
+
+	.filters fieldset {
+		border: 0;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+	}
+
+	.filters legend {
+		padding: 0;
+		margin-bottom: var(--space-1);
+		font-size: var(--text-sm);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+
+	.filter-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+
+	.filter-chip:hover:not(:disabled) {
+		border-color: var(--accent);
+	}
+
+	.filter-chip[aria-pressed="true"] {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
+	}
+
+	.filter-chip:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.filter-chip:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.filter-count {
+		font-size: 0.8em;
+		opacity: 0.7;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.filter-reset {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		margin: 0 0 var(--space-1);
+	}
+
+	.filter-reset-button {
+		font: inherit;
+		font-size: var(--text-sm);
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+
+	.card-grid li[hidden] {
+		display: none;
+	}
+}

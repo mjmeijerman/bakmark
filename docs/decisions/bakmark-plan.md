@@ -151,7 +151,7 @@ Build to video 1: **~27–33h**, plus ~12–18h of content and shooting. Per vid
 
 ### D12 — Recipes must be findable: the taxonomy is data from day one, the search UI is not
 
-Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
+Every recipe carries `category`, `tags[]`, `difficulty` (1–5, revised in D20), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
 
 - **In Gate A:** the fields, ~30 minutes while writing `soezendeeg.json`. Retrofitting a taxonomy over five finished recipes is a data migration.
 - **Not in Gate A:** search and filter. Facets (category, difficulty, time, site search) ship at **recipe 4**. With one to three recipes the home page is simply a list; a search box over three items is decoration.
@@ -202,6 +202,31 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 **Consequence for D1:** five videos instead of one. Soezenbeslag, soesjes, banketbakkersroom, slagroom and Zwitserse room are each a technique with its own payoff, which fits the format better than one 20-minute video that hides four of them.
 
 **Rejected:** copying ingredients into each recipe (drift, and the requirement was explicitly the opposite); only sharing ingredients, not steps (the timing is the part that gets fixed); a template/include system in the build (another artifact that can go stale); one mega-recipe with all five techniques inline (no separate page, no separate video, no reuse).
+
+### D20 — One category per recipe, facets for everything else, difficulty 1–5
+
+*Added 2026-10-29. Extends D12.*
+
+**The category list is closed and short:** `basistechniek`, `deeg-beslag`, `room-vulling`, `gebak`, `brood`, `chocolade`, `hartig`. One value per recipe. It answers "what is this", which is the only question a single list can answer well.
+
+**Everything that is not "what is this" is a facet, not a category:**
+
+| Facet | Source | Why not a category |
+|---|---|---|
+| Rol (gerecht / basisrecept) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". |
+| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". |
+| Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
+| Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
+| Gebruikt in | `components[]`, reverse | Unique to this model. Answers "what can I make with this basisrecept" and turns the component graph into navigation. |
+
+**Why not multiple categories:** a recipe in two categories makes the counts lie (six recipes, eight results), makes "alle gebak" ambiguous, and forces every new category decision twice. A thing is one kind of thing; the occasion (Kerst), the diet (glutenvrij) and the technique (kookdeeg) are properties, and those are tags. Tags never appear as filters until a tag has two recipes.
+
+**The rule that keeps it usable:** a filter value only becomes clickable at **≥2 recipes**. Below that it renders greyed out with its count, so the reader sees the shape of the catalogue without landing on a one-item result page. Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+
+**Filtering is server-rendered and narrowed client-side:** every card is in the HTML, the chips only hide and reveal. With JavaScript off the full list stays and the chips are inert — no blank page, no spinner. OR within a facet, AND across facets, with a live "x van y recepten" counter and a reset.
+
+**Rejected:** multi-value categories (lying counts); occasion and diet as categories (they multiply the list and every recipe collects three of them); a search box as the primary navigation (there are six recipes; facets are faster than typing and they teach the catalogue); a filter UI before recipe 4 (D12 — the data shipped first; the UI arrives when there is something to filter); difficulty 1–3 (no room to distinguish "folding cream" from "tempering custard").
+
 
 ### D14 — The result is the headline: every recipe says what it makes
 

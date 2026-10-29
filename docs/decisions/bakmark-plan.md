@@ -222,6 +222,8 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 **Sorting is a view, not a filter.** `/recepten` sorts on **Nieuwste eerst** (default), **Alfabetisch**, **Makkelijk eerst** and **Snelst klaar**; the choice lives in the same query string (`sorteer=`) as the filters, so a sorted view is linkable and survives the trip to a recipe and back. Sorting is a DOM reorder of the same cards, so it composes with every filter and with the keyword.
 
+**Time is broken down, not summed.** A composite page shows a *Tijdsindeling* table: one row per component with actief / oven / wacht / totaal, and a footer with the sums plus the wall-clock total. The four buckets are separate because they are not interchangeable — "2,5 uur" for filled soesjes is 1 uur 15 min with your hands in it, 30 min oven and 55 min waiting, and a reader deciding whether to start at 20:00 needs exactly that split. `time.wait` was added for cooling and resting, which \`afterbake\` was standing in for.
+
 **`published` is a schema field now.** Every recipe carries its publication date, shown on the recipe page as "geplaatst 29 oktober 2026". Until launch all six carry their creation date, which is why "nieuwste eerst" currently equals alphabetical — ties fall back to the title. That is the honest state, not a sorting bug.
 | — | — | The facet label for `role` was "Rol", which is a database word, not a baker's word. It is **"Soort recept"** now, with two values: a basisrecept is used by other recipes; an eindproduct is what you serve. A third value only earns its place if a recipe is neither — a pure technique with no product. |
 | Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |

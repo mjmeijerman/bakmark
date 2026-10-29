@@ -30,7 +30,8 @@
 	"time": {
 		"active": 1500,
 		"total": 1800,
-		"note": "25 min actief. Bakken staat bij het recept Soesjes."
+		"note": "25 min actief. Bakken staat bij het recept Soesjes.",
+		"wait": 0
 	},
 	"context": "Soezendeeg is een kookdeeg: het wordt eerst in de pan gegaard en gaat daarna de oven in. Tijdens het garen verstijfselt het zetmeel in de bloem, waardoor het deeg veel vocht kan opnemen — water, melk en ei. Dat vocht is het hele mechanisme: in de oven wordt het stoom, stoom neemt veel meer ruimte in dan water, en die druk blaast het deeg van binnen uit hol. Daarom zijn er maar twee momenten waarop het misgaat: de bloem is niet lang genoeg gegaard (dan neemt het deeg minder ei op en blijven de soezen plat), of de wand is nog niet stevig als de hitte eruit gaat (dan storten ze in). Al het overige is marge. Zodra je dit deeg beheerst, beheers je ook eclairs, Bossche bollen, Paris-Brest en tijgersoesjes — het is één techniek met andere vormen.",
 	"ingredients": [

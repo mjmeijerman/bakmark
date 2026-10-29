@@ -26,7 +26,8 @@
 	"time": {
 		"active": 900,
 		"total": 3600,
-		"note": "15 min actief, daarna minimaal 45 min koelen."
+		"note": "15 min actief, daarna 45 min koelen in de koelkast.",
+		"wait": 2700
 	},
 	"context": "Banketbakkersroom is melk die je bindt met eierdooiers en zetmeel. Twee dingen maken het verschil. De dooiers worden getemperd — een deel van de hete melk er eerst bij, dan pas alles terug in de pan — anders stollen ze meteen tot stukjes. En de room mag na het binden niet meer hard koken, want dan schift hij. Bindt het zetmeel eenmaal, dan is de room dik en glad, en dat is precies de structuur die Zwitserse room nodig heeft om niet in te zakken.",
 	"ingredients": [

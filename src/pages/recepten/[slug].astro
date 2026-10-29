@@ -154,6 +154,66 @@ const factorLabel = (factor: number) =>
 		) : null}
 
 		<section class="section">
+			<h2>Tijdsindeling</h2>
+			<p class="section-lede">
+				Waar de tijd naartoe gaat, per onderdeel. Actief is met je handen in het
+				beslag; oven en wacht lopen vanzelf door.
+			</p>
+			<table class="time-table">
+				<thead>
+					<tr>
+						<th scope="col">Onderdeel</th>
+						<th scope="col">Actief</th>
+						<th scope="col">Oven</th>
+						<th scope="col">Wacht</th>
+						<th scope="col">Totaal</th>
+					</tr>
+				</thead>
+				<tbody>
+					{groups.map((group) => (
+						<tr>
+							<th scope="row">
+								{composed
+									? <a class="no-print" href={`/recepten/${group.recipe.slug}`}>{group.recipe.title}</a>
+									: group.recipe.title}
+								{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
+								{group.factor !== 1 ? <span class="muted">{factorLabel(group.factor)}</span> : null}
+							</th>
+							<td>{formatMinutes(group.recipe.time.active)}</td>
+							<td>{group.recipe.time.oven ? formatMinutes(group.recipe.time.oven) : "—"}</td>
+							<td>
+								{group.recipe.time.wait
+									? formatMinutes(group.recipe.time.wait)
+									: group.recipe.time.afterbake
+										? formatMinutes(group.recipe.time.afterbake)
+										: "—"}
+							</td>
+							<td>{formatMinutes(group.recipe.time.total)}</td>
+						</tr>
+					))}
+				</tbody>
+				{composed && (
+					<tfoot>
+						<tr>
+							<th scope="row">Samen</th>
+							<td>{formatMinutes(activeTime)}</td>
+							<td>{formatMinutes(groups.reduce((sum, g) => sum + (g.recipe.time.oven || 0), 0)) || "—"}</td>
+							<td>{formatMinutes(groups.reduce((sum, g) => sum + (g.recipe.time.wait || g.recipe.time.afterbake || 0), 0)) || "—"}</td>
+							<td>{formatMinutes(recipe.time.total)}</td>
+						</tr>
+					</tfoot>
+				)}
+			</table>
+			{composed && (
+				<p class="form-note no-print">
+					De totale tijd is de wandklok van leeg aanrecht tot eindresultaat.
+					Actief optellen mag, maar delen overlappen: de banketbakkersroom kan
+					koelen terwijl je het beslag maakt.
+				</p>
+			)}
+		</section>
+
+		<section class="section">
 			<h2>Ingrediënten</h2>
 			{groups.map((group, groupIndex) => (
 				<div class="ingredient-group">

@@ -1518,3 +1518,42 @@
 		color: var(--text);
 	}
 }
+
+/* Time breakdown per component. */
+@layer components {
+	.time-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: var(--text-sm);
+		margin: var(--space-2) 0 var(--space-3);
+	}
+
+	.time-table th,
+	.time-table td {
+		text-align: left;
+		padding: var(--space-2) var(--space-2) var(--space-2) 0;
+		border-bottom: 1px dashed var(--border);
+		vertical-align: baseline;
+	}
+
+	.time-table thead th {
+		color: var(--muted);
+		font-weight: 600;
+	}
+
+	.time-table tbody th {
+		font-weight: 600;
+	}
+
+	.time-table tfoot th,
+	.time-table tfoot td {
+		border-top: 1px solid var(--border-strong);
+		border-bottom: 0;
+		font-weight: 600;
+	}
+
+	.time-table .muted {
+		font-weight: 400;
+		font-size: var(--text-sm);
+	}
+}

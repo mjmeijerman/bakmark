@@ -26,7 +26,8 @@
 	"time": {
 		"active": 600,
 		"total": 600,
-		"note": "10 minuten, mits de banketbakkersroom al koud is."
+		"note": "10 minuten, mits de banketbakkersroom al koud is.",
+		"wait": 0
 	},
 	"context": "Zwitserse room is banketbakkersroom die je luchtig maakt met stijfgeklopte slagroom. De banketbakkersroom geeft de smaak en de stevigheid, de slagroom geeft het volume en de lichte structuur. De verhouding bepaalt waarvoor je hem kunt gebruiken: meer banketbakkersroom en hij houdt vorm in een eclair, meer slagroom en hij is te luchtig om te stapelen. Het vouwen is de enige techniek die telt — roeren slaat de lucht er weer uit en dan wordt de room dun.",
 	"ingredients": [],

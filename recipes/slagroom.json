@@ -25,7 +25,8 @@
 	"time": {
 		"active": 300,
 		"total": 300,
-		"note": "5 minuten, mits de room en de kom koud zijn."
+		"note": "5 minuten, mits de room en de kom koud zijn.",
+		"wait": 0
 	},
 	"context": "Slagroom klopt niet omdat je lucht in de room slaat, maar omdat vetbolletjes zich om de ingeslagen lucht vastzetten. Dat werkt alleen als de room koud is: bij 4 °C is het vet hard genoeg om het netwerk te vormen dat de lucht vasthoudt. Is de room te warm, dan gebeurt er lange tijd niets en klopt hij daarna in één beweging door naar boter. Daarom: alles koud, en stoppen zodra de pieken staan.",
 	"ingredients": [

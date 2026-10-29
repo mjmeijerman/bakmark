@@ -67,7 +67,15 @@ export interface Recipe {
 	category: string;
 	tags: string[];
 	difficulty: number;
-	time: { active: number; oven?: number; afterbake?: number; total: number; note?: string };
+	time: {
+		active: number;
+		oven?: number;
+		afterbake?: number;
+		/** Cooling, resting, chilling. */
+		wait?: number;
+		total: number;
+		note?: string;
+	};
 	context: string;
 	ingredients: Ingredient[];
 	/** Same steps, different composition: the milk/water split, for instance. */

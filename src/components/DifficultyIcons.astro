@@ -1,6 +1,6 @@
 ---
 interface Props {
-	/** Filled spoons. */
+	/** Filled whisks. */
 	level: number;
 	scale?: number;
 }
@@ -16,12 +16,13 @@ const { level, scale = 5 } = Astro.props;
 				viewBox="0 0 24 24"
 				focusable="false"
 			>
-				{/* A mixing bowl. Tried at this size: chef's hat (reads as a
-				    mushroom), whisk (reads as two letters), rolling pin (reads as a
-				    dash), spoon (reads as a lollipop). A semicircle with a rim
-				    survives being drawn 1.3rem wide. */}
-				<path d="M3.2 10.4h17.6a8.8 8.8 0 0 1-17.6 0Z" />
-				<rect x="2.2" y="7.6" width="19.6" height="2.8" rx="1.4" />
+				{/* A balloon whisk: solid head with three wire slots cut out, so the
+				    shape still reads when it is 1.3rem wide. */}
+				<rect x="10.7" y="1" width="2.6" height="5" rx="1.3" />
+				<path
+					fill-rule="evenodd"
+					d="M12 5.4c-4.3 0-7.6 3.7-7.6 8.3 0 4.7 3.3 7.9 7.6 7.9s7.6-3.2 7.6-7.9c0-4.6-3.3-8.3-7.6-8.3Zm-3.25 3.8h1.3v10.2h-1.3zm2.6 0h1.3v10.2h-1.3zm2.6 0h1.3v10.2h-1.3z"
+				/>
 			</svg>
 		))
 	}

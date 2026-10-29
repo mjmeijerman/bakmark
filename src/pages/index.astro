@@ -35,7 +35,7 @@ import RecipeCard from "../components/RecipeCard.astro";
 		<ul class="card-grid">
 			{
 				allRecipes()
-					.filter((recipe) => recipe.role === "gerecht")
+					.filter((recipe) => recipe.role === "afgewerkt")
 					.map((recipe) => (
 					<li>
 						<RecipeCard

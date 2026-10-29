@@ -4,9 +4,11 @@ import RecipeCard from "../../components/RecipeCard.astro";
 import {
 	CATEGORIES,
 	DIFFICULTY_SCALE,
+	ROLE_LABELS,
 	TIME_BUCKETS,
 	allRecipes,
 	recipeChips,
+	searchText,
 	type Recipe,
 } from "../../lib/recipes";
 
@@ -23,10 +25,11 @@ const categoryOptions = CATEGORIES.map((category) => ({
 	total: count((recipe) => recipe.category === category.id),
 })).filter((option) => option.total > 0);
 
-const roleOptions = [
-	{ id: "gerecht", label: "gerecht", total: count((recipe) => recipe.role === "gerecht") },
-	{ id: "basis", label: "basisrecept", total: count((recipe) => recipe.role === "basis") },
-];
+const roleOptions = (Object.keys(ROLE_LABELS) as Recipe["role"][]).map((role) => ({
+	id: role,
+	label: ROLE_LABELS[role],
+	total: count((recipe) => recipe.role === role),
+}));
 
 const difficultyOptions = Array.from({ length: DIFFICULTY_SCALE }, (_, index) => index + 1).map(
 	(level) => ({
@@ -39,117 +42,131 @@ const difficultyOptions = Array.from({ length: DIFFICULTY_SCALE }, (_, index) =>
 const timeOptions = TIME_BUCKETS.map((bucket) => ({
 	id: bucket.id,
 	label: bucket.label,
-	total: count((recipe) => {
-		const total = recipe.time.total;
-		return total >= bucket.min && total < bucket.max;
-	}),
+	total: count((recipe) => recipe.time.total >= bucket.min && recipe.time.total < bucket.max),
 }));
 ---
 
 <Layout
 	title="Alle recepten"
-	description="Alle recepten op Bakmark, met video's zonder knippen. Filter op categorie, rol, moeilijkheid en tijd."
+	description="Alle recepten op Bakmark, met video's zonder knippen. Zoek op trefwoord of filter op categorie, rol, moeilijkheid en tijd."
 >
 	<section class="hero">
 		<p class="kicker">Recepten</p>
 		<h1>Alle recepten</h1>
 		<p class="lead">
-			Basisrecepten en de gerechten die eruit volgen. Elk onderdeel heeft een
-			eigen pagina en een eigen video.
+			Basisrecepten en de afgewerkte recepten die eruit volgen. Elk onderdeel
+			heeft een eigen pagina en een eigen video.
 		</p>
 	</section>
 
+	<div class="filter-bar" data-filter-bar>
+		<details class="filter-panel" data-filter-panel>
+			<summary>
+				<span class="filter-summary-label">Zoeken en filteren</span>
+				<span class="filter-summary-state" data-summary-state></span>
+			</summary>
+
+			<form class="filters" data-filters aria-describedby="filter-note">
+				<p class="search-row">
+					<label for="search">Zoek op trefwoord</label>
+					<input
+						id="search"
+						name="q"
+						type="search"
+						placeholder="soesjes, room, chocolade, tempereren"
+						autocomplete="off"
+						data-search
+					/>
+				</p>
+
+				<fieldset>
+					<legend>Categorie</legend>
+					<div class="filter-row">
+						{categoryOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="category"
+								data-value={option.id}
+								aria-pressed="false"
+								disabled={option.total < 2}
+								title={option.total < 2 ? "Komt één recept in voor" : undefined}
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Rol</legend>
+					<div class="filter-row">
+						{roleOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="role"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Moeilijkheid</legend>
+					<div class="filter-row">
+						{difficultyOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="difficulty"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Tijd (totaal)</legend>
+					<div class="filter-row">
+						{timeOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="time"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<p class="filter-reset">
+					<button type="button" class="filter-reset-button" data-reset hidden>
+						Alles wissen
+					</button>
+				</p>
+				<p class="form-note">
+					Grijze filters hebben nog te weinig recepten om te kiezen. Ze gaan
+					vanzelf aan zodra er een tweede recept in valt.
+				</p>
+			</form>
+		</details>
+
+		<p class="filter-status" id="filter-note">
+			<span data-count>{recipes.length} recepten</span>
+		</p>
+	</div>
+
 	<section class="section">
-		<h2>Filteren</h2>
-		<form class="filters" data-filters aria-describedby="filter-note">
-			<fieldset>
-				<legend>Categorie</legend>
-				<div class="filter-row">
-					{categoryOptions.map((option) => (
-						<button
-							type="button"
-							class="filter-chip"
-							data-facet="category"
-							data-value={option.id}
-							aria-pressed="false"
-							disabled={option.total < 2}
-							title={option.total < 2 ? "Komt één recept in voor" : undefined}
-						>
-							{option.label}<span class="filter-count">{option.total}</span>
-						</button>
-					))}
-				</div>
-			</fieldset>
-
-			<fieldset>
-				<legend>Rol</legend>
-				<div class="filter-row">
-					{roleOptions.map((option) => (
-						<button
-							type="button"
-							class="filter-chip"
-							data-facet="role"
-							data-value={option.id}
-							aria-pressed="false"
-							disabled={option.total < 1}
-						>
-							{option.label}<span class="filter-count">{option.total}</span>
-						</button>
-					))}
-				</div>
-			</fieldset>
-
-			<fieldset>
-				<legend>Moeilijkheid</legend>
-				<div class="filter-row">
-					{difficultyOptions.map((option) => (
-						<button
-							type="button"
-							class="filter-chip"
-							data-facet="difficulty"
-							data-value={option.id}
-							aria-pressed="false"
-						>
-							{option.label}<span class="filter-count">{option.total}</span>
-						</button>
-					))}
-				</div>
-			</fieldset>
-
-			<fieldset>
-				<legend>Tijd (totaal)</legend>
-				<div class="filter-row">
-					{timeOptions.map((option) => (
-						<button
-							type="button"
-							class="filter-chip"
-							data-facet="time"
-							data-value={option.id}
-							aria-pressed="false"
-						>
-							{option.label}<span class="filter-count">{option.total}</span>
-						</button>
-					))}
-				</div>
-			</fieldset>
-
-			<p class="filter-reset">
-				<button type="button" class="filter-reset-button" data-reset hidden>
-					Filters wissen
-				</button>
-				<span class="form-note" id="filter-note" data-count>
-					{recipes.length} recepten
-				</span>
-			</p>
-			<p class="form-note">
-				Grijze filters hebben nog te weinig recepten om te kiezen. Ze gaan vanzelf
-				aan zodra er een tweede recept in valt.
-			</p>
-		</form>
-	</section>
-
-	<section class="section">
-		<h2>Alles</h2>
 		<ul class="card-grid" data-results>
 			{recipes.map((recipe) => (
 				<li
@@ -157,6 +174,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 					data-role={recipe.role}
 					data-difficulty={recipe.difficulty}
 					data-minutes={minutes(recipe)}
+					data-search-text={searchText(recipe)}
 				>
 					<RecipeCard
 						href={`/recepten/${recipe.slug}`}
@@ -170,21 +188,27 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			))}
 		</ul>
 		<p class="form-note" data-empty hidden>
-			Geen recepten met deze combinatie. Wis een filter om breder te zoeken.
+			Geen recepten met deze combinatie. Wis een filter of trefwoord om breder
+			te zoeken.
 		</p>
 	</section>
 </Layout>
 
 <script>
-	// Filters are OR within a facet and AND across facets. Everything is
-	// rendered server-side, so with JavaScript off the full list still shows.
+	// Server-rendered list, client-side narrowing. OR within a facet, AND across
+	// facets and the keyword search. With JavaScript off nothing is hidden: the
+	// panel still opens (it is a <details>) and the full list stays visible.
 	const form = document.querySelector<HTMLFormElement>("[data-filters]");
 	const results = document.querySelector<HTMLElement>("[data-results]");
 	const empty = document.querySelector<HTMLElement>("[data-empty]");
 	const counter = document.querySelector<HTMLElement>("[data-count]");
 	const reset = document.querySelector<HTMLButtonElement>("[data-reset]");
+	const search = document.querySelector<HTMLInputElement>("[data-search]");
+	const panel = document.querySelector<HTMLDetailsElement>("[data-filter-panel]");
+	const summaryState = document.querySelector<HTMLElement>("[data-summary-state]");
+	const header = document.querySelector<HTMLElement>(".site-header");
 
-	if (form && results && empty && counter && reset) {
+	if (form && results && empty && counter && reset && search && panel && summaryState) {
 		const chips = Array.from(form.querySelectorAll<HTMLButtonElement>("[data-facet]"));
 		const cards = Array.from(results.children) as HTMLElement[];
 		const selected = new Map<string, Set<string>>();
@@ -195,7 +219,43 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			lang: [3600, Number.POSITIVE_INFINITY],
 		};
 
+		// The filter bar sticks below the header, whose height depends on how the
+		// nav wraps. Measure it instead of guessing a constant.
+		if (header) {
+			const setOffset = () =>
+				document.documentElement.style.setProperty(
+					"--header-height",
+					`${header.getBoundingClientRect().height}px`,
+				);
+			setOffset();
+			window.addEventListener("resize", setOffset);
+		}
+
+		const activeCount = () =>
+			Array.from(selected.values()).reduce((sum, values) => sum + values.size, 0) +
+			(search.value.trim() ? 1 : 0);
+
+		// Short terms match at a word start, longer terms anywhere: "ei" must not
+		// hit "kleiner", but "room" must still find "banketbakkersroom" — Dutch
+		// glues its words together, so pure word matching would lose compounds.
+		const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const terms = () =>
+			search.value
+				.trim()
+				.toLowerCase()
+				.split(/\s+/)
+				.filter(Boolean)
+				.map((term) =>
+					term.length >= 4
+						? new RegExp(escape(term), "i")
+						: new RegExp(`(^|[^a-zà-ÿ])${escape(term)}`, "i"),
+				);
+
 		const matches = (card: HTMLElement): boolean => {
+			const haystack = card.dataset.searchText ?? "";
+			const wanted = terms();
+			if (wanted.length && !wanted.every((pattern) => pattern.test(haystack))) return false;
+
 			const seconds = Number(card.dataset.minutes ?? 0) * 60;
 			return Array.from(selected.entries()).every(([facet, values]) => {
 				if (values.size === 0) return true;
@@ -224,7 +284,11 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 					? `${cards.length} recepten`
 					: `${visible} van ${cards.length} recepten`;
 			empty.hidden = visible > 0;
-			reset.hidden = !Array.from(selected.values()).some((values) => values.size > 0);
+
+			const active = activeCount();
+			reset.hidden = active === 0;
+			summaryState.textContent = active > 0 ? `${active} actief` : "";
+			panel.classList.toggle("has-active", active > 0);
 		};
 
 		for (const chip of chips) {
@@ -240,8 +304,11 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			});
 		}
 
+		search.addEventListener("input", apply);
+
 		reset.addEventListener("click", () => {
 			selected.clear();
+			search.value = "";
 			for (const chip of chips) chip.setAttribute("aria-pressed", "false");
 			apply();
 		});

@@ -55,7 +55,7 @@ export interface Recipe {
 	slug: string;
 	title: string;
 	subtitle: string;
-	role: "basis" | "gerecht";
+	role: "basis" | "afgewerkt";
 	aliases?: string[];
 	verified: boolean;
 	verified_note?: string;
@@ -246,6 +246,31 @@ export const categoryLabel = (id: string) =>
 
 export const DIFFICULTY_SCALE = 5;
 
+/** "gerecht" read as a savoury dinner; a finished bake is "afgewerkt". */
+export const ROLE_LABELS: Record<Recipe["role"], string> = {
+	basis: "basisrecept",
+	afgewerkt: "afgewerkt recept",
+};
+
+export const roleLabel = (role: Recipe["role"]) => ROLE_LABELS[role] ?? role;
+
+/** One lowercase blob per recipe: what a keyword search looks through. */
+export function searchText(recipe: Recipe): string {
+	return [
+		recipe.title,
+		recipe.subtitle,
+		roleLabel(recipe.role),
+		categoryLabel(recipe.category),
+		...(recipe.tags ?? []),
+		...recipe.ingredients.map((ingredient) => ingredient.name),
+		...(recipe.components ?? []).map((link) => link.ref.replace(/-/g, " ")),
+		...recipe.steps.flatMap((step) => [step.title, step.text]),
+		...(recipe.faq ?? []).map((item) => item.q),
+	]
+		.join(" ")
+		.toLowerCase();
+}
+
 export const TIME_BUCKETS = [
 	{ id: "kort", label: "tot 30 min", min: 0, max: 1800 },
 	{ id: "middel", label: "30-60 min", min: 1800, max: 3600 },
@@ -264,7 +289,7 @@ export const recipeChips = (r: Recipe) => [
 	formatMinutes(r.time.total),
 	`${r.result.value} ${r.result.unit}`,
 	categoryLabel(r.category),
-	...(r.role === "basis" ? ["basisrecept"] : []),
+	roleLabel(r.role),
 ];
 
 /**

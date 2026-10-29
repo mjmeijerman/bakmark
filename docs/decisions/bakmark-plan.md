@@ -213,7 +213,7 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 | Facet | Source | Why not a category |
 |---|---|---|
-| Rol (gerecht / basisrecept) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". |
+| Rol (basisrecept / afgewerkt recept) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Originally "gerecht", renamed in D20: in Dutch that reads as a savoury dinner, not a finished bake. |
 | Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". |
 | Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
 | Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
@@ -224,6 +224,12 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 **The rule that keeps it usable:** a filter value only becomes clickable at **≥2 recipes**. Below that it renders greyed out with its count, so the reader sees the shape of the catalogue without landing on a one-item result page. Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
 
 **Filtering is server-rendered and narrowed client-side:** every card is in the HTML, the chips only hide and reveal. With JavaScript off the full list stays and the chips are inert — no blank page, no spinner. OR within a facet, AND across facets, with a live "x van y recepten" counter and a reset.
+
+**The panel is collapsed by default and sticky.** As a wall of chips it pushed the first recipe off a phone screen, so it is a `<details>` that opens to a summary line, with an active-filter count on the closed state. The header and the filter bar stay visible while scrolling; the bar's `top` is measured from the real header height (the nav wraps on narrow screens), not guessed.
+
+**Keyword search covers the whole recipe, not just the title:** the search blob is built at build time from title, subtitle, role, category, tags, ingredient names, component names, every step title and text, and the FAQ questions. A search box without that data would only find titles. Two-character terms match at a word start (`ei` finds eieren, not kleiner); four characters or more match anywhere, because Dutch compounds would otherwise hide `room` inside `banketbakkersroom`.
+
+**Known limitation:** matching is literal, so "soes" finds "soesjes" and "soesje" but not a misspelling, and there is no ranking — with six recipes the count is the ranking. Revisit at ~40 recipes, where a real index (Pagefind) is cheaper than hand-rolled scoring.
 
 **Rejected:** multi-value categories (lying counts); occasion and diet as categories (they multiply the list and every recipe collects three of them); a search box as the primary navigation (there are six recipes; facets are faster than typing and they teach the catalogue); a filter UI before recipe 4 (D12 — the data shipped first; the UI arrives when there is something to filter); difficulty 1–3 (no room to distinguish "folding cream" from "tempering custard").
 

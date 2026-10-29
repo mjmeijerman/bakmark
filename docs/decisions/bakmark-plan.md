@@ -221,7 +221,9 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 **Why not multiple categories:** a recipe in two categories makes the counts lie (six recipes, eight results), makes "alle gebak" ambiguous, and forces every new category decision twice. A thing is one kind of thing; the occasion (Kerst), the diet (glutenvrij) and the technique (kookdeeg) are properties, and those are tags. Tags never appear as filters until a tag has two recipes.
 
-**The rule that keeps it usable:** a filter value only becomes clickable at **≥2 recipes**. Below that it renders greyed out with its count, so the reader sees the shape of the catalogue without landing on a one-item result page. Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+**Every value is clickable, with its count.** *Revised 2026-10-29: the earlier ≥2 rule is dropped.* Greying out a value with one recipe meant the filter stopped working exactly when a reader knew what they wanted — and the count already tells them whether the result page will be thin. The count is the warning, not a disabled button. (0 values still render nothing: a category nothing falls into is not a filter.) Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+
+**The URL is the filter state.** Every change writes `?categorie=…&rol=…&moeilijkheid=…&tijd=…&q=…` with `history.replaceState`, and the page reads that query on load: the chips light up, the keyword returns, the panel opens, and the list is already narrowed. That means a filtered view is linkable, a returned-from-recipe view is intact without re-filtering, and page 2 of D21 inherits the same mechanism.
 
 **Filtering is server-rendered and narrowed client-side:** every card is in the HTML, the chips only hide and reveal. With JavaScript off the full list stays and the chips are inert — no blank page, no spinner. OR within a facet, AND across facets, with a live "x van y recepten" counter and a reset.
 

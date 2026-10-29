@@ -89,8 +89,6 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 								data-facet="category"
 								data-value={option.id}
 								aria-pressed="false"
-								disabled={option.total < 2}
-								title={option.total < 2 ? "Komt één recept in voor" : undefined}
 							>
 								{option.label}<span class="filter-count">{option.total}</span>
 							</button>
@@ -155,8 +153,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 					</button>
 				</p>
 				<p class="form-note">
-					Grijze filters hebben nog te weinig recepten om te kiezen. Ze gaan
-					vanzelf aan zodra er een tweede recept in valt.
+					Het getal achter een filter is het aantal recepten dat erin valt.
 				</p>
 			</form>
 		</details>
@@ -273,7 +270,40 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			});
 		};
 
-		const apply = () => {
+		// The URL is the state: a filtered view is linkable, and coming back from a
+		// recipe restores it because the path still carries the query.
+		const FACET_PARAMS: Record<string, string> = {
+			category: "categorie",
+			role: "rol",
+			difficulty: "moeilijkheid",
+			time: "tijd",
+		};
+
+		const readUrl = () => {
+			const params = new URLSearchParams(window.location.search);
+			for (const [facet, name] of Object.entries(FACET_PARAMS)) {
+				const raw = params.get(name);
+				if (!raw) continue;
+				selected.set(facet, new Set(raw.split(",").filter(Boolean)));
+			}
+			const query = params.get("q");
+			if (query) search.value = query;
+		};
+
+		const writeUrl = () => {
+			const params = new URLSearchParams();
+			for (const [facet, name] of Object.entries(FACET_PARAMS)) {
+				const values = selected.get(facet);
+				if (values && values.size > 0) params.set(name, Array.from(values).join(","));
+			}
+			const query = search.value.trim();
+			if (query) params.set("q", query);
+			const suffix = params.toString();
+			const url = suffix ? `${window.location.pathname}?${suffix}` : window.location.pathname;
+			window.history.replaceState(null, "", url);
+		};
+
+		const apply = ({ syncUrl = true }: { syncUrl?: boolean } = {}) => {
 			let visible = 0;
 			for (const card of cards) {
 				const show = matches(card);
@@ -290,6 +320,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			reset.hidden = active === 0;
 			summaryState.textContent = active > 0 ? `${active} actief` : "";
 			panel.classList.toggle("has-active", active > 0);
+			if (syncUrl) writeUrl();
 		};
 
 		for (const chip of chips) {
@@ -327,6 +358,15 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 			apply();
 		});
 
-		apply();
+		readUrl();
+		for (const chip of chips) {
+			const values = selected.get(chip.dataset.facet ?? "");
+			if (values?.has(chip.dataset.value ?? "")) chip.setAttribute("aria-pressed", "true");
+		}
+		apply({ syncUrl: false });
+
+		// A restored filter should be visible, otherwise the list looks short for
+		// no reason.
+		if (activeCount() > 0) panel.open = true;
 	}
 </script>

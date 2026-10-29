@@ -193,8 +193,10 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 
 <script>
 	// Server-rendered list, client-side narrowing. OR within a facet, AND across
-	// facets and the keyword search. With JavaScript off nothing is hidden: the
-	// panel still opens (it is a <details>) and the full list stays visible.
+	// facets and the keyword. Counts are live and context-aware: every chip shows
+	// how many recipes it would add given the other facets and the search term,
+	// and a chip that would add none is disabled — so filtering can never strand
+	// you on an empty list.
 	const form = document.querySelector<HTMLFormElement>("[data-filters]");
 	const results = document.querySelector<HTMLElement>("[data-results]");
 	const empty = document.querySelector<HTMLElement>("[data-empty]");
@@ -211,14 +213,34 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 		const cards = Array.from(results.children) as HTMLElement[];
 		const selected = new Map<string, Set<string>>();
 
-		const buckets: Record<string, [number, number]> = {
-			kort: [0, 1800],
-			middel: [1800, 3600],
-			lang: [3600, Number.POSITIVE_INFINITY],
+		const FACET_PARAMS: Record<string, string> = {
+			category: "categorie",
+			role: "rol",
+			difficulty: "moeilijkheid",
+			time: "tijd",
 		};
 
-		// The filter bar sticks below the header, whose height depends on how the
-		// nav wraps. Measure it instead of guessing a constant.
+		const BUCKETS: { id: string; min: number; max: number }[] = [
+			{ id: "kort", min: 0, max: 1800 },
+			{ id: "middel", min: 1800, max: 3600 },
+			{ id: "lang", min: 3600, max: Number.POSITIVE_INFINITY },
+		];
+
+		// One map per card: facet → the values it holds.
+		const facetsOf = new Map<HTMLElement, Map<string, Set<string>>>();
+		for (const card of cards) {
+			const seconds = Number(card.dataset.minutes ?? 0) * 60;
+			facetsOf.set(
+				card,
+				new Map<string, Set<string>>([
+					["category", new Set([card.dataset.category ?? ""])],
+					["role", new Set([card.dataset.role ?? ""])],
+					["difficulty", new Set([card.dataset.difficulty ?? ""])],
+					["time", new Set(BUCKETS.filter((b) => seconds >= b.min && seconds < b.max).map((b) => b.id))],
+				]),
+			);
+		}
+
 		if (header) {
 			const setOffset = () =>
 				document.documentElement.style.setProperty(
@@ -249,34 +271,40 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 						: new RegExp(`(^|[^a-zà-ÿ])${escape(term)}`, "i"),
 				);
 
-		const matches = (card: HTMLElement): boolean => {
+		const matchesSearch = (card: HTMLElement) => {
 			const haystack = card.dataset.searchText ?? "";
-			const wanted = terms();
-			if (wanted.length && !wanted.every((pattern) => pattern.test(haystack))) return false;
-
-			const seconds = Number(card.dataset.minutes ?? 0) * 60;
-			return Array.from(selected.entries()).every(([facet, values]) => {
-				if (values.size === 0) return true;
-				if (facet === "category") return values.has(card.dataset.category ?? "");
-				if (facet === "role") return values.has(card.dataset.role ?? "");
-				if (facet === "difficulty") return values.has(card.dataset.difficulty ?? "");
-				if (facet === "time") {
-					return Array.from(values).some((id) => {
-						const range = buckets[id];
-						return range ? seconds >= range[0] && seconds < range[1] : true;
-					});
-				}
-				return true;
-			});
+			return terms().every((pattern) => pattern.test(haystack));
 		};
 
-		// The URL is the state: a filtered view is linkable, and coming back from a
-		// recipe restores it because the path still carries the query.
-		const FACET_PARAMS: Record<string, string> = {
-			category: "categorie",
-			role: "rol",
-			difficulty: "moeilijkheid",
-			time: "tijd",
+		/**
+		 * Does this card survive? `skip` leaves one facet out of the test, and
+		 * `extra` adds a value for that skipped facet. That pair is how a chip's
+		 * count is computed: the number of recipes that value holds under the other
+		 * facets and the search term. The union itself is what the counter says.
+		 */
+		const survives = (
+			card: HTMLElement,
+			override?: { facet: string; values: Set<string> },
+		): boolean => {
+			if (!matchesSearch(card)) return false;
+			const facets = facetsOf.get(card);
+			if (!facets) return false;
+
+			for (const [facet, values] of selected.entries()) {
+				if (facet === override?.facet) continue;
+				if (values.size === 0) continue;
+				const cardValues = facets.get(facet) ?? new Set<string>();
+				if (!Array.from(values).some((value) => cardValues.has(value))) return false;
+			}
+
+			if (override) {
+				const cardValues = facets.get(override.facet) ?? new Set<string>();
+				if (!override.values.has("") && !Array.from(override.values).some((value) => cardValues.has(value))) {
+					return false;
+				}
+			}
+
+			return true;
 		};
 
 		const readUrl = () => {
@@ -306,7 +334,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 		const apply = ({ syncUrl = true }: { syncUrl?: boolean } = {}) => {
 			let visible = 0;
 			for (const card of cards) {
-				const show = matches(card);
+				const show = survives(card);
 				card.hidden = !show;
 				if (show) visible += 1;
 			}
@@ -315,6 +343,19 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 					? `${cards.length} recepten`
 					: `${visible} van ${cards.length} recepten`;
 			empty.hidden = visible > 0;
+
+			// Live counts, and a chip that would yield nothing is not offered.
+			for (const chip of chips) {
+				const facet = chip.dataset.facet ?? "";
+				const value = chip.dataset.value ?? "";
+				const chipCount = chip.querySelector<HTMLElement>(".filter-count");
+				const isOn = selected.get(facet)?.has(value) ?? false;
+				const total = cards.filter((card) =>
+					survives(card, { facet, values: new Set([value]) }),
+				).length;
+				if (chipCount) chipCount.textContent = String(total);
+				chip.disabled = total === 0 && !isOn;
+			}
 
 			const active = activeCount();
 			reset.hidden = active === 0;

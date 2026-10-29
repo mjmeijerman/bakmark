@@ -221,7 +221,13 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 **Why not multiple categories:** a recipe in two categories makes the counts lie (six recipes, eight results), makes "alle gebak" ambiguous, and forces every new category decision twice. A thing is one kind of thing; the occasion (Kerst), the diet (glutenvrij) and the technique (kookdeeg) are properties, and those are tags. Tags never appear as filters until a tag has two recipes.
 
-**Every value is clickable, with its count.** *Revised 2026-10-29: the earlier ≥2 rule is dropped.* Greying out a value with one recipe meant the filter stopped working exactly when a reader knew what they wanted — and the count already tells them whether the result page will be thin. The count is the warning, not a disabled button. (0 values still render nothing: a category nothing falls into is not a filter.) Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+**Every value is clickable, with a live count.** *Revised twice on 2026-10-29.* The ≥2 rule is dropped: greying out a value with one recipe refused a reader who knew what they wanted. Counts are now **context-aware** — each chip shows how many recipes its value holds under the other facets and the search term, so picking "basistechniek" drops "eindproduct" to 0 and the numbers under category stay honest (2, 3, 1) instead of all collapsing to the current total.
+
+**You cannot filter yourself into an empty list.** A chip whose count is 0 in the current context is disabled, so the combinations that would return nothing are unreachable by clicking. The only way to reach zero results is to hand-edit the query string, and then the empty state offers the reset. Zero-value *categories* still render nothing at all.
+
+**Two different numbers, on purpose:** a chip counts its own value; the counter under the panel counts the union ("5 van 6"). A chip is not a prediction of the result total, it is a description of the value — and the union is what facets are OR'd into.
+
+Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
 
 **The URL is the filter state.** Every change writes `?categorie=…&rol=…&moeilijkheid=…&tijd=…&q=…` with `history.replaceState`, and the page reads that query on load: the chips light up, the keyword returns, the panel opens, and the list is already narrowed. That means a filtered view is linkable, a returned-from-recipe view is intact without re-filtering, and page 2 of D21 inherits the same mechanism.
 

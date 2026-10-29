@@ -33,6 +33,12 @@ const usedBy = usedIn(recipe.slug);
 const titles = new Map(allRecipes().map((r) => [r.slug, r.title]));
 
 // Everything you need besides ingredients, deduped across the components.
+// A column nobody fills in is noise: drop it instead of printing dashes.
+const hasOven = groups.some((group) => (group.recipe.time.oven || 0) > 0);
+const hasWait = groups.some(
+	(group) => (group.recipe.time.wait || group.recipe.time.afterbake || 0) > 0,
+);
+
 const tools = Array.from(
 	groups
 		.flatMap((group) => group.recipe.tools ?? [])
@@ -164,8 +170,8 @@ const factorLabel = (factor: number) =>
 					<tr>
 						<th scope="col">Onderdeel</th>
 						<th scope="col">Actief</th>
-						<th scope="col">Oven</th>
-						<th scope="col">Wacht</th>
+						{hasOven && <th scope="col">Oven</th>}
+						{hasWait && <th scope="col">Wacht</th>}
 						<th scope="col">Totaal</th>
 					</tr>
 				</thead>
@@ -180,14 +186,18 @@ const factorLabel = (factor: number) =>
 								{group.factor !== 1 ? <span class="muted">{factorLabel(group.factor)}</span> : null}
 							</th>
 							<td>{formatMinutes(group.recipe.time.active)}</td>
-							<td>{group.recipe.time.oven ? formatMinutes(group.recipe.time.oven) : "—"}</td>
-							<td>
-								{group.recipe.time.wait
-									? formatMinutes(group.recipe.time.wait)
-									: group.recipe.time.afterbake
-										? formatMinutes(group.recipe.time.afterbake)
-										: "—"}
-							</td>
+							{hasOven && (
+								<td>{group.recipe.time.oven ? formatMinutes(group.recipe.time.oven) : null}</td>
+							)}
+							{hasWait && (
+								<td>
+									{group.recipe.time.wait
+										? formatMinutes(group.recipe.time.wait)
+										: group.recipe.time.afterbake
+											? formatMinutes(group.recipe.time.afterbake)
+											: null}
+								</td>
+							)}
 							<td>{formatMinutes(group.recipe.time.total)}</td>
 						</tr>
 					))}
@@ -197,8 +207,19 @@ const factorLabel = (factor: number) =>
 						<tr>
 							<th scope="row">Samen</th>
 							<td>{formatMinutes(activeTime)}</td>
-							<td>{formatMinutes(groups.reduce((sum, g) => sum + (g.recipe.time.oven || 0), 0)) || "—"}</td>
-							<td>{formatMinutes(groups.reduce((sum, g) => sum + (g.recipe.time.wait || g.recipe.time.afterbake || 0), 0)) || "—"}</td>
+							{hasOven && (
+								<td>{formatMinutes(groups.reduce((sum, g) => sum + (g.recipe.time.oven || 0), 0))}</td>
+							)}
+							{hasWait && (
+								<td>
+									{formatMinutes(
+										groups.reduce(
+											(sum, g) => sum + (g.recipe.time.wait || g.recipe.time.afterbake || 0),
+											0,
+										),
+									)}
+								</td>
+							)}
 							<td>{formatMinutes(recipe.time.total)}</td>
 						</tr>
 					</tfoot>

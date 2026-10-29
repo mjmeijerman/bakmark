@@ -1,4 +1,6 @@
 ---
+import DifficultyBadge from "./DifficultyBadge.astro";
+
 interface Props {
 	href: string;
 	title: string;
@@ -6,6 +8,8 @@ interface Props {
 	imageLabel: string;
 	chips?: string[];
 	concept?: boolean;
+	/** Shown on the card so the overview says how hard something is at a glance. */
+	difficulty?: number;
 }
 
 const {
@@ -15,6 +19,7 @@ const {
 	imageLabel,
 	chips = [],
 	concept = false,
+	difficulty,
 } = Astro.props;
 ---
 
@@ -28,7 +33,10 @@ const {
 		<span aria-hidden="true">Placeholder</span>
 		<strong aria-hidden="true">{imageLabel}</strong>
 	</div>
-	{concept && <p><span class="chip chip-concept">Concept</span></p>}
+	<p class="recipe-card-labels">
+		{concept && <span class="chip chip-concept">Concept</span>}
+		{difficulty ? <DifficultyBadge level={difficulty} /> : null}
+	</p>
 	<h3>{title}</h3>
 	<p>{description}</p>
 	{

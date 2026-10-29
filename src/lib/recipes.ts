@@ -246,6 +246,18 @@ export const categoryLabel = (id: string) =>
 
 export const DIFFICULTY_SCALE = 5;
 
+/** Words beat a fraction: "gemiddeld" needs no translation, "3/5" does. */
+export const DIFFICULTY_WORDS = [
+	"makkelijk",
+	"te doen",
+	"gemiddeld",
+	"lastig",
+	"gevorderd",
+] as const;
+
+export const difficultyWord = (level: number) =>
+	DIFFICULTY_WORDS[Math.min(Math.max(Math.round(level), 1), DIFFICULTY_SCALE) - 1];
+
 /** "gerecht" read as a savoury dinner; the finished bake is the "eindproduct". */
 export const ROLE_LABELS: Record<Recipe["role"], string> = {
 	basis: "basisrecept",

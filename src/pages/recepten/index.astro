@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import RecipeCard from "../../components/RecipeCard.astro";
-import DifficultyIcons from "../../components/DifficultyIcons.astro";
+import DifficultyBadge from "../../components/DifficultyBadge.astro";
 import {
 	CATEGORIES,
 	DIFFICULTY_SCALE,
@@ -127,7 +127,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 								aria-pressed="false"
 								aria-label={`moeilijkheid ${option.level} van ${DIFFICULTY_SCALE}`}
 							>
-								<DifficultyIcons level={option.level} scale={DIFFICULTY_SCALE} />
+								<DifficultyBadge level={option.level} />
 								<span class="filter-count">{option.total}</span>
 							</button>
 						))}
@@ -184,6 +184,7 @@ const timeOptions = TIME_BUCKETS.map((bucket) => ({
 						description={recipe.subtitle}
 						imageLabel={`${recipe.title.toLowerCase()}, close-up`}
 						chips={recipeChips(recipe)}
+						difficulty={recipe.difficulty}
 						concept={!recipe.verified}
 					/>
 				</li>

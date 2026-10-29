@@ -44,6 +44,7 @@ import RecipeCard from "../components/RecipeCard.astro";
 							description={recipe.subtitle}
 							imageLabel={`${recipe.title.toLowerCase()}, close-up`}
 							chips={recipeChips(recipe)}
+							difficulty={recipe.difficulty}
 							concept={!recipe.verified}
 						/>
 					</li>

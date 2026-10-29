@@ -1390,3 +1390,92 @@
 		color: var(--accent);
 	}
 }
+
+/* Difficulty badge (one whisk plus a word), ingredient checkboxes and the
+   benodigdheden list. */
+@layer components {
+	.difficulty-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	.difficulty-badge .difficulty-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		flex: none;
+		color: var(--accent);
+	}
+
+	.recipe-card-labels {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-1);
+	}
+
+	.recipe-card-labels .difficulty-badge {
+		font-size: var(--text-sm);
+	}
+
+	.ingredients li {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: baseline;
+		justify-content: normal;
+		gap: var(--space-2);
+	}
+
+	.ingredient-check {
+		width: 1.15rem;
+		height: 1.15rem;
+		margin: 0;
+		accent-color: var(--accent);
+		cursor: pointer;
+		align-self: center;
+	}
+
+	.ingredients li.is-checked .ingredient-name,
+	.ingredients li.is-checked .amount {
+		text-decoration: line-through;
+		opacity: 0.55;
+	}
+
+	.tools {
+		margin: var(--space-3) 0;
+		padding: 0;
+		list-style: none;
+		max-width: var(--measure);
+	}
+
+	.tools li {
+		display: grid;
+		gap: 0.1rem;
+		justify-items: start;
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.tools .form-note {
+		margin: 0;
+	}
+
+	.tools li:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
+	}
+}

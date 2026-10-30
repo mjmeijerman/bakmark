@@ -100,10 +100,10 @@ Order of work:
 **Pre-flight on the actual box** (2026-10-26: the VPS is a LeaseWeb VPS with a dedicated IP, so provider choice is settled):
 
 - **Reverse DNS: solved.** LeaseWeb lets us set the PTR ourselves in the Customer Portal → IP management; it defaults to `hosted-by.leaseweb.com`. Set it to `mail.<domein>` before the first send.
-- **Outbound port 25: unverified.** Test it on the server before installing Postfix — `nc -vz -w5 gmail-smtp-in.l.google.com 25`. If it is filtered, ask LeaseWeb support for the unblock procedure; if they refuse, the relay option below becomes the plan.
+- **Outbound port 25: verified open** (2026-10-26). A TCP connection from the box to `gmail-smtp-in.l.google.com:25` completes, so LeaseWeb does not filter outbound SMTP and Postfix can deliver directly. No unblock ticket needed.
 - **IP reputation: check it, do not assume.** The IP already has history from whatever ran on it: `https://multirbl.valli.org/lookup/<ip>`. A listed IP is a different problem from a cold one, and worth knowing before the double opt-in mail is the first thing it sends.
 
-If the port-25 test fails, the relay option below becomes the plan.
+With port 25 open, the relay is no longer a connectivity fallback — it is purely a reputation fallback, used only if deliverability disappoints.
 
 **The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly.
 

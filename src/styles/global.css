@@ -60,6 +60,13 @@
 		--border-strong: #c9b79f;
 		--border-strong: light-dark(#c9b79f, #4d4034);
 
+		/* Logo. The mark keeps its own gold and brown; the ink lightens in dark
+		   mode so it stays visible on the dark background. */
+		--logo-gold: #d4af37;
+		--logo-gold: light-dark(#d4af37, #e6c45c);
+		--logo-ink: #5c4033;
+		--logo-ink: light-dark(#5c4033, #d8c3a8);
+
 		/* Warmth: a very soft two-stop wash, no image request. */
 		--wash-a: rgb(161 71 27 / 0.05);
 		--wash-b: rgb(120 84 40 / 0.04);
@@ -258,6 +265,9 @@
 	}
 
 	.site-title {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
 		margin-right: auto;
 		font-family: var(--font-serif);
 		font-size: 1.375rem;
@@ -266,6 +276,48 @@
 		line-height: 1.1;
 		text-decoration: none;
 		color: var(--text);
+	}
+
+	/* The Bakmark mark. Colours live on the tokens --logo-gold / --logo-ink. */
+	.logo {
+		display: block;
+		flex: none;
+	}
+
+	.site-logo {
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	.site-footer .site-logo {
+		width: 2rem;
+		height: 2rem;
+	}
+
+	.logo-ring {
+		fill: none;
+		stroke: var(--logo-gold);
+	}
+
+	.logo-mark-line {
+		fill: none;
+		stroke: var(--logo-ink);
+		stroke-width: 6;
+		stroke-linecap: round;
+	}
+
+	.logo-bowl {
+		fill: var(--logo-ink);
+	}
+
+	.logo-word {
+		fill: var(--logo-ink);
+		font-family: var(--font-serif);
+	}
+
+	.logo-url {
+		fill: var(--logo-gold);
+		font-family: var(--font-sans);
 	}
 
 	.site-header nav {
@@ -1399,7 +1451,7 @@
 	}
 }
 
-/* Difficulty chips: whisk icons, filled up to the level. */
+/* Difficulty chips: chef's hat icons, filled up to the level. */
 @layer components {
 	.filter-chip-difficulty {
 		gap: var(--space-1);
@@ -1430,7 +1482,7 @@
 	}
 }
 
-/* Difficulty badge (one whisk plus a word), ingredient checkboxes and the
+/* Difficulty badge (one chef's hat plus a word), ingredient checkboxes and the
    benodigdheden list. */
 @layer components {
 	.difficulty-badge {
@@ -1442,8 +1494,8 @@
 	}
 
 	.difficulty-badge .difficulty-icon {
-		width: 1.25rem;
-		height: 1.25rem;
+		width: 1.5rem;
+		height: 1.5rem;
 		flex: none;
 		color: var(--accent);
 	}

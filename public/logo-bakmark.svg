@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Bakmark">
+	<!-- Buitenste gouden cirkel -->
+	<circle cx="100" cy="100" r="90" fill="none" stroke="#D4AF37" stroke-width="5"/>
+	<circle cx="100" cy="100" r="82" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+	<!-- Centraal bak-icoon: gekruiste garde en deegroller, mengkom -->
+	<g transform="translate(100,90) scale(0.8)">
+		<path d="M -30,-20 L 30,40" stroke="#5C4033" stroke-width="6" stroke-linecap="round"/>
+		<path d="M 30,-20 L -30,40" stroke="#5C4033" stroke-width="6" stroke-linecap="round"/>
+		<path d="M -25,-25 C -25,-5 25,-5 25,-25 Z" fill="#5C4033"/>
+	</g>
+
+	<!-- Tekst Bakmark gebogen onderaan -->
+	<path id="bakmark-bottom" d="M 35,130 A 70,70 0 0,0 165,130" fill="none"/>
+	<text font-family="Georgia, 'Times New Roman', serif" font-size="20" font-weight="bold" fill="#5C4033" text-anchor="middle">
+		<textPath href="#bakmark-bottom" startOffset="50%">BAKMARK</textPath>
+	</text>
+
+	<!-- Tekst bakmark.nl bovenaan -->
+	<path id="bakmark-top" d="M 165,70 A 70,70 0 0,0 35,70" fill="none"/>
+	<text font-family="Georgia, 'Times New Roman', serif" font-size="12" letter-spacing="2" fill="#D4AF37" text-anchor="middle">
+		<textPath href="#bakmark-top" startOffset="50%">bakmark.nl</textPath>
+	</text>
+</svg>

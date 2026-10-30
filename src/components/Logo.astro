@@ -1,0 +1,43 @@
+---
+interface Props {
+	/** Rendered size; the mark is square. */
+	size?: number;
+	class?: string;
+}
+
+const { size = 40, class: className } = Astro.props;
+
+// Unique ids per instance: the header and the footer both render this logo.
+const uid = Math.random().toString(36).slice(2, 8);
+const bottomId = `logo-bottom-${uid}`;
+const topId = `logo-top-${uid}`;
+---
+
+<svg
+	class:list={["logo", className]}
+	viewBox="0 0 200 200"
+	width={size}
+	height={size}
+	role="img"
+	aria-label="Bakmark"
+	focusable="false"
+>
+	<circle class="logo-ring" cx="100" cy="100" r="90" stroke-width="5"></circle>
+	<circle class="logo-ring" cx="100" cy="100" r="82" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+
+	<g transform="translate(100,90) scale(0.8)">
+		<path class="logo-mark-line" d="M -30,-20 L 30,40"></path>
+		<path class="logo-mark-line" d="M 30,-20 L -30,40"></path>
+		<path class="logo-bowl" d="M -25,-25 C -25,-5 25,-5 25,-25 Z"></path>
+	</g>
+
+	<path id={bottomId} d="M 35,130 A 70,70 0 0,0 165,130" fill="none"></path>
+	<text class="logo-word" font-size="20" font-weight="bold" text-anchor="middle">
+		<textPath href={`#${bottomId}`} startOffset="50%">BAKMARK</textPath>
+	</text>
+
+	<path id={topId} d="M 165,70 A 70,70 0 0,0 35,70" fill="none"></path>
+	<text class="logo-url" font-size="12" letter-spacing="2" text-anchor="middle">
+		<textPath href={`#${topId}`} startOffset="50%">bakmark.nl</textPath>
+	</text>
+</svg>

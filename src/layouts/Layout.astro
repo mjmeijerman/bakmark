@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
+import Logo from "../components/Logo.astro";
 
 interface Props {
 	title: string;
@@ -43,7 +44,10 @@ const year = new Date().getFullYear();
 		</main>
 		<footer class="site-footer">
 			<div class="wrap">
-				<a class="site-title" href="/">Bakmark</a>
+				<a class="site-title" href="/">
+					<Logo class="site-logo" size={32} />
+					<span>Bakmark</span>
+				</a>
 				<p>Bakken zonder knippen. Geen advertenties, geen trackingcookies, geen e-maillijst-muur.</p>
 				<p>
 					Soms staat er een affiliate-link. Die is altijd gemarkeerd en kost

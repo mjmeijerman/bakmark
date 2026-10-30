@@ -40,6 +40,7 @@ JavaScript. The toggle stores `light` or `dark` in `localStorage` and sets
 | `--accent-deep` on `--surface-warm` | `#7a3210` | `#ffc9a6` | 7.5:1 / ≥8:1 |
 | `--text` on `--surface-warm` | `#221c16` | `#f1e8dc` | 13.8:1 / 12.7:1 |
 | `--border`, `--border-strong` | `#e0d3bf`, `#c9b79f` | `#3a2f25`, `#4d4034` | decorative only |
+| `--logo-gold`, `--logo-ink` | `#d4af37`, `#5c4033` | `#e6c45c`, `#d8c3a8` | decorative only |
 
 All text pairs clear WCAG AA (4.5:1). Muted text is the lowest at 5.5:1; nothing
 relies on colour alone.
@@ -57,6 +58,16 @@ relies on colour alone.
 - Headings sit above a 3px accent rule on section pages; the kicker above an h1
   is uppercase 15px in accent.
 - Spacing scale: `--space-1` to `--space-8` = 0.5, 0.75, 1, 1.5, 2, 3, 4, 6rem.
+
+## Logo
+
+The Bakmark mark (`src/components/Logo.astro`, also shipped as
+`public/logo-bakmark.svg` and as the favicon) keeps its own gold and brown
+instead of the terracotta accent. It sits in the header and the footer at 40px
+and 32px, always next to the wordmark: below 48px the curved `BAKMARK` inside
+the badge is not readable, so the text does the work and the badge is the
+emblem. In dark mode the ink lightens to `--logo-ink` (`#d8c3a8`); the gold
+stays, which is why it is the one exception to the single accent colour.
 
 ## Rules that outlive the tokens
 

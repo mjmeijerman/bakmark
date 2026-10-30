@@ -65,6 +65,16 @@
 		--wash-b: rgb(120 84 40 / 0.04);
 		--shadow-soft: 0 1px 2px rgb(70 44 25 / 0.06), 0 8px 24px -12px rgb(70 44 25 / 0.18);
 		--shadow-lift: 0 2px 3px rgb(70 44 25 / 0.08), 0 16px 32px -16px rgb(70 44 25 / 0.24);
+
+		/* The mark is gold on transparent. Gold on cream paper is thin, so light
+		   mode deepens it a little; on the dark background it stays untouched. */
+		--logo-filter: brightness(0.82) saturate(1.15);
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--logo-filter: none;
+		}
 	}
 
 	:root[data-theme="light"] {
@@ -76,6 +86,7 @@
 	}
 
 	:root[data-theme="light"] {
+		--logo-filter: brightness(0.82) saturate(1.15);
 		--wash-a: rgb(161 71 27 / 0.05);
 		--wash-b: rgb(120 84 40 / 0.04);
 		--shadow-soft: 0 1px 2px rgb(70 44 25 / 0.06), 0 8px 24px -12px rgb(70 44 25 / 0.18);
@@ -83,6 +94,7 @@
 	}
 
 	:root[data-theme="dark"] {
+		--logo-filter: none;
 		--wash-a: rgb(244 169 124 / 0.05);
 		--wash-b: rgb(120 90 60 / 0.06);
 		--shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
@@ -275,6 +287,7 @@
 	.logo {
 		display: block;
 		flex: none;
+		filter: var(--logo-filter);
 	}
 
 	.site-logo {

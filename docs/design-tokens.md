@@ -60,16 +60,19 @@ relies on colour alone.
 
 ## Logo
 
-The Bakmark mark is `public/logo-bakmark.png` (160px, transparent, rendered
-from the brand badge), used at 40px in the header and 32px in the footer
-always next to the wordmark: below 48px the curved `BAKMARK` inside the badge
-is not readable, so the text does the name and the badge is the emblem. The
-favicon is the same badge on the dark brown `#221c16` tile, because a pale
-badge alone disappears in a tab bar.
+The Bakmark mark is `public/logo-bakmark.png`: the brand badge, gold on a
+transparent background, 160px, used at 40px in the header and 32px in the
+footer, always next to the wordmark — below 48px the curved `BAKMARK` inside
+the badge is not readable, so the text does the name and the badge is the
+emblem. The favicon is the same badge on the dark brown `#221c16` tile,
+because gold alone disappears in a tab bar.
 
-The mark keeps its own gold and cream. That is the one place where the
-single-accent rule does not apply: it is a supplied brand asset, not a UI
-colour.
+There is no vector of this artwork; it was generated as a raster and tracing it
+produced a 1 MB SVG with ragged edges, so the PNG is the original. Light mode
+deepens it by `--logo-filter` (brightness 0.82, saturation 1.15): gold on cream
+paper is thin, and on the dark background the untouched artwork already reads.
+The mark keeps its own gold, which is the one place where the single-accent
+rule does not apply — it is a supplied brand asset, not a UI colour.
 
 ## Difficulty icon
 

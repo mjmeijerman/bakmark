@@ -40,7 +40,6 @@ JavaScript. The toggle stores `light` or `dark` in `localStorage` and sets
 | `--accent-deep` on `--surface-warm` | `#7a3210` | `#ffc9a6` | 7.5:1 / ≥8:1 |
 | `--text` on `--surface-warm` | `#221c16` | `#f1e8dc` | 13.8:1 / 12.7:1 |
 | `--border`, `--border-strong` | `#e0d3bf`, `#c9b79f` | `#3a2f25`, `#4d4034` | decorative only |
-| `--logo-gold`, `--logo-ink` | `#d4af37`, `#5c4033` | `#e6c45c`, `#d8c3a8` | decorative only |
 
 All text pairs clear WCAG AA (4.5:1). Muted text is the lowest at 5.5:1; nothing
 relies on colour alone.
@@ -61,13 +60,23 @@ relies on colour alone.
 
 ## Logo
 
-The Bakmark mark (`src/components/Logo.astro`, also shipped as
-`public/logo-bakmark.svg` and as the favicon) keeps its own gold and brown
-instead of the terracotta accent. It sits in the header and the footer at 40px
-and 32px, always next to the wordmark: below 48px the curved `BAKMARK` inside
-the badge is not readable, so the text does the work and the badge is the
-emblem. In dark mode the ink lightens to `--logo-ink` (`#d8c3a8`); the gold
-stays, which is why it is the one exception to the single accent colour.
+The Bakmark mark is `public/logo-bakmark.png` (160px, transparent, rendered
+from the brand badge), used at 40px in the header and 32px in the footer
+always next to the wordmark: below 48px the curved `BAKMARK` inside the badge
+is not readable, so the text does the name and the badge is the emblem. The
+favicon is the same badge on the dark brown `#221c16` tile, because a pale
+badge alone disappears in a tab bar.
+
+The mark keeps its own gold and cream. That is the one place where the
+single-accent rule does not apply: it is a supplied brand asset, not a UI
+colour.
+
+## Difficulty icon
+
+`public/koksmuts.svg` is the chef's hat, drawn for this site. It is a plain
+black silhouette used as a CSS mask (`.difficulty-icon`), so one file serves
+the recipe page, the cards and the filter chips, and the hat takes
+`currentColor` (`--accent` in the badge) instead of shipping a copy per card.
 
 ## Rules that outlive the tokens
 

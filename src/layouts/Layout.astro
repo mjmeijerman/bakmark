@@ -50,15 +50,11 @@ const alternate = alternatePath(Astro.url.pathname, lang);
 		</main>
 		<footer class="site-footer">
 			<div class="wrap">
-				<a class="site-title" href={path(lang, "home")}>
-					<Logo class="site-logo" size={32} />
-					<span>Bakmark</span>
-				</a>
-				<p>{t(lang, "footer.tagline")}</p>
-				<p>{t(lang, "footer.affiliate")}</p>
-				<p>
-					© {year} Bakmark ·
-					<a href={path(lang, "contact")}>{t(lang, "footer.privacy")}</a>
+				<p class="site-footer-line">
+					<Logo class="site-logo" size={24} />
+					<span>© {year} Bakmark</span>
+					<span aria-hidden="true">·</span>
+					<a href={path(lang, "privacy")}>{t(lang, "footer.privacy")}</a>
 				</p>
 			</div>
 		</footer>

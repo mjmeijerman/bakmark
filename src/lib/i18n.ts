@@ -21,6 +21,7 @@ const ROUTES = {
 	who: { nl: "/wie", en: "/who" },
 	how: { nl: "/hoe-het-werkt", en: "/how-it-works" },
 	contact: { nl: "/contact", en: "/contact" },
+	privacy: { nl: "/privacy", en: "/privacy" },
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -62,10 +63,7 @@ const nl: Dict = {
 	"nav.who": "Wie",
 	"nav.how": "Hoe het werkt",
 	"nav.contact": "Contact",
-	"footer.tagline": "Bakken zonder knippen. Alles in één take, alles vrij te lezen.",
-	"footer.affiliate":
-		"Soms staat er een affiliate-link. Die is altijd gemarkeerd en kost jou niets extra.",
-	"footer.privacy": "Contact en privacy",
+	"footer.privacy": "Privacy",
 	"home.title": "Welkom bij Bakmark",
 	"home.description":
 		"Duidelijke recepten in een overzichtelijke catalogus, met een video bij elk recept. Gratis te lezen, met een fooi als je wilt.",
@@ -73,11 +71,11 @@ const nl: Dict = {
 		"Duidelijke recepten in een overzichtelijke catalogus, met een video bij elk recept.",
 	"home.newest": "Nieuwste recepten",
 	"home.browse": "Bekijk de recepten",
-	"newsletter.heading": "Eén bericht per nieuwe video",
+	"newsletter.heading": "Schrijf je in voor de nieuwsbrief",
 	"newsletter.label": "Je e-mailadres",
 	"newsletter.button": "Inschrijven",
 	"newsletter.note":
-		"De inschrijving opent bij de eerste video. Je adres wordt alleen gebruikt voor dat ene bericht; uitschrijven kan met één klik. Het blijft bij Bakmark.",
+		"Schrijf je in voor de nieuwsbrief en je krijgt een mailtje als er nieuwe recepten geplaatst zijn.",
 };
 
 const en: Dict = {
@@ -93,21 +91,18 @@ const en: Dict = {
 	"nav.who": "Who",
 	"nav.how": "How it works",
 	"nav.contact": "Contact",
-	"footer.tagline": "Baking without cuts. Everything in one take, everything free to read.",
-	"footer.affiliate":
-		"Sometimes there is an affiliate link. It is always marked and costs you nothing extra.",
-	"footer.privacy": "Contact and privacy",
+	"footer.privacy": "Privacy",
 	"home.title": "Welcome to Bakmark",
 	"home.description":
 		"Clear recipes in an orderly catalogue, with a video for every recipe. Free to read, with a tip if you like.",
 	"home.lead": "Clear recipes in an orderly catalogue, with a video for every recipe.",
 	"home.newest": "Latest recipes",
 	"home.browse": "Browse the recipes",
-	"newsletter.heading": "One email per new video",
+	"newsletter.heading": "Subscribe to the newsletter",
 	"newsletter.label": "Your email address",
 	"newsletter.button": "Subscribe",
 	"newsletter.note":
-		"Sign-ups open with the first video. Your address is used only for that one message; unsubscribing takes one click. It stays with Bakmark.",
+		"Subscribe to the newsletter and you will get an email when new recipes are published.",
 };
 
 const DICTS: Record<Lang, Dict> = { nl, en };

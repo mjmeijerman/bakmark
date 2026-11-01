@@ -23,9 +23,9 @@ npm run build   # static site in ./dist
 ```text
 /
 ├── src/pages/          # Dutch routes: /, /recepten, /recepten/<slug>, /waarom,
-│                       # /wie, /hoe-het-werkt, /contact
+│                       # /wie, /hoe-het-werkt, /contact, /privacy
 ├── src/pages/en/       # English routes: /en, /en/recipes, /en/recipes/<slug>, /en/why,
-│                       # /en/who, /en/how-it-works, /en/contact
+│                       # /en/who, /en/how-it-works, /en/contact, /en/privacy
 ├── src/views/          # Page bodies, one per page, taking a `lang` prop
 ├── src/lib/i18n.ts     # route table, t(), path(), alternatePath()
 ├── src/lib/recipes.ts  # recipe loading, scaling, English text overlays

@@ -1,34 +1,49 @@
 ---
 import Logo from "./Logo.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+import { DEFAULT_LANG, isLang, path, t, type Lang, type RouteKey } from "../lib/i18n";
 
-const path = Astro.url.pathname;
-const links = [
-	{ href: "/", label: "Home" },
-	{ href: "/recepten", label: "Alle recepten" },
-	{ href: "/waarom", label: "Waarom" },
-	{ href: "/wie", label: "Wie" },
-	{ href: "/hoe-het-werkt", label: "Hoe het werkt" },
-	{ href: "/contact", label: "Contact" },
+interface Props {
+	lang?: Lang;
+	/** Where the language toggle points; the page pairs itself up. */
+	alternate?: string;
+}
+
+const { lang: rawLang, alternate } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+
+const currentPath = Astro.url.pathname;
+const current = lang === DEFAULT_LANG ? currentPath : currentPath.replace(/^\/en(?=\/|$)/, "") || "/";
+
+const links: { route: RouteKey; label: string }[] = [
+	{ route: "home", label: t(lang, "nav.home") },
+	{ route: "recipes", label: t(lang, "nav.recipes") },
+	{ route: "why", label: t(lang, "nav.why") },
+	{ route: "who", label: t(lang, "nav.who") },
+	{ route: "how", label: t(lang, "nav.how") },
+	{ route: "contact", label: t(lang, "nav.contact") },
 ];
 
-const isCurrent = (href: string) =>
-	href === "/recepten" ? path.startsWith("/recepten") : path === href;
+const isCurrent = (route: RouteKey) => {
+	const href = path(lang, route);
+	if (route === "recipes") return current.startsWith(path(DEFAULT_LANG, "recipes"));
+	return current === href;
+};
 ---
 
 <header class="site-header wrap">
-	<a class="site-title" href="/">
+	<a class="site-title" href={path(lang, "home")}>
 		<Logo class="site-logo" size={40} />
 		<span>Bakmark</span>
 	</a>
-	<nav aria-label="Hoofdnavigatie">
+	<nav aria-label={t(lang, "nav.aria")}>
 		<ul class="site-nav">
 			{
 				links.map((link) => (
 					<li>
 						<a
-							href={link.href}
-							aria-current={isCurrent(link.href) ? "page" : undefined}
+							href={path(lang, link.route)}
+							aria-current={isCurrent(link.route) ? "page" : undefined}
 						>
 							{link.label}
 						</a>
@@ -37,5 +52,17 @@ const isCurrent = (href: string) =>
 			}
 		</ul>
 	</nav>
-	<ThemeToggle />
+	<div class="header-controls">
+		<a
+			class="lang-toggle"
+			href={alternate ?? path(lang === "nl" ? "en" : "nl", "home")}
+			hreflang={lang === "nl" ? "en" : "nl"}
+			lang={lang === "nl" ? "en" : "nl"}
+			aria-label={t(lang, "lang.switch")}
+			title={t(lang, "lang.switch")}
+		>
+			{t(lang, "lang.toggle")}
+		</a>
+		<ThemeToggle lang={lang} />
+	</div>
 </header>

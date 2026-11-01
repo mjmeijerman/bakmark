@@ -1,22 +1,33 @@
 ---
 import { DIFFICULTY_SCALE, difficultyWord } from "../lib/recipes";
+import { DEFAULT_LANG, isLang, type Lang } from "../lib/i18n";
 
 interface Props {
 	level: number;
 	/** Show the word next to the icon. Off for tight spots. */
 	showWord?: boolean;
+	lang?: Lang;
 }
 
-const { level, showWord = true } = Astro.props;
-const word = difficultyWord(level);
+const { level, showWord = true, lang: rawLang } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+const word = difficultyWord(level, lang);
+const title =
+	lang === "en"
+		? `Difficulty ${level} of ${DIFFICULTY_SCALE}: ${word}`
+		: `Moeilijkheid ${level} van ${DIFFICULTY_SCALE}: ${word}`;
+const spoken =
+	lang === "en"
+		? `difficulty ${level} of ${DIFFICULTY_SCALE}, ${word}`
+		: `moeilijkheid ${level} van ${DIFFICULTY_SCALE}, ${word}`;
 ---
 
-<span class="difficulty-badge" title={`Moeilijkheid ${level} van ${DIFFICULTY_SCALE}: ${word}`}>
+<span class="difficulty-badge" title={title}>
 	{/* The hat is /koksmuts.svg used as a mask, so it takes the badge colour and
 	    the path is not repeated in every card. */}
 	<span class="difficulty-icon" aria-hidden="true"></span>
 	<span class="difficulty-words">
 		<span aria-hidden="true">{showWord ? word : `${level}/${DIFFICULTY_SCALE}`}</span>
-		<span class="sr-only">moeilijkheid {level} van {DIFFICULTY_SCALE}, {word}</span>
+		<span class="sr-only">{spoken}</span>
 	</span>
 </span>

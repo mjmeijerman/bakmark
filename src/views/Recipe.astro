@@ -1,0 +1,719 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import DifficultyBadge from "../components/DifficultyBadge.astro";
+import RecipeSection from "../components/RecipeSection.astro";
+import {
+	DIFFICULTY_SCALE,
+	allRecipes,
+	categoryLabel,
+	formatDate,
+	formatMinutes,
+	localize,
+	localizeGroup,
+	loadRecipe,
+	recipeChips,
+	resolveRecipe,
+	totalTime,
+	usedIn,
+	type Recipe,
+} from "../lib/recipes";
+import { path, type Lang } from "../lib/i18n";
+
+interface Props {
+	slug: string;
+	lang: Lang;
+}
+
+const { slug, lang } = Astro.props;
+
+const copy = {
+	nl: {
+		draftKicker: "Concept · nog niet geverifieerd",
+		notVerified: "Nog niet geverifieerd.",
+		conceptChip: "Concept",
+		videoAria: (title: string) => `Placeholder: video van ${title} in één take`,
+		videoLabel: (title: string) => `Video: ${title} in één take`,
+		printLine: (active: string, level: number, published: string, oven: number | null) =>
+			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
+		why: "Waarom dit werkt",
+		variants: "Varianten",
+		variantsLede:
+			"Dezelfde stappen, een andere samenstelling. Een recept dat dit basisrecept gebruikt, kiest de variant; pas je de stappen aan, dan verandert dat in alle varianten mee.",
+		defaultVariant: " (standaard)",
+		composition: "Opbouw",
+		compositionLede:
+			"Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen pagina en een eigen video, en wijzigingen daar werken hier direct door.",
+		usedIn: "Gebruikt in",
+		usedInLede:
+			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
+		via: (title: string) => `, via ${title}`,
+		timing: "Tijdsindeling",
+		timingLede:
+			"Waar de tijd naartoe gaat, per onderdeel. Actief is met je handen in het beslag; oven en wacht lopen vanzelf door.",
+		colPart: "Onderdeel",
+		colActive: "Actief",
+		colOven: "Oven",
+		colWait: "Wacht",
+		colTotal: "Totaal",
+		together: "Samen",
+		timingNote:
+			"De totale tijd is de wandklok van leeg aanrecht tot eindresultaat. Actief optellen mag, maar delen overlappen: de banketbakkersroom kan koelen terwijl je het beslag maakt.",
+		ingredients: "Ingrediënten",
+		baseRecipeLink: "basisrecept",
+		onTop: "Bovenop de basisrecepten hierboven, plus:",
+		gathered: (name: string) => `${name} verzameld`,
+		moreAbout: (name: string) => `Meer over ${name}`,
+		equipment: "Benodigdheden",
+		ready: (name: string) => `${name} klaargezet`,
+		affiliate:
+			"Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en kost jou niets extra.",
+		baking: "Bakken",
+		bakeMode: "Ovenstand",
+		bakeTemp: "Temperatuur",
+		bakeTempValue: (temp: number, fan: number) => `${temp} °C (hetelucht ${fan} °C)`,
+		bakeTime: "Baktijd",
+		bakeDone: "Klaar wanneer",
+		bakeDoor: "Ovendeur",
+		bakeAfter: "Nadrogen",
+		bakeAfterValue: (duration: string) => `${duration}, deur op een kier`,
+		steps: "Stappen",
+		ownPage: "eigen pagina",
+		stepsNote:
+			"Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit de opname, met de echte tijden en de volgorde van de video.",
+		whyTips: "Waarom en tips",
+		whyLabel: "Waarom:",
+		failed: "Als het mislukt",
+		symptom: "Symptoom",
+		cause: "Oorzaak",
+		fix: "Oplossing",
+		faq: "Veelgestelde vragen",
+		printing: "Printen",
+		printingText:
+			"De printversie houdt alleen de ingrediënten en de stappen over, zonder uitleg en zonder foto's. Twee kantjes op het aanrecht, niet meer.",
+		printButton: "Print dit recept",
+		tipHeading: "Een fooi?",
+		tipText:
+			"De recepten en video's zijn gratis. Wie er iets aan heeft, kan een fooi achterlaten. Wie dat niet doet, merkt daar niets van.",
+		tipOwn: "Eigen bedrag",
+		tipPlaceholder: "Placeholder: de betaallink komt er bij de eerste video.",
+		newsletterHeading: "Nieuwsbrief",
+	},
+	en: {
+		draftKicker: "Draft · not verified yet",
+		notVerified: "Not verified yet.",
+		conceptChip: "Draft",
+		videoAria: (title: string) => `Placeholder: video of ${title} in one take`,
+		videoLabel: (title: string) => `Video: ${title} in one take`,
+		printLine: (active: string, level: number, published: string, oven: number | null) =>
+			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
+		why: "Why this works",
+		variants: "Variants",
+		variantsLede:
+			"The same steps, a different composition. A recipe that uses this base recipe picks the variant; change the steps and every variant changes with it.",
+		defaultVariant: " (default)",
+		composition: "Composition",
+		compositionLede:
+			"This recipe is built from base recipes. Every part has its own page and its own video, and changes there land here immediately.",
+		usedIn: "Used in",
+		usedInLede:
+			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
+		via: (title: string) => `, via ${title}`,
+		timing: "Timing",
+		timingLede:
+			"Where the time goes, per part. Active is hands in the batter; oven and wait run on their own.",
+		colPart: "Part",
+		colActive: "Active",
+		colOven: "Oven",
+		colWait: "Wait",
+		colTotal: "Total",
+		together: "Together",
+		timingNote:
+			"Total time is the wall clock from empty worktop to finished result. Adding up the active times is allowed, but the parts overlap: the pastry cream can cool while you make the dough.",
+		ingredients: "Ingredients",
+		baseRecipeLink: "base recipe",
+		onTop: "On top of the base recipes above, plus:",
+		gathered: (name: string) => `${name} gathered`,
+		moreAbout: (name: string) => `More about ${name}`,
+		equipment: "Equipment",
+		ready: (name: string) => `${name} ready`,
+		affiliate:
+			"Sometimes a tool carries an affiliate link. It is marked and costs you nothing extra.",
+		baking: "Baking",
+		bakeMode: "Oven setting",
+		bakeTemp: "Temperature",
+		bakeTempValue: (temp: number, fan: number) => `${temp} °C (fan ${fan} °C)`,
+		bakeTime: "Baking time",
+		bakeDone: "Done when",
+		bakeDoor: "Oven door",
+		bakeAfter: "Drying out",
+		bakeAfterValue: (duration: string) => `${duration}, door ajar`,
+		steps: "Steps",
+		ownPage: "own page",
+		stepsNote:
+			"Times and temperatures are starting values. The final version comes from the recording, with the real times and the order of the video.",
+		whyTips: "Why and tips",
+		whyLabel: "Why:",
+		failed: "When it goes wrong",
+		symptom: "Symptom",
+		cause: "Cause",
+		fix: "Fix",
+		faq: "Frequently asked questions",
+		printing: "Printing",
+		printingText:
+			"The print version keeps only the ingredients and the steps, without explanations and without photos. Two sides on the worktop, nothing more.",
+		printButton: "Print this recipe",
+		tipHeading: "A tip?",
+		tipText:
+			"The recipes and videos are free. If they helped you, you can leave a tip. If you don't, you notice nothing of it.",
+		tipOwn: "Own amount",
+		tipPlaceholder: "Placeholder: the payment link arrives with the first video.",
+		newsletterHeading: "Newsletter",
+	},
+}[lang];
+
+const recipe = localize(loadRecipe(slug), lang);
+const resolved = resolveRecipe(loadRecipe(slug));
+const groups = resolved.groups.map((group) => localizeGroup(group, lang));
+const composed = groups.length > 1;
+const chips = recipeChips(recipe, lang);
+const activeTime = totalTime({ root: loadRecipe(slug), groups: resolved.groups });
+const bakeGroups = groups.filter((group) => group.recipe.bake);
+const direct = groups.filter((group) => group.depth === 1);
+const usedBy = usedIn(slug).map((entry) => ({
+	...entry,
+	recipe: localize(entry.recipe, lang),
+}));
+const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
+
+// Everything you need besides ingredients, deduped across the components.
+// A column nobody fills in is noise: drop it instead of printing dashes.
+const hasOven = groups.some((group) => (group.recipe.time.oven || 0) > 0);
+const hasWait = groups.some(
+	(group) => (group.recipe.time.wait || group.recipe.time.afterbake || 0) > 0,
+);
+
+const tools = Array.from(
+	groups
+		.flatMap((group) => group.recipe.tools ?? [])
+		.reduce((map, tool) => map.set(tool.name, tool), new Map<string, { name: string; note?: string }>())
+		.values(),
+);
+const factorLabel = (factor: number) => {
+	if (factor === 1) return "";
+	const rounded = String(Math.round(factor * 100) / 100);
+	return lang === "en" ? ` ×${rounded}` : ` ×${rounded.replace(".", ",")}`;
+};
+const resultLine = recipe.verified ? categoryLabel(recipe.category, lang) : copy.draftKicker;
+const published = recipe.published ? formatDate(recipe.published, lang) : "";
+const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.temperature) : null;
+---
+
+<Layout
+	title={recipe.title}
+	description={`${recipe.title}: ${recipe.result.value} ${recipe.result.unit}. ${recipe.subtitle}`}
+	lang={lang}
+>
+	<article>
+		<section class="hero">
+			<p class="kicker no-print">{resultLine}</p>
+			<h1>{recipe.title}</h1>
+			<p class="recipe-result">{recipe.subtitle}</p>
+			<ul class="chips recipe-meta no-print">
+				{chips.map((chip) => <li><span class="chip">{chip}</span></li>)}
+				<li><DifficultyBadge level={recipe.difficulty} lang={lang} /></li>
+				{
+					!recipe.verified && (
+						<li>
+							<span class="chip chip-concept">{copy.conceptChip}</span>
+						</li>
+					)
+				}
+			</ul>
+			<p class="recipe-summary">
+				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
+			</p>
+			<p class="print-only">
+				{copy.printLine(formatMinutes(activeTime, lang), recipe.difficulty, published, ovenTemperature)}
+			</p>
+		</section>
+
+		{
+			!recipe.verified && (
+				<p class="verified-note no-print">
+					<strong>{copy.notVerified}</strong> {recipe.verified_note}
+				</p>
+			)
+		}
+
+		<div
+			class="placeholder-box recipe-video no-print"
+			style="--ratio: 16 / 9"
+			role="img"
+			aria-label={copy.videoAria(recipe.title.toLocaleLowerCase(lang))}
+		>
+			<span aria-hidden="true">Placeholder</span>
+			<strong aria-hidden="true">{copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}</strong>
+		</div>
+
+		<RecipeSection title={copy.why} noPrint>
+			<p>{recipe.context}</p>
+			<ul class="chips">
+				{recipe.tags.map((tag) => <li><span class="chip">{tag}</span></li>)}
+			</ul>
+		</RecipeSection>
+
+		{
+			recipe.variants && Object.keys(recipe.variants).length ? (
+				<RecipeSection title={copy.variants} noPrint>
+					<p class="section-lede">{copy.variantsLede}</p>
+					<dl class="variants">
+						{Object.entries(recipe.variants).map(([key, variant]) => (
+							<div>
+								<dt>{variant.label}</dt>
+								<dd>
+									{variant.note}
+									{key === "klassiek" ? copy.defaultVariant : ""}
+								</dd>
+							</div>
+						))}
+					</dl>
+				</RecipeSection>
+			) : null
+		}
+
+		{
+			composed && (
+				<RecipeSection title={copy.composition} noPrint>
+					<p class="section-lede">{copy.compositionLede}</p>
+					<ul class="parts">
+						{direct.map((group) => (
+							<li>
+								<a href={path(lang, "recipe", group.recipe.slug)}>{group.recipe.title}</a>
+								<span class="muted">
+									{group.recipe.result.value} {group.recipe.result.unit}
+									{factorLabel(group.factor)}
+								</span>
+							</li>
+						))}
+					</ul>
+				</RecipeSection>
+			)
+		}
+
+		{
+			usedBy.length ? (
+				<RecipeSection title={copy.usedIn} noPrint>
+					<p class="section-lede">{copy.usedInLede}</p>
+					<ul class="parts">
+						{usedBy.map(({ recipe: user, via }) => (
+							<li>
+								<a href={path(lang, "recipe", user.slug)}>{user.title}</a>
+								<span class="muted">
+									{user.result.value} {user.result.unit}
+									{via ? copy.via(titles.get(via) ?? via) : ""}
+								</span>
+							</li>
+						))}
+					</ul>
+				</RecipeSection>
+			) : null
+		}
+
+		<RecipeSection title={copy.timing} noPrint>
+			<p class="section-lede">{copy.timingLede}</p>
+			<table class="time-table">
+				<thead>
+					<tr>
+						<th scope="col">{copy.colPart}</th>
+						<th scope="col">{copy.colActive}</th>
+						{hasOven && <th scope="col">{copy.colOven}</th>}
+						{hasWait && <th scope="col">{copy.colWait}</th>}
+						<th scope="col">{copy.colTotal}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						groups.map((group) => (
+							<tr>
+								<th scope="row">
+									{composed ? (
+										<a class="no-print" href={path(lang, "recipe", group.recipe.slug)}>
+											{group.recipe.title}
+										</a>
+									) : (
+										group.recipe.title
+									)}
+									{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
+									{group.factor !== 1 ? <span class="muted">{factorLabel(group.factor)}</span> : null}
+								</th>
+								<td>{formatMinutes(group.recipe.time.active, lang)}</td>
+								{hasOven && (
+									<td>
+										{group.recipe.time.oven ? formatMinutes(group.recipe.time.oven, lang) : null}
+									</td>
+								)}
+								{hasWait && (
+									<td>
+										{group.recipe.time.wait
+											? formatMinutes(group.recipe.time.wait, lang)
+											: group.recipe.time.afterbake
+												? formatMinutes(group.recipe.time.afterbake, lang)
+												: null}
+									</td>
+								)}
+								<td>{formatMinutes(group.recipe.time.total, lang)}</td>
+							</tr>
+						))
+					}
+				</tbody>
+				{
+					composed && (
+						<tfoot>
+							<tr>
+								<th scope="row">{copy.together}</th>
+								<td>{formatMinutes(activeTime, lang)}</td>
+								{hasOven && (
+									<td>
+										{formatMinutes(
+											resolved.groups.reduce((sum, g) => sum + (g.recipe.time.oven || 0), 0),
+											lang,
+										)}
+									</td>
+								)}
+								{hasWait && (
+									<td>
+										{formatMinutes(
+											resolved.groups.reduce(
+												(sum, g) => sum + (g.recipe.time.wait || g.recipe.time.afterbake || 0),
+												0,
+											),
+											lang,
+										)}
+									</td>
+								)}
+								<td>{formatMinutes(recipe.time.total, lang)}</td>
+							</tr>
+						</tfoot>
+					)
+				}
+			</table>
+			{composed && <p class="form-note no-print">{copy.timingNote}</p>}
+		</RecipeSection>
+
+		<RecipeSection title={copy.ingredients}>
+			{
+				groups
+					.filter((group) => group.ingredients.length > 0)
+					.map((group, groupIndex) => (
+						<div class="ingredient-group">
+							{composed && (
+								<h3>
+									{group.recipe.title}
+									<span class="muted">
+										{group.variantLabel ? `${group.variantLabel} ` : ""}
+										{factorLabel(group.factor)}
+									</span>
+									{groupIndex > 0 || group.recipe.slug !== slug ? (
+										<a class="group-link no-print" href={path(lang, "recipe", group.recipe.slug)}>
+											{copy.baseRecipeLink}
+										</a>
+									) : null}
+								</h3>
+							)}
+							{group.recipe.components?.length ? (
+								<p class="form-note">{copy.onTop}</p>
+							) : null}
+							<ul class="ingredients">
+								{group.ingredients.map((ingredient) => (
+									<li data-gather={`${group.recipe.slug}:${ingredient.id}`}>
+										<input
+											type="checkbox"
+											class="gather-check"
+											id={`check-${group.recipe.slug}-${ingredient.id}`}
+											aria-label={copy.gathered(ingredient.name)}
+										/>
+										<div class="ingredient-name">
+											{ingredient.name}
+											{ingredient.note && (
+												<details class="ingredient-info">
+													<summary aria-label={copy.moreAbout(ingredient.name)}>
+														<span aria-hidden="true">i</span>
+													</summary>
+													<div class="ingredient-info-panel">
+														<p>{ingredient.note}</p>
+													</div>
+												</details>
+											)}
+										</div>
+										<span class="amount">{ingredient.amount_display}</span>
+									</li>
+								))}
+							</ul>
+						</div>
+					))
+			}
+		</RecipeSection>
+
+		{
+			tools.length ? (
+				<RecipeSection title={copy.equipment}>
+					<ul class="tools">
+						{tools.map((tool) => (
+							<li data-gather={`tool:${tool.name}`}>
+								<input
+									type="checkbox"
+									class="gather-check"
+									id={`check-tool-${tool.name.replace(/\s+/g, "-").toLowerCase()}`}
+									aria-label={copy.ready(tool.name)}
+								/>
+								<div>
+									<span>{tool.name}</span>
+									{tool.note ? <span class="form-note">{tool.note}</span> : null}
+								</div>
+							</li>
+						))}
+					</ul>
+					<p class="form-note no-print">{copy.affiliate}</p>
+				</RecipeSection>
+			) : null
+		}
+
+		{
+			bakeGroups.map((group) => (
+				<section class="section">
+					<h2>
+						{copy.baking}
+						{composed ? ` — ${group.recipe.title.toLocaleLowerCase(lang)}` : ""}
+					</h2>
+					<dl class="bake">
+						<div>
+							<dt>{copy.bakeMode}</dt>
+							<dd>
+								{group.recipe.bake.mode} · {group.recipe.bake.rack}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeTemp}</dt>
+							<dd>
+								{copy.bakeTempValue(
+									group.recipe.bake.temperature,
+									group.recipe.bake.temperature_hetelucht,
+								)}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeTime}</dt>
+							<dd>
+								{formatMinutes(group.recipe.bake.time.min, lang)} –{" "}
+								{formatMinutes(group.recipe.bake.time.max, lang)}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeDone}</dt>
+							<dd>{group.recipe.bake.done_when}</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeDoor}</dt>
+							<dd>{group.recipe.bake.door}</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeAfter}</dt>
+							<dd>{copy.bakeAfterValue(formatMinutes(group.recipe.bake.afterbake.duration, lang))}</dd>
+						</div>
+					</dl>
+					<p class="form-note no-print">{group.recipe.bake.time_note}</p>
+				</section>
+			))
+		}
+
+		<section class="section">
+			<h2>{copy.steps}</h2>
+			{
+				groups.map((group) => (
+					<div class="step-group">
+						{composed && (
+							<h3>
+								{group.recipe.title}
+								{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
+								<a class="group-link no-print" href={path(lang, "recipe", group.recipe.slug)}>
+									{copy.ownPage}
+								</a>
+							</h3>
+						)}
+						<ol class="steps">
+							{group.steps.map((step, index) => (
+								<li id={`${group.recipe.slug}-${step.id}`}>
+									<span class="step-num" aria-hidden="true">
+										{index + 1}
+									</span>
+									<p>
+										<strong>{step.title}</strong>
+									</p>
+									<p>{step.text}</p>
+									{step.why || step.tips?.length ? (
+										<details class="step-extra">
+											<summary>{copy.whyTips}</summary>
+											{step.why && (
+												<p class="step-why">
+													<strong>{copy.whyLabel}</strong> {step.why}
+												</p>
+											)}
+											{step.tips?.length ? (
+												<ul class="step-tips">
+													{step.tips.map((tip) => (
+														<li>{tip}</li>
+													))}
+												</ul>
+											) : null}
+										</details>
+									) : null}
+								</li>
+							))}
+						</ol>
+					</div>
+				))
+			}
+			<p class="form-note no-print">{copy.stepsNote}</p>
+		</section>
+
+		{
+			recipe.mislukt?.length ? (
+				<section class="section no-print">
+					<h2>{copy.failed}</h2>
+					<table class="mislukt">
+						<thead>
+							<tr>
+								<th>{copy.symptom}</th>
+								<th>{copy.cause}</th>
+								<th>{copy.fix}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{recipe.mislukt.map((item) => (
+								<tr>
+									<td>{item.symptoom}</td>
+									<td>{item.oorzaak}</td>
+									<td>{item.fix}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</section>
+			) : null
+		}
+
+		{
+			recipe.faq?.length ? (
+				<section class="section no-print">
+					<h2>{copy.faq}</h2>
+					<div class="faq">
+						{recipe.faq.map((item) => (
+							<details>
+								<summary>{item.q}</summary>
+								<p>{item.a}</p>
+							</details>
+						))}
+					</div>
+				</section>
+			) : null
+		}
+
+		<section class="section no-print">
+			<h2>{copy.printing}</h2>
+			<p>{copy.printingText}</p>
+			<p>
+				<button class="button" type="button" data-print>{copy.printButton}</button>
+			</p>
+		</section>
+
+		<section class="callout no-print">
+			<h2>{copy.tipHeading}</h2>
+			<p>{copy.tipText}</p>
+			<ul class="tips">
+				<li><span class="tip-amount">€3</span></li>
+				<li><span class="tip-amount">€7</span></li>
+				<li><span class="tip-amount">€15</span></li>
+				<li><span class="tip-amount">€25</span></li>
+				<li><span class="tip-amount">{copy.tipOwn}</span></li>
+			</ul>
+			<p class="form-note">{copy.tipPlaceholder}</p>
+		</section>
+	</article>
+
+	<NewsletterForm lang={lang} heading={copy.newsletterHeading} />
+</Layout>
+
+<script>
+	// One ingredient note open at a time, and a click or Escape anywhere else
+	// closes it. <details> does the toggling itself; this only adds dismissal,
+	// so the notes still work with JavaScript off.
+	const notes = document.querySelectorAll<HTMLDetailsElement>("details.ingredient-info");
+
+	const closeNotes = (keep?: Element) => {
+		notes.forEach((note) => {
+			if (note !== keep) note.open = false;
+		});
+	};
+
+	document.addEventListener("click", (event) => {
+		const target = event.target as Element | null;
+		closeNotes(target?.closest("details.ingredient-info") ?? undefined);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") closeNotes();
+	});
+
+	// Checkboxes for ingredients and tools: what is already on the counter. Kept in
+	// localStorage so a reload mid-recipe does not lose the list; nothing leaves
+	// the browser.
+	const checks = Array.from(document.querySelectorAll<HTMLInputElement>(".gather-check"));
+	if (checks.length) {
+		const key = `bakmark:checks:${window.location.pathname}`;
+		type Store = Record<string, boolean>;
+
+		const read = (): Store => {
+			try {
+				return JSON.parse(window.localStorage.getItem(key) ?? "{}") as Store;
+			} catch {
+				return {};
+			}
+		};
+
+		const saved = read();
+		for (const box of checks) {
+			const id = box.closest<HTMLElement>("[data-gather]")?.dataset.gather ?? box.id;
+			box.checked = Boolean(saved[id]);
+			box.closest("li")?.classList.toggle("is-checked", box.checked);
+			box.addEventListener("change", () => {
+				const store = read();
+				if (box.checked) store[id] = true;
+				else delete store[id];
+				try {
+					window.localStorage.setItem(key, JSON.stringify(store));
+				} catch {
+					// Private mode: ticking still works, it just is not remembered.
+				}
+				box.closest("li")?.classList.toggle("is-checked", box.checked);
+			});
+		}
+	}
+
+	// Collapsed sections would print as headings with nothing under them: a
+	// sheet cannot be clicked. Open them for the print pass and restore after.
+	const collapsibles = Array.from(document.querySelectorAll<HTMLDetailsElement>("details.collapsible"));
+	let reopened: HTMLDetailsElement[] = [];
+	window.addEventListener("beforeprint", () => {
+		reopened = collapsibles.filter((details) => !details.open);
+		for (const details of reopened) details.open = true;
+	});
+	window.addEventListener("afterprint", () => {
+		for (const details of reopened) details.open = false;
+		reopened = [];
+	});
+
+	// Print view is this page with the explanations hidden by @media print.
+	// One button, no second artifact that can drift from the data.
+	document.querySelector("[data-print]")?.addEventListener("click", () => window.print());
+</script>

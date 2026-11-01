@@ -335,10 +335,42 @@
 	}
 
 	/* Theme toggle */
-	.theme-toggle {
-		font: inherit;
+	/* Language toggle and theme toggle sit together on the right. */
+	.header-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.lang-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.6rem;
+		padding: var(--space-2) var(--space-3);
 		font-size: var(--text-sm);
-		padding: var(--space-1) var(--space-2);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		line-height: 1;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+		box-shadow: var(--shadow-soft);
+		text-decoration: none;
+	}
+
+	.lang-toggle:hover {
+		background: var(--surface-warm);
+	}
+
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font: inherit;
+		padding: var(--space-2);
+		line-height: 0;
 		background: var(--surface);
 		color: var(--text);
 		border: 1px solid var(--border-strong);
@@ -349,6 +381,26 @@
 
 	.theme-toggle:hover {
 		background: var(--surface-warm);
+	}
+
+	.theme-toggle .theme-icon {
+		width: 1.15rem;
+		height: 1.15rem;
+		display: block;
+	}
+
+	/* One icon at a time: the one for the mode the button switches to.
+	   Moon starts hidden so nothing flashes twice before the script runs. */
+	.theme-toggle .theme-icon-moon {
+		display: none;
+	}
+
+	.theme-toggle[data-state="light"] .theme-icon-sun {
+		display: none;
+	}
+
+	.theme-toggle[data-state="light"] .theme-icon-moon {
+		display: block;
 	}
 
 	/* Buttons */
@@ -413,12 +465,33 @@
 		margin-top: var(--space-4);
 	}
 
-	.hero-actions {
+	.hero .hero-more {
+		margin-top: var(--space-4);
+	}
+
+	/* Newest recipes as a plain list: the cards live on /recepten. */
+	.newest-list {
+		display: grid;
+		gap: var(--space-2);
+		margin: var(--space-4) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.newest-list li {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-3);
-		align-items: center;
-		margin-top: var(--space-5);
+		align-items: baseline;
+		gap: var(--space-2);
+	}
+
+	.newest-list a {
+		font-weight: 600;
+	}
+
+	.newest-list .newest-meta {
+		color: var(--muted);
+		font-size: var(--text-sm);
 	}
 
 	/* Headings with a short accent rule above */
@@ -1420,6 +1493,9 @@
 	.card-grid > li {
 		content-visibility: auto;
 		contain-intrinsic-size: auto 30rem;
+		/* content-visibility paints inside the li box, so the card's 2px hover
+		   lift and its shadow were clipped along the top edge. */
+		padding-block: 3px;
 	}
 
 	[data-results-section] {

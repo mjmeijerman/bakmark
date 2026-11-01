@@ -1,0 +1,578 @@
+---
+import Layout from "../layouts/Layout.astro";
+import RecipeCard from "../components/RecipeCard.astro";
+import DifficultyBadge from "../components/DifficultyBadge.astro";
+import {
+	CATEGORIES,
+	DIFFICULTY_SCALE,
+	ROLE_LABELS,
+	allRecipes,
+	categoryLabel,
+	difficultyWord,
+	publishedValue,
+	recipeChips,
+	roleLabel,
+	searchText,
+	sortOptions,
+	timeBuckets,
+	type Recipe,
+} from "../lib/recipes";
+import { DEFAULT_LANG, isLang, path, type Lang } from "../lib/i18n";
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang: rawLang } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+
+const copy = {
+	nl: {
+		title: "Alle recepten",
+		description:
+			"Alle recepten op Bakmark, met video's zonder knippen. Zoek op trefwoord of filter op categorie, rol, moeilijkheid en tijd.",
+		kicker: "Recepten",
+		h1: "Alle recepten",
+		lead: "Basisrecepten en de eindproducten die eruit volgen. Elk onderdeel heeft een eigen pagina en een eigen video.",
+		filterSummary: "Zoeken en filteren",
+		searchLabel: "Zoek op trefwoord",
+		searchPlaceholder: "soesjes, room, chocolade, tempereren",
+		legends: { category: "Categorie", role: "Soort recept", difficulty: "Moeilijkheid", time: "Tijd (totaal)" },
+		reset: "Alles wissen",
+		countNote: "Het getal achter een filter is het aantal recepten dat erin valt.",
+		countAllTemplate: "{n} recepten",
+		countSomeTemplate: "{visible} van {total} recepten",
+		activeTemplate: "{n} actief",
+		sortLabel: "Volgorde",
+		empty: "Geen recepten met deze combinatie. Wis een filter of trefwoord om breder te zoeken.",
+		reverted: "Die combinatie levert geen recepten op. De laatste keuze is teruggedraaid.",
+		noHits: "Geen recepten met dit trefwoord. Wis het zoekveld of een filter om breder te zoeken.",
+		difficultyAria: (level: number) => `moeilijkheid ${level} van ${DIFFICULTY_SCALE}`,
+		facetParams: { category: "categorie", role: "rol", difficulty: "moeilijkheid", time: "tijd" },
+		sortParam: "sorteer",
+		defaultSort: "nieuwste",
+	},
+	en: {
+		title: "All recipes",
+		description:
+			"All recipes on Bakmark, with videos without cuts. Search by keyword or filter on category, kind of recipe, difficulty and time.",
+		kicker: "Recipes",
+		h1: "All recipes",
+		lead: "Base recipes and the finished bakes that follow from them. Every part has its own page and its own video.",
+		filterSummary: "Search and filter",
+		searchLabel: "Search by keyword",
+		searchPlaceholder: "choux, cream, chocolate, tempering",
+		legends: {
+			category: "Category",
+			role: "Kind of recipe",
+			difficulty: "Difficulty",
+			time: "Time (total)",
+		},
+		reset: "Clear all",
+		countNote: "The number behind a filter is how many recipes fall inside it.",
+		countAllTemplate: "{n} recipes",
+		countSomeTemplate: "{visible} of {total} recipes",
+		activeTemplate: "{n} active",
+		sortLabel: "Order",
+		empty: "No recipes with this combination. Clear a filter or keyword to search wider.",
+		reverted: "That combination leaves no recipes. Your last choice has been undone.",
+		noHits: "No recipes with this keyword. Clear the search field or a filter to search wider.",
+		difficultyAria: (level: number) => `difficulty ${level} of ${DIFFICULTY_SCALE}`,
+		facetParams: { category: "category", role: "role", difficulty: "difficulty", time: "time" },
+		sortParam: "sort",
+		defaultSort: "nieuwste",
+	},
+}[lang];
+
+const recipes = allRecipes(lang);
+const sorts = sortOptions(lang);
+const buckets = timeBuckets(lang);
+const locale = lang === "en" ? "en" : "nl";
+
+const minutes = (recipe: Recipe) => Math.round(recipe.time.total / 60);
+
+/** Count per facet value; values with one recipe stay visible but disabled (D20). */
+const count = (predicate: (recipe: Recipe) => boolean) => recipes.filter(predicate).length;
+
+const categoryOptions = CATEGORIES.map((category) => ({
+	id: category.id,
+	label: categoryLabel(category.id, lang),
+	total: count((recipe) => recipe.category === category.id),
+})).filter((option) => option.total > 0);
+
+const roleOptions = (Object.keys(ROLE_LABELS) as Recipe["role"][]).map((role) => ({
+	id: role,
+	label: roleLabel(role, lang),
+	total: count((recipe) => recipe.role === role),
+}));
+
+const difficultyOptions = Array.from({ length: DIFFICULTY_SCALE }, (_, index) => index + 1).map(
+	(level) => ({
+		id: String(level),
+		level,
+		label: `${level}/${DIFFICULTY_SCALE}`,
+		total: count((recipe) => recipe.difficulty === level),
+	}),
+);
+
+const timeOptions = buckets.map((bucket) => ({
+	id: bucket.id,
+	label: bucket.label,
+	total: count((recipe) => recipe.time.total >= bucket.min && recipe.time.total < bucket.max),
+}));
+
+const fill = (template: string, values: Record<string, string | number>) =>
+	template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
+
+const uiStrings = {
+	countAll: copy.countAllTemplate,
+	countSomeTemplate: copy.countSomeTemplate,
+	activeTemplate: copy.activeTemplate,
+	reverted: copy.reverted,
+	noHits: copy.noHits,
+	defaultSort: copy.defaultSort,
+	facetParams: copy.facetParams,
+	sortParam: copy.sortParam,
+};
+---
+
+<Layout title={copy.title} description={copy.description} lang={lang}>
+	<section class="hero">
+		<p class="kicker">{copy.kicker}</p>
+		<h1>{copy.h1}</h1>
+		<p class="lead">{copy.lead}</p>
+	</section>
+
+	<div class="filter-bar" data-filter-bar>
+		<details class="filter-panel" data-filter-panel>
+			<summary>
+				<span class="filter-summary-label">{copy.filterSummary}</span>
+				<span class="filter-summary-state" data-summary-state></span>
+			</summary>
+
+			<form
+				class="filters"
+				data-filters
+				role="search"
+				aria-describedby="filter-note"
+				data-strings={JSON.stringify(uiStrings)}
+			>
+				<p class="search-row">
+					<label for="search">{copy.searchLabel}</label>
+					<input
+						id="search"
+						name="q"
+						type="search"
+						placeholder={copy.searchPlaceholder}
+						autocomplete="off"
+						data-search
+					/>
+				</p>
+
+				<fieldset>
+					<legend>{copy.legends.category}</legend>
+					<div class="filter-row">
+						{categoryOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="category"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>{copy.legends.role}</legend>
+					<div class="filter-row">
+						{roleOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="role"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>{copy.legends.difficulty}</legend>
+					<div class="filter-row">
+						{difficultyOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip filter-chip-difficulty"
+								data-facet="difficulty"
+								data-value={option.id}
+								aria-pressed="false"
+								aria-label={copy.difficultyAria(option.level)}
+							>
+								<DifficultyBadge level={option.level} lang={lang} />
+								<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>{copy.legends.time}</legend>
+					<div class="filter-row">
+						{timeOptions.map((option) => (
+							<button
+								type="button"
+								class="filter-chip"
+								data-facet="time"
+								data-value={option.id}
+								aria-pressed="false"
+							>
+								{option.label}<span class="filter-count">{option.total}</span>
+							</button>
+						))}
+					</div>
+				</fieldset>
+
+				<p class="filter-reset">
+					<button type="button" class="filter-reset-button" data-reset hidden>
+						{copy.reset}
+					</button>
+				</p>
+				<p class="form-note filter-feedback" data-feedback aria-live="polite" hidden></p>
+				<p class="form-note">{copy.countNote}</p>
+			</form>
+		</details>
+
+		<p class="filter-status" id="filter-note" aria-live="polite">
+			<span data-count>{fill(copy.countAllTemplate, { n: recipes.length })}</span>
+			<label class="sort-control">
+				<span>{copy.sortLabel}</span>
+				<select data-sort>
+					{sorts.map((option, index) => (
+						<option value={option.id} selected={index === 0}>{option.label}</option>
+					))}
+				</select>
+			</label>
+		</p>
+	</div>
+
+	<section class="section" data-results-section>
+		<ul class="card-grid" data-results>
+			{recipes.map((recipe) => (
+				<li
+					data-category={recipe.category}
+					data-role={recipe.role}
+					data-difficulty={recipe.difficulty}
+					data-minutes={minutes(recipe)}
+					data-published={publishedValue(recipe)}
+					data-title={recipe.title.toLocaleLowerCase(locale)}
+					data-search-text={searchText(recipe, lang)}
+				>
+					<RecipeCard
+						href={path(lang, "recipe", recipe.slug)}
+						title={recipe.title}
+						description={recipe.subtitle}
+						imageLabel={`${recipe.title.toLowerCase()}, close-up`}
+						chips={recipeChips(recipe, lang)}
+						difficulty={recipe.difficulty}
+						concept={!recipe.verified}
+						lang={lang}
+					/>
+				</li>
+			))}
+		</ul>
+		<p class="form-note" data-empty hidden>{copy.empty}</p>
+	</section>
+</Layout>
+
+<script>
+	// Server-rendered list, client-side narrowing. OR within a facet, AND across
+	// facets and the keyword. Counts are live and context-aware, and a chip is
+	// only offered when picking it would still show something: filtering must
+	// never be able to strand you on an empty list.
+	const form = document.querySelector<HTMLFormElement>("[data-filters]");
+	const results = document.querySelector<HTMLElement>("[data-results]");
+	const empty = document.querySelector<HTMLElement>("[data-empty]");
+	const counter = document.querySelector<HTMLElement>("[data-count]");
+	const reset = document.querySelector<HTMLButtonElement>("[data-reset]");
+	const resultsSection = document.querySelector<HTMLElement>("[data-results-section]");
+	const search = document.querySelector<HTMLInputElement>("[data-search]");
+	const panel = document.querySelector<HTMLDetailsElement>("[data-filter-panel]");
+	const summaryState = document.querySelector<HTMLElement>("[data-summary-state]");
+	const feedback = document.querySelector<HTMLElement>("[data-feedback]");
+	const sort = document.querySelector<HTMLSelectElement>("[data-sort]");
+	const header = document.querySelector<HTMLElement>(".site-header");
+
+	/* Copy and query-parameter names come from the page, so one script serves
+	   both languages. Placeholders are filled in at the call site. */
+	const strings = JSON.parse(form?.dataset.strings ?? "{}") as {
+		countAll: string;
+		countSomeTemplate: string;
+		activeTemplate: string;
+		reverted: string;
+		noHits: string;
+		defaultSort: string;
+		facetParams: Record<string, string>;
+		sortParam: string;
+	};
+	const fill = (template: string, values: Record<string, string | number>) =>
+		template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
+	const FACET_PARAMS = strings.facetParams ?? {};
+	const DEFAULT_SORT = strings.defaultSort ?? "nieuwste";
+
+	if (form && results && empty && counter && reset && search && panel && summaryState) {
+		const chips = Array.from(form.querySelectorAll<HTMLButtonElement>("[data-facet]"));
+		const cards = Array.from(results.children) as HTMLElement[];
+		const selected = new Map<string, Set<string>>();
+		let feedbackTimer = 0;
+
+		const BUCKETS: { id: string; min: number; max: number }[] = [
+			{ id: "kort", min: 0, max: 1800 },
+			{ id: "middel", min: 1800, max: 3600 },
+			{ id: "lang", min: 3600, max: Number.POSITIVE_INFINITY },
+		];
+
+		// One map per card: facet → the values it holds.
+		const facetsOf = new Map<HTMLElement, Map<string, Set<string>>>();
+		for (const card of cards) {
+			const seconds = Number(card.dataset.minutes ?? 0) * 60;
+			facetsOf.set(
+				card,
+				new Map<string, Set<string>>([
+					["category", new Set([card.dataset.category ?? ""])],
+					["role", new Set([card.dataset.role ?? ""])],
+					["difficulty", new Set([card.dataset.difficulty ?? ""])],
+					[
+						"time",
+						new Set(BUCKETS.filter((b) => seconds >= b.min && seconds < b.max).map((b) => b.id)),
+					],
+				]),
+			);
+		}
+
+		if (header) {
+			const setOffset = () =>
+				document.documentElement.style.setProperty(
+					"--header-height",
+					`${header.getBoundingClientRect().height}px`,
+				);
+			setOffset();
+			window.addEventListener("resize", setOffset);
+		}
+
+		const activeCount = () =>
+			Array.from(selected.values()).reduce((sum, values) => sum + values.size, 0) +
+			(search.value.trim() ? 1 : 0);
+
+		// Short terms match at a word start, longer terms anywhere: "ei" must not
+		// hit "kleiner", but "room" must still find "banketbakkersroom" — Dutch
+		// glues its words together, so pure word matching would lose compounds.
+		const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const terms = () =>
+			search.value
+				.trim()
+				.toLowerCase()
+				.split(/\s+/)
+				.filter(Boolean)
+				.map((term) =>
+					term.length >= 4
+						? new RegExp(escape(term), "i")
+						: new RegExp(`(^|[^a-zà-ÿ])${escape(term)}`, "i"),
+				);
+
+		const matchesSearch = (card: HTMLElement) => {
+			const haystack = card.dataset.searchText ?? "";
+			return terms().every((pattern) => pattern.test(haystack));
+		};
+
+		const survivesWith = (card: HTMLElement, selection: Map<string, Set<string>>): boolean => {
+			if (!matchesSearch(card)) return false;
+			const facets = facetsOf.get(card);
+			if (!facets) return false;
+			for (const [facet, values] of selection.entries()) {
+				if (values.size === 0) continue;
+				const cardValues = facets.get(facet) ?? new Set<string>();
+				if (!Array.from(values).some((value) => cardValues.has(value))) return false;
+			}
+			return true;
+		};
+
+		const withFacet = (facet: string, values: Set<string>) => {
+			const next = new Map(selected);
+			next.set(facet, values);
+			return next;
+		};
+
+		const visibleCount = (selection: Map<string, Set<string>> = selected) =>
+			cards.filter((card) => survivesWith(card, selection)).length;
+
+		const readUrl = () => {
+			const params = new URLSearchParams(window.location.search);
+			for (const [facet, name] of Object.entries(FACET_PARAMS)) {
+				const raw = params.get(name);
+				if (!raw) continue;
+				selected.set(facet, new Set(raw.split(",").filter(Boolean)));
+			}
+			const query = params.get("q");
+			if (query) search.value = query;
+			// Frontmatter imports are not available in a client script, so the valid
+			// values come from the rendered <option> list.
+			const order = params.get(strings.sortParam ?? "sorteer");
+			const known = sort ? Array.from(sort.options).map((option) => option.value) : [];
+			if (sort && order && known.includes(order)) sort.value = order;
+		};
+
+		const writeUrl = () => {
+			const params = new URLSearchParams();
+			for (const [facet, name] of Object.entries(FACET_PARAMS)) {
+				const values = selected.get(facet);
+				if (values && values.size > 0) params.set(name, Array.from(values).join(","));
+			}
+			const query = search.value.trim();
+			if (query) params.set("q", query);
+			if (sort && sort.value !== DEFAULT_SORT) params.set(strings.sortParam ?? "sorteer", sort.value);
+			const suffix = params.toString();
+			const url = suffix ? `${window.location.pathname}?${suffix}` : window.location.pathname;
+			window.history.replaceState(null, "", url);
+		};
+
+		// Order is a view, not a filter: the same cards, rearranged. Newest first
+		// is the default because a catalogue is read as "what is new here".
+		const comparators: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+			nieuwste: (a, b) => Number(b.dataset.published ?? 0) - Number(a.dataset.published ?? 0),
+			az: (a, b) =>
+				(a.dataset.title ?? "").localeCompare(b.dataset.title ?? "", document.documentElement.lang),
+			moeilijkheid: (a, b) => Number(a.dataset.difficulty ?? 0) - Number(b.dataset.difficulty ?? 0),
+			tijd: (a, b) => Number(a.dataset.minutes ?? 0) - Number(b.dataset.minutes ?? 0),
+		};
+
+		const sortCards = () => {
+			const compare = comparators[sort?.value ?? DEFAULT_SORT] ?? comparators.nieuwste;
+			const sorted = [...cards].sort(compare);
+			for (const card of sorted) results.append(card);
+		};
+
+		const apply = ({ syncUrl = true }: { syncUrl?: boolean } = {}) => {
+			let visible = 0;
+			for (const card of cards) {
+				const show = survivesWith(card, selected);
+				card.hidden = !show;
+				if (show) visible += 1;
+			}
+			counter.textContent =
+				visible === cards.length
+					? fill(strings.countAll, { n: cards.length })
+					: fill(strings.countSomeTemplate, { visible, total: cards.length });
+			empty.hidden = visible > 0;
+
+			for (const chip of chips) {
+				const facet = chip.dataset.facet ?? "";
+				const value = chip.dataset.value ?? "";
+				const isOn = selected.get(facet)?.has(value) ?? false;
+
+				// Two different questions per chip. The number answers "how many
+				// recipes hold this value" (under the other facets). The disabled
+				// state answers "would picking it still show something", and that
+				// includes what is already picked in this facet.
+				const ownOnly = withFacet(facet, new Set([value]));
+				const ifPicked = withFacet(facet, new Set([...(selected.get(facet) ?? []), value]));
+
+				const chipCount = chip.querySelector<HTMLElement>(".filter-count");
+				if (chipCount) chipCount.textContent = String(visibleCount(ownOnly));
+				chip.disabled = !isOn && visibleCount(ifPicked) === 0;
+			}
+
+			const active = activeCount();
+			reset.hidden = active === 0;
+			summaryState.textContent = active > 0 ? fill(strings.activeTemplate, { n: active }) : "";
+			panel.classList.toggle("has-active", active > 0);
+			if (syncUrl) {
+				sortCards();
+				writeUrl();
+			}
+		};
+
+		const say = (message: string) => {
+			if (!feedback) return;
+			feedback.textContent = message;
+			feedback.hidden = false;
+			window.clearTimeout(feedbackTimer);
+			feedbackTimer = window.setTimeout(() => {
+				feedback.hidden = true;
+			}, 5000);
+		};
+
+		for (const chip of chips) {
+			chip.addEventListener("click", () => {
+				const facet = chip.dataset.facet as string;
+				const value = chip.dataset.value as string;
+				const before = new Map([...selected].map(([key, values]) => [key, new Set(values)]));
+
+				const values = selected.get(facet) ?? new Set<string>();
+				if (values.has(value)) values.delete(value);
+				else values.add(value);
+				selected.set(facet, values);
+				apply();
+
+				// Deselecting can empty the list too: two facets can each hold
+				// recipes while their intersection is empty.
+				if (visibleCount() === 0) {
+					selected.clear();
+					for (const [key, kept] of before) selected.set(key, kept);
+					chip.setAttribute("aria-pressed", String(before.get(facet)?.has(value) ?? false));
+					apply();
+					say(strings.reverted);
+					return;
+				}
+
+				chip.setAttribute("aria-pressed", String(selected.get(facet)?.has(value) ?? false));
+			});
+		}
+
+		search.addEventListener("input", () => {
+			apply();
+			// A keyword can legitimately find nothing; the empty state explains it.
+			if (visibleCount() === 0) say(strings.noHits);
+		});
+
+		sort?.addEventListener("change", () => apply());
+
+		// Enter used to submit the form and reload the page, which threw the query
+		// away. Enter now keeps the term, closes the panel and shows the results.
+		form.addEventListener("submit", (event) => {
+			event.preventDefault();
+			apply();
+			panel.open = false;
+			if (resultsSection) {
+				resultsSection.tabIndex = -1;
+				resultsSection.focus({ preventScroll: true });
+				resultsSection.scrollIntoView({ block: "start", behavior: "smooth" });
+			}
+		});
+
+		reset.addEventListener("click", () => {
+			selected.clear();
+			search.value = "";
+			if (feedback) feedback.hidden = true;
+			for (const chip of chips) chip.setAttribute("aria-pressed", "false");
+			apply();
+		});
+
+		readUrl();
+		for (const chip of chips) {
+			const values = selected.get(chip.dataset.facet ?? "");
+			if (values?.has(chip.dataset.value ?? "")) chip.setAttribute("aria-pressed", "true");
+		}
+		apply({ syncUrl: false });
+
+		// A restored filter should be visible, otherwise the list looks short for
+		// no reason.
+		if (activeCount() > 0) panel.open = true;
+	}
+</script>

@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { DEFAULT_LANG, type Lang } from "./i18n";
 
 /** Single source of truth: recipes/<slug>.json (see docs/decisions/bakmark-plan.md D4). */
 const RECIPES_DIR = join(process.cwd(), "recipes");
@@ -121,11 +122,168 @@ export function loadRecipe(slug: string): Recipe {
 	return recipe;
 }
 
-export function allRecipes(): Recipe[] {
+/**
+ * English text lives in recipes/en/<slug>.json as an overlay: only the words,
+ * never the numbers. The Dutch file stays the single source of truth, so the
+ * component graph and every factor keep working in one language.
+ */
+export interface RecipeTextOverlay {
+	title?: string;
+	subtitle?: string;
+	context?: string;
+	verified_note?: string;
+	tags?: string[];
+	result?: { unit?: string; note?: string };
+	time?: { note?: string };
+	ingredients?: Record<string, { name?: string; note?: string; unit?: string; amount_display?: string }>;
+	steps?: Record<string, { title?: string; text?: string; why?: string; tips?: string[] }>;
+	tools?: Record<string, { name?: string; note?: string }>;
+	components?: Record<string, { unit?: string; note?: string }>;
+	faq?: Record<string, { q?: string; a?: string }>;
+	mislukt?: Record<string, { symptoom?: string; oorzaak?: string; fix?: string }>;
+	variants?: Record<string, { label?: string; note?: string }>;
+	bake?: Record<string, string>;
+}
+
+const EN_OVERLAY_DIR = join(RECIPES_DIR, "en");
+const overlayCache = new Map<string, RecipeTextOverlay | null>();
+
+/* Cached for the build, read fresh in dev: a translation added while the dev
+   server runs should show up on the next request, not after a restart. */
+const cacheOverlays = import.meta.env?.PROD ?? true;
+
+export function textOverlay(slug: string): RecipeTextOverlay | null {
+	if (cacheOverlays) {
+		const cached = overlayCache.get(slug);
+		if (cached !== undefined) return cached;
+	}
+	let overlay: RecipeTextOverlay | null = null;
+	try {
+		overlay = JSON.parse(
+			readFileSync(join(EN_OVERLAY_DIR, `${slug}.json`), "utf8"),
+		) as RecipeTextOverlay;
+	} catch {
+		overlay = null;
+	}
+	if (cacheOverlays) overlayCache.set(slug, overlay);
+	return overlay;
+}
+
+/** Display copy in `lang`; anything untranslated falls back to Dutch. */
+export function localize(recipe: Recipe, lang: Lang = DEFAULT_LANG): Recipe {
+	if (lang === DEFAULT_LANG) return recipe;
+	const overlay = textOverlay(recipe.slug);
+	if (!overlay) return recipe;
+
+	return {
+		...recipe,
+		title: overlay.title ?? recipe.title,
+		subtitle: overlay.subtitle ?? recipe.subtitle,
+		context: overlay.context ?? recipe.context,
+		verified_note: overlay.verified_note ?? recipe.verified_note,
+		tags: overlay.tags ?? recipe.tags,
+		result: {
+			...recipe.result,
+			unit: overlay.result?.unit ?? recipe.result.unit,
+			note: overlay.result?.note ?? recipe.result.note,
+		},
+		time: { ...recipe.time, note: overlay.time?.note ?? recipe.time.note },
+		ingredients: recipe.ingredients.map((ingredient) => ({
+			...ingredient,
+			name: overlay.ingredients?.[ingredient.id]?.name ?? ingredient.name,
+			note: overlay.ingredients?.[ingredient.id]?.note ?? ingredient.note,
+			unit: overlay.ingredients?.[ingredient.id]?.unit ?? ingredient.unit,
+			amount_display:
+				overlay.ingredients?.[ingredient.id]?.amount_display ?? ingredient.amount_display,
+		})),
+		steps: recipe.steps.map((step) => ({
+			...step,
+			title: overlay.steps?.[step.id]?.title ?? step.title,
+			text: overlay.steps?.[step.id]?.text ?? step.text,
+			why: overlay.steps?.[step.id]?.why ?? step.why,
+			tips: overlay.steps?.[step.id]?.tips ?? step.tips,
+		})),
+		tools: (recipe.tools ?? []).map((tool) => ({
+			...tool,
+			name: overlay.tools?.[tool.name]?.name ?? tool.name,
+			note: overlay.tools?.[tool.name]?.note ?? tool.note,
+		})),
+		components: (recipe.components ?? []).map((link) => ({
+			...link,
+			unit: overlay.components?.[link.ref]?.unit ?? link.unit,
+			note: overlay.components?.[link.ref]?.note ?? link.note,
+		})),
+		faq: (recipe.faq ?? []).map((item, index) => ({
+			...item,
+			q: overlay.faq?.[String(index)]?.q ?? item.q,
+			a: overlay.faq?.[String(index)]?.a ?? item.a,
+		})),
+		mislukt: (recipe.mislukt ?? []).map((item, index) => ({
+			...item,
+			symptoom: overlay.mislukt?.[String(index)]?.symptoom ?? item.symptoom,
+			oorzaak: overlay.mislukt?.[String(index)]?.oorzaak ?? item.oorzaak,
+			fix: overlay.mislukt?.[String(index)]?.fix ?? item.fix,
+		})),
+		variants: recipe.variants
+			? Object.fromEntries(
+					Object.entries(recipe.variants).map(([key, variant]) => [
+						key,
+						{
+							...variant,
+							label: overlay.variants?.[key]?.label ?? variant.label,
+							note: overlay.variants?.[key]?.note ?? variant.note,
+						},
+					]),
+				)
+			: recipe.variants,
+		bake: recipe.bake
+			? {
+					...recipe.bake,
+					...(Object.fromEntries(
+						Object.entries(overlay.bake ?? {}).map(([key, value]) => [key, value]),
+					) as Record<string, string>),
+				}
+			: recipe.bake,
+	};
+}
+
+/** Same treatment for a resolved group: the amounts stay, the words change. */
+export function localizeGroup(group: ResolvedGroup, lang: Lang = DEFAULT_LANG): ResolvedGroup {
+	if (lang === DEFAULT_LANG) return group;
+	const overlay = textOverlay(group.recipe.slug);
+	const recipe = localize(group.recipe, lang);
+	if (!overlay) return { ...group, recipe };
+	return {
+		...group,
+		recipe,
+		steps: recipe.steps,
+		variantLabel: group.variant ? recipe.variants?.[group.variant]?.label : group.variantLabel,
+		ingredients: group.ingredients.map((ingredient) => {
+			const text = overlay.ingredients?.[ingredient.id];
+			const unit = text?.unit ?? ingredient.unit;
+			/* A scaled amount is rebuilt from unit + number, so a translated unit
+			   has to be put back in rather than appended. */
+			const amount_display =
+				text?.amount_display ??
+				(ingredient.scaled && text?.unit
+					? `${String(ingredient.amount)} ${unit}`
+					: ingredient.amount_display);
+			return {
+				...ingredient,
+				name: text?.name ?? ingredient.name,
+				note: text?.note ?? ingredient.note,
+				unit,
+				amount_display,
+			};
+		}),
+	};
+}
+
+export function allRecipes(lang: Lang = DEFAULT_LANG): Recipe[] {
 	return readdirSync(RECIPES_DIR)
 		.filter((file) => file.endsWith(".json"))
-		.map((file) => loadRecipe(file.replace(/\.json$/, "")))
-		.sort((a, b) => a.title.localeCompare(b.title, "nl"));
+		.map((file) => localize(loadRecipe(file.replace(/\.json$/, "")), lang))
+		.sort((a, b) => a.title.localeCompare(b.title, lang === "en" ? "en" : "nl"));
 }
 
 /** Recipes plus the alias slugs they answer to. */
@@ -267,8 +425,20 @@ export const CATEGORIES = [
 	{ id: "hartig", label: "hartig" },
 ] as const;
 
-export const categoryLabel = (id: string) =>
-	CATEGORIES.find((category) => category.id === id)?.label ?? id;
+const CATEGORY_LABELS_EN: Record<string, string> = {
+	basistechniek: "core technique",
+	"deeg-beslag": "dough & batter",
+	"room-vulling": "cream & filling",
+	gebak: "pastry",
+	brood: "bread",
+	chocolade: "chocolate",
+	hartig: "savoury",
+};
+
+export const categoryLabel = (id: string, lang: Lang = DEFAULT_LANG) =>
+	lang === "en"
+		? (CATEGORY_LABELS_EN[id] ?? id)
+		: (CATEGORIES.find((category) => category.id === id)?.label ?? id);
 
 export const DIFFICULTY_SCALE = 5;
 
@@ -281,8 +451,18 @@ export const DIFFICULTY_WORDS = [
 	"gevorderd",
 ] as const;
 
-export const difficultyWord = (level: number) =>
-	DIFFICULTY_WORDS[Math.min(Math.max(Math.round(level), 1), DIFFICULTY_SCALE) - 1];
+const DIFFICULTY_WORDS_EN = [
+	"easy",
+	"straightforward",
+	"average",
+	"tricky",
+	"advanced",
+] as const;
+
+export const difficultyWord = (level: number, lang: Lang = DEFAULT_LANG) => {
+	const words = lang === "en" ? DIFFICULTY_WORDS_EN : DIFFICULTY_WORDS;
+	return words[Math.min(Math.max(Math.round(level), 1), DIFFICULTY_SCALE) - 1];
+};
 
 /** "gerecht" read as a savoury dinner; the finished bake is the "eindproduct". */
 export const ROLE_LABELS: Record<Recipe["role"], string> = {
@@ -290,15 +470,23 @@ export const ROLE_LABELS: Record<Recipe["role"], string> = {
 	eindproduct: "eindproduct",
 };
 
-export const roleLabel = (role: Recipe["role"]) => ROLE_LABELS[role] ?? role;
+const ROLE_LABELS_EN: Record<Recipe["role"], string> = {
+	basis: "base recipe",
+	eindproduct: "finished bake",
+};
+
+export const roleLabel = (role: Recipe["role"], lang: Lang = DEFAULT_LANG) => {
+	const labels = lang === "en" ? ROLE_LABELS_EN : ROLE_LABELS;
+	return labels[role] ?? role;
+};
 
 /** One lowercase blob per recipe: what a keyword search looks through. */
-export function searchText(recipe: Recipe): string {
+export function searchText(recipe: Recipe, lang: Lang = DEFAULT_LANG): string {
 	return [
 		recipe.title,
 		recipe.subtitle,
-		roleLabel(recipe.role),
-		categoryLabel(recipe.category),
+		roleLabel(recipe.role, lang),
+		categoryLabel(recipe.category, lang),
 		...(recipe.tags ?? []),
 		...recipe.ingredients.map((ingredient) => ingredient.name),
 		...(recipe.components ?? []).map((link) => link.ref.replace(/-/g, " ")),
@@ -315,6 +503,18 @@ export const TIME_BUCKETS = [
 	{ id: "lang", label: "langer dan 1 uur", min: 3600, max: Number.POSITIVE_INFINITY },
 ] as const;
 
+const TIME_BUCKET_LABELS_EN: Record<string, string> = {
+	kort: "up to 30 min",
+	middel: "30-60 min",
+	lang: "longer than 1 hour",
+};
+
+export const timeBuckets = (lang: Lang = DEFAULT_LANG) =>
+	TIME_BUCKETS.map((bucket) => ({
+		...bucket,
+		label: lang === "en" ? (TIME_BUCKET_LABELS_EN[bucket.id] ?? bucket.label) : bucket.label,
+	}));
+
 export const SORT_OPTIONS = [
 	{ id: "nieuwste", label: "Nieuwste eerst" },
 	{ id: "az", label: "Alfabetisch" },
@@ -322,32 +522,54 @@ export const SORT_OPTIONS = [
 	{ id: "tijd", label: "Snelst klaar" },
 ] as const;
 
+const SORT_LABELS_EN: Record<string, string> = {
+	nieuwste: "Newest first",
+	az: "Alphabetical",
+	moeilijkheid: "Easiest first",
+	tijd: "Quickest done",
+};
+
+export const sortOptions = (lang: Lang = DEFAULT_LANG) =>
+	SORT_OPTIONS.map((option) => ({
+		...option,
+		label: lang === "en" ? (SORT_LABELS_EN[option.id] ?? option.label) : option.label,
+	}));
+
 export type SortId = (typeof SORT_OPTIONS)[number]["id"];
 
 /** Sort key for a recipe; unknown dates sort last, never first. */
 export const publishedValue = (recipe: Recipe) =>
 	recipe.published ? Date.parse(recipe.published) : 0;
 
-export const formatDate = (iso?: string) => {
+export const formatDate = (iso?: string, lang: Lang = DEFAULT_LANG) => {
 	if (!iso) return "";
 	const date = new Date(iso);
 	if (Number.isNaN(date.getTime())) return iso;
-	return new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" }).format(date);
+	return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "nl-NL", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	}).format(date);
 };
 
-export const formatMinutes = (seconds: number) => {
+export const formatMinutes = (seconds: number, lang: Lang = DEFAULT_LANG) => {
 	const min = Math.round(seconds / 60);
 	if (min < 60) return `${min} min`;
 	const rest = min % 60;
+	if (lang === "en") {
+		return rest === 0
+			? `${Math.floor(min / 60)} ${Math.floor(min / 60) === 1 ? "hour" : "hours"}`
+			: `${Math.floor(min / 60)} h ${rest} min`;
+	}
 	return rest === 0 ? `${Math.floor(min / 60)} uur` : `${Math.floor(min / 60)} u ${rest} min`;
 };
 
 /** Chips as used by RecipeCard and the recipe hero. */
-export const recipeChips = (r: Recipe) => [
-	formatMinutes(r.time.total),
+export const recipeChips = (r: Recipe, lang: Lang = DEFAULT_LANG) => [
+	formatMinutes(r.time.total, lang),
 	`${r.result.value} ${r.result.unit}`,
-	categoryLabel(r.category),
-	roleLabel(r.role),
+	categoryLabel(r.category, lang),
+	roleLabel(r.role, lang),
 ];
 
 /**

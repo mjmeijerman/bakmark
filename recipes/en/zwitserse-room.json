@@ -1,0 +1,79 @@
+{
+	"title": "Swiss cream",
+	"subtitle": "Pastry cream with whipped cream, the filling for choux buns and eclairs",
+	"verified_note": "Not made by the maker himself yet. The 1:1 ratio is the classic crème légère; adjust it if you want it lighter or firmer.",
+	"result": {
+		"unit": "g",
+		"note": "Enough for 30 choux buns, about 20 g per bun."
+	},
+	"time": {
+		"note": "10 minutes, provided the pastry cream is already cold."
+	},
+	"context": "Swiss cream is pastry cream made airy with whipped cream. The pastry cream brings the flavour and the body, the whipped cream brings the volume and the light texture. The ratio decides what you can use it for: more pastry cream and it holds its shape inside an eclair, more whipped cream and it is too light to stack. Folding is the only technique that counts — stirring knocks the air back out and the cream turns thin.",
+	"tags": [
+		"swiss cream",
+		"crème légère",
+		"cream",
+		"filling",
+		"base recipe"
+	],
+	"components": {
+		"banketbakkersroom": {
+			"unit": "g",
+			"note": "Cold and stirred smooth."
+		},
+		"slagroom": {
+			"unit": "g",
+			"note": "Firm peaks, not grainy."
+		}
+	},
+	"tools": {
+		"spatel": {
+			"name": "spatula"
+		},
+		"kom": {
+			"name": "bowl"
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Stir the pastry cream smooth",
+			"text": "Loosen the cold pastry cream with a spatula until it is smooth and creamy again.",
+			"why": "Cold pastry cream is stiff and breaks if you mix it with the whipped cream in one go. Stirred loose, it takes up the whipped cream evenly.",
+			"tips": [
+				"Still cold? Ten seconds of stirring is enough; do not let it warm up."
+			]
+		},
+		"stap-2": {
+			"title": "Fold in the whipped cream",
+			"text": "Add the whipped cream in two goes and fold it in with a spatula: spatula underneath, turn over, quarter turn. Stop as soon as it is even.",
+			"why": "Folding keeps the air in the whipped cream. Stirring or whisking breaks the air bubbles and the cream turns thin and watery — exactly the opposite of what you want.",
+			"tips": [
+				"In two goes: the first makes the pastry cream supple, the second stays airy.",
+				"Use it straight away or keep it for at most two hours in the fridge; after that the cream sinks."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "Why does my Swiss cream turn thin?",
+			"a": "Stirred too long, or stirred instead of folded. The air is gone by then. Cream that is too warm also thins; keep everything cold and fold only until it is just even."
+		},
+		"1": {
+			"q": "Can I change the ratio?",
+			"a": "Yes. More pastry cream gives a firmer cream that holds its shape in eclairs; more whipped cream gives a lighter cream you have to serve straight away. 1:1 is the starting point."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "thin, watery cream",
+			"oorzaak": "stirred instead of folded, or too warm",
+			"fix": "spatula and folding, everything cold"
+		},
+		"1": {
+			"symptoom": "splits or goes grainy",
+			"oorzaak": "whipped cream beaten too stiff, or pastry cream too cold and stiff",
+			"fix": "stir the pastry cream smooth first, whip the cream to firm but smooth peaks"
+		}
+	}
+}

@@ -1,0 +1,131 @@
+{
+	"title": "Pastry cream",
+	"subtitle": "The base cream under choux buns, mille-feuille and eclairs",
+	"verified_note": "Not timed by the maker himself yet. The times are starting values.",
+	"result": {
+		"unit": "g",
+		"note": "Enough for 30 choux buns or one 24 cm mille-feuille base."
+	},
+	"time": {
+		"note": "15 min active, then 45 min cooling in the fridge."
+	},
+	"context": "Pastry cream is milk thickened with egg yolks and starch. Two things make the difference. The yolks are tempered — some of the hot milk in first, only then everything back into the pan — otherwise they set into lumps straight away. And once thickened, the cream must not boil hard again, because it will split. Once the starch has set, the cream is thick and smooth, and that is exactly the structure Swiss cream needs so that it does not sink.",
+	"tags": [
+		"pastry cream",
+		"crème pâtissière",
+		"cream",
+		"filling",
+		"base recipe"
+	],
+	"ingredients": {
+		"melk": {
+			"name": "whole milk",
+			"note": "Whole milk; semi-skimmed gives a thinner cream."
+		},
+		"vanille": {
+			"amount_display": "1 pod",
+			"unit": "pod",
+			"name": "vanilla pod",
+			"note": "Or 2 tsp vanilla extract, added with the yolks."
+		},
+		"suiker": {
+			"name": "sugar",
+			"note": "Stirred into the yolks, not into the milk."
+		},
+		"dooiers": {
+			"amount_display": "4 yolks",
+			"unit": "yolks",
+			"name": "egg yolks",
+			"note": "At room temperature; cold yolks combine poorly."
+		},
+		"maizena": {
+			"name": "cornflour",
+			"note": "Thickens at about 85 °C. Flour works too, but tastes of flour."
+		},
+		"boter": {
+			"name": "unsalted butter",
+			"note": "Stir in once the cream is off the heat; gives shine and flavour."
+		}
+	},
+	"tools": {
+		"pan met dikke bodem": {
+			"name": "heavy-based pan"
+		},
+		"garde": {
+			"name": "whisk"
+		},
+		"plasticfolie": {
+			"name": "cling film"
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Flavour the milk with vanilla",
+			"text": "Split the vanilla pod, scrape out the seeds and put seeds and pod into the pan with the milk. Bring slowly to the boil and let it infuse gently for ten minutes. Take the pod out.",
+			"why": "The vanilla flavour sits in the seeds and in the fatty parts around the pod; they need heat and time. A shorter steep gives only the smell of the pod, not the taste.",
+			"tips": [
+				"You can dry scraped pods and keep them in a jar of sugar later."
+			]
+		},
+		"stap-2": {
+			"title": "Stir yolks, sugar and cornflour smooth",
+			"text": "Whisk the yolks loose with the sugar and add the cornflour. Stir until smooth, with no lumps left.",
+			"why": "Whisked yolks with starch thicken evenly. Lumps of cornflour only thicken at the last moment and end up as small hard spots in the cooled cream.",
+			"tips": [
+				"Do not let it stand: the starch sinks to the bottom and clumps."
+			]
+		},
+		"stap-3": {
+			"title": "Temper",
+			"text": "Pour a third of the hot milk into the yolks while stirring. Stir the mixture back into the pan and set it over low heat.",
+			"why": "The yolks set at around 85 °C. Added straight to the hot milk they turn into bits of egg at once; a third first brings them up to temperature gradually.",
+			"tips": [
+				"Keep stirring while pouring, not after."
+			]
+		},
+		"stap-4": {
+			"title": "Thicken",
+			"text": "Keep stirring over low heat until the cream thickens and bubbles once, about 3-5 minutes. Off the heat immediately.",
+			"why": "The starch sets at about 85 °C and that is what makes the cream thick. One bubble proves it reached the temperature; boil any longer and the cream splits or tastes of egg.",
+			"tips": [
+				"Stir the bottom and the edges too.",
+				"Not thickening? Keep going a little, it happens all at once."
+			]
+		},
+		"stap-5": {
+			"title": "Butter in and cool",
+			"text": "Stir the cream off the heat, stir in the butter and pour the cream into a shallow dish. Cover with cling film pressed onto the cream itself and chill for at least 45 minutes.",
+			"why": "Film in contact keeps out air and moisture: otherwise a skin forms, and that skin is exactly what you have to stir smooth later. Butter at the end gives shine and rounds off the flavour.",
+			"tips": [
+				"Warm is enough; let the cream stand for ten seconds first."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "Why does my pastry cream split?",
+			"a": "Too hot or too long. The yolks set above 85 °C and the fat separates. One bubble is enough. Split? Take the pan off the heat and blend with a stick blender; it often comes back smooth."
+		},
+		"1": {
+			"q": "How long does it keep?",
+			"a": "Three days in the fridge, covered on the surface. Do not freeze: the starch breaks down on thawing and the cream turns grainy."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "lumps in the cream",
+			"oorzaak": "not tempered, or the cornflour was not stirred smooth",
+			"fix": "a third of the hot milk first, stir the cornflour into the yolks beforehand"
+		},
+		"1": {
+			"symptoom": "split cream",
+			"oorzaak": "cooked too long or too hot",
+			"fix": "one bubble and off the heat at once; split? stick blender"
+		},
+		"2": {
+			"symptoom": "cream too thin",
+			"oorzaak": "not thickened for long enough",
+			"fix": "stir until it bubbles once, do not stop sooner"
+		}
+	}
+}

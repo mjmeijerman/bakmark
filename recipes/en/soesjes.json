@@ -1,0 +1,100 @@
+{
+	"title": "Choux buns",
+	"subtitle": "Choux pastry baked into hollow, crisp buns",
+	"verified_note": "Not timed and baked by the maker himself yet. Times and temperatures are starting values, not measured ones.",
+	"result": {
+		"unit": "choux buns",
+		"note": "25-35 buns of 3-4 cm, or 8-10 large ones, or 10-12 eclairs."
+	},
+	"time": {
+		"note": "10 min piping and setting up the bake, 20-30 min in the oven, 10 min drying out."
+	},
+	"context": "Baking is where cooked dough becomes choux: the water in the batter turns into steam, steam takes up far more room than water, and that pressure blows every blob hollow from the inside. Two things decide whether that works. The wall has to be firm enough before the heat leaves, so the door stays shut until the last five minutes. And the blobs have to stand apart, so the hot air can pass between them and the sides cook too. Everything after that — filling, glazing, stacking — is possible because there is a hollow.",
+	"tags": [
+		"choux buns",
+		"choux",
+		"baking",
+		"cooked dough",
+		"base recipe"
+	],
+	"components": {
+		"soezenbeslag": {
+			"unit": "g"
+		}
+	},
+	"bake": {
+		"mode": "top and bottom heat",
+		"rack": "middle",
+		"preheat_note": "Fully preheated, at least 15 minutes.",
+		"trays_note": "One tray at a time. Two trays do not work with top and bottom heat, and are awkward even with a fan.",
+		"time_note": "Small buns 20-25 min, large ones 25-30 min. Always from golden brown, never from the clock.",
+		"done_when": "Golden brown over the whole surface, no pale or soft spots.",
+		"door": "shut until the last 5 minutes, then briefly open to let the steam out",
+		"afterbake.door": "ajar",
+		"afterbake.door_note": "A ladle between the door. Lets the buns dry out and firm up."
+	},
+	"tools": {
+		"bakplaat": {
+			"name": "baking tray"
+		},
+		"bakpapier of siliconenmatje": {
+			"name": "baking paper or silicone mat",
+			"note": "Silicone mats with printed circles give even sizes."
+		},
+		"pollepel": {
+			"name": "ladle",
+			"note": "To keep the oven door ajar."
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Pipe and bake",
+			"text": "Pipe blobs of 3-4 cm with 3-4 cm between them onto baking paper and flatten the peaks with a wet finger. Bake at 210 °C top and bottom heat (fan 200 °C), in the middle of the oven, one tray at a time: small buns 20-25 min, large ones 25-30 min. Do not open the door until the last 5 minutes; then open it briefly so the steam escapes.",
+			"why": "The blobs expand to roughly twice their width. Closer than 3 cm and they touch, and the touching sides stay pale and soft, because no hot air reaches them. And an open door in the first twenty minutes costs the steam that holds the buns up.",
+			"tips": [
+				"Pale means underbaked, and underbaked means collapsing after baking.",
+				"In doubt? Leave them in. There is no penalty for one minute too long.",
+				"Drawing circles with a glass on the back of the baking paper gives even sizes."
+			]
+		},
+		"stap-2": {
+			"title": "Drying out",
+			"text": "Only take the buns out of the oven once they are golden brown, and then leave them in for another 10 minutes with the door ajar, for instance with a ladle between it.",
+			"why": "In those ten minutes the last moisture escapes and the wall dries further. That is the difference between a bun that is still crisp an hour later and one that goes soft.",
+			"tips": [
+				"They must not cool on the worktop before they are baked dry; they will sink."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "Why do my choux buns collapse?",
+			"a": "Almost always because they came out of the oven too pale, or because the door opened too early. In both cases the wall was not firm enough yet. Baking longer until golden brown and then drying out for ten minutes with the door ajar solves it."
+		},
+		"1": {
+			"q": "Can I bake two trays at once?",
+			"a": "Not with top and bottom heat: the upper tray bakes faster than the lower one. With a fan it sometimes works, but it stays awkward and the tray you take out halfway sinks. Bake one tray at a time."
+		},
+		"2": {
+			"q": "Can I bake choux buns in advance?",
+			"a": "Yes. Unfilled they keep for about a week airtight at room temperature and they freeze well. Only fill them just before serving, otherwise the wall goes soft."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "collapsed after baking",
+			"oorzaak": "too pale out of the oven, or the door opened too early",
+			"fix": "bake until golden brown, then dry out for 10 min with the door ajar"
+		},
+		"1": {
+			"symptoom": "cracked top",
+			"oorzaak": "batter too thick, or the peaks were not flattened",
+			"fix": "bring the batter to a V consistency, flatten the peaks with a wet finger"
+		},
+		"2": {
+			"symptoom": "pale, soft contact sides",
+			"oorzaak": "blobs too close together",
+			"fix": "at least 3-4 cm apart, one tray at a time"
+		}
+	}
+}

@@ -1,5 +1,6 @@
 ---
 import DifficultyBadge from "./DifficultyBadge.astro";
+import { DEFAULT_LANG, isLang, type Lang } from "../lib/i18n";
 
 interface Props {
 	href: string;
@@ -10,6 +11,7 @@ interface Props {
 	concept?: boolean;
 	/** Shown on the card so the overview says how hard something is at a glance. */
 	difficulty?: number;
+	lang?: Lang;
 }
 
 const {
@@ -20,7 +22,11 @@ const {
 	chips = [],
 	concept = false,
 	difficulty,
+	lang: rawLang,
 } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+const conceptLabel = lang === "en" ? "Draft" : "Concept";
+const cta = lang === "en" ? "Open the recipe →" : "Bekijk het recept →";
 ---
 
 <a class="recipe-card" href={href}>
@@ -34,8 +40,8 @@ const {
 		<strong aria-hidden="true">{imageLabel}</strong>
 	</div>
 	<p class="recipe-card-labels">
-		{concept && <span class="chip chip-concept">Concept</span>}
-		{difficulty ? <DifficultyBadge level={difficulty} /> : null}
+		{concept && <span class="chip chip-concept">{conceptLabel}</span>}
+		{difficulty ? <DifficultyBadge level={difficulty} lang={lang} /> : null}
 	</p>
 	<h3>{title}</h3>
 	<p>{description}</p>
@@ -50,5 +56,5 @@ const {
 			</ul>
 		)
 	}
-	<span class="recipe-card-cta" aria-hidden="true">Bekijk het recept →</span>
+	<span class="recipe-card-cta" aria-hidden="true">{cta}</span>
 </a>

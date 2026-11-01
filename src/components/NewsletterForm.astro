@@ -1,14 +1,18 @@
 ---
+import { DEFAULT_LANG, isLang, t, type Lang } from "../lib/i18n";
+
 interface Props {
+	lang?: Lang;
 	heading?: string;
 }
 
-const { heading = "Eén bericht per nieuwe video" } = Astro.props;
+const { lang: rawLang, heading } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
 ---
 
 <form class="signup" method="post" action="" data-signup>
-	<h2>{heading}</h2>
-	<label for="email">Je e-mailadres</label>
+	<h2>{heading ?? t(lang, "newsletter.heading")}</h2>
+	<label for="email">{t(lang, "newsletter.label")}</label>
 	<div class="signup-row">
 		<input
 			id="email"
@@ -18,11 +22,9 @@ const { heading = "Eén bericht per nieuwe video" } = Astro.props;
 			inputmode="email"
 			required
 		/>
-		<button type="submit" disabled>Inschrijven</button>
+		<button type="submit" disabled>{t(lang, "newsletter.button")}</button>
 	</div>
 	<p class="form-note">
-		De inschrijving opent bij de eerste video. Je adres wordt alleen gebruikt
-		voor dat ene bericht; uitschrijven kan met één klik. Geen advertenties,
-		geen doorverkoop.
+		{t(lang, "newsletter.note")}
 	</p>
 </form>

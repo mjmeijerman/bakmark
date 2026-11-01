@@ -1,0 +1,58 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PlaceholderImage from "../components/PlaceholderImage.astro";
+import type { Lang } from "../lib/i18n";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const copy = {
+	nl: {
+		title: "Wie",
+		description: "Wie de video's maakt, en waarom zonder knippen.",
+		h1: "Wie",
+		photoLabel: "Portretfoto",
+		photoCaption: "Eén foto, gemaakt in de keuken waar de video's worden opgenomen.",
+		heading: "Eén foto, één verhaal",
+		paragraphs: [
+			"Ik ben Mark. Ik bak thuis, in een gewone keuken, met een gewone oven en een aanrecht dat te klein is. Wat ik hier laat zien is wat er bij mij gebeurt, in echte tijd en zonder montage.",
+			"Zonder knippen, omdat ik nergens anders heb geleerd hoe deeg echt aanvoelt: niet uit een perfect gemonteerd filmpje, maar door te kijken naar iemand die het hele proces doet, in echte tijd.",
+		],
+		draft: "Deze tekst is een concept. De definitieve versie komt van Mark zelf.",
+	},
+	en: {
+		title: "Who",
+		description: "Who makes the videos, and why without cuts.",
+		h1: "Who",
+		photoLabel: "Portrait photo",
+		photoCaption: "One photo, taken in the kitchen where the videos are recorded.",
+		heading: "One photo, one story",
+		paragraphs: [
+			"I am Mark. I bake at home, in an ordinary kitchen, with an ordinary oven and a worktop that is too small. What I show here is what happens in my kitchen, in real time and without editing.",
+			"Without cuts, because that is the only way I learned how dough really feels: not from a perfectly edited clip, but by watching someone do the whole process, in real time.",
+		],
+		draft: "This text is a draft. The final version comes from Mark himself.",
+	},
+}[lang];
+---
+
+<Layout title={copy.title} description={copy.description} lang={lang}>
+	<section class="page-header">
+		<h1>{copy.h1}</h1>
+	</section>
+
+	<PlaceholderImage label={copy.photoLabel} caption={copy.photoCaption} ratio="4 / 5" />
+
+	<section class="section">
+		<h2>{copy.heading}</h2>
+		{
+			copy.paragraphs.map((paragraph) => (
+				<p>{paragraph}</p>
+			))
+		}
+		<p class="muted">{copy.draft}</p>
+	</section>
+</Layout>

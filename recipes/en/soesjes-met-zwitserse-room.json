@@ -1,0 +1,88 @@
+{
+	"title": "Choux buns with Swiss cream",
+	"subtitle": "Hollow choux buns filled with pastry cream and whipped cream",
+	"verified_note": "Not made by the maker himself yet. The amounts follow from the base recipes; the filling step has not been tested.",
+	"result": {
+		"unit": "filled choux buns",
+		"note": "About 20 g of cream per bun. Want more cream per bun? Increase the Swiss cream, not the buns."
+	},
+	"time": {
+		"note": "About 2.5 hours from empty worktop to filled choux buns, most of it waiting and baking."
+	},
+	"context": "This is the same dough as in the separate choux recipe, the same buns, and the same cream as on the two base pages — no second version that can drift apart. Change something in the dough and it changes here too. The only step of its own is the filling, and that is mostly a matter of timing: a bun filled too early goes soft, and so does one left standing too long.",
+	"tags": [
+		"choux buns",
+		"swiss cream",
+		"choux",
+		"pastry",
+		"filling"
+	],
+	"components": {
+		"soesjes": {
+			"unit": "choux buns",
+			"note": "Cooled, not filled."
+		},
+		"zwitserse-room": {
+			"unit": "g",
+			"note": "Use straight from the fridge."
+		}
+	},
+	"tools": {
+		"spuitzak met kartelmondje 8-10 mm": {
+			"name": "piping bag with an 8-10 mm star nozzle",
+			"note": "Or a sharp knife and a teaspoon."
+		},
+		"poedersuiker": {
+			"name": "icing sugar",
+			"note": "To dust, just before serving."
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Get the buns ready",
+			"text": "Let the buns cool completely on a rack. Prick a hole in the base with a small knife or the tip of the nozzle, or cut them in half horizontally.",
+			"why": "Filling from the bottom keeps the top intact and gives an even filling. Cutting in half is quicker and easier to fill, but the wall goes soft sooner.",
+			"tips": [
+				"Only fill when they are really cold; warm buns draw moisture and turn leathery."
+			]
+		},
+		"stap-2": {
+			"title": "Filling",
+			"text": "Put the Swiss cream in a piping bag with a star nozzle and fill each bun from below until you feel resistance and no more cream goes in. Or spoon the cream into the cut buns.",
+			"why": "Until you feel resistance: a half-filled bun tastes of air. Push too far and the wall bursts.",
+			"tips": [
+				"About 20 g per bun; for 30 buns that is exactly 600 g of cream."
+			]
+		},
+		"stap-3": {
+			"title": "Serving",
+			"text": "Dust with icing sugar and serve within two hours. Keep them in the fridge until then and take them out 15-30 minutes before serving.",
+			"why": "The cream is cold and the wall takes up moisture. Filled for longer than a day, the buns go soft and lose their bite.",
+			"tips": [
+				"Unfilled buns keep for a week airtight; fill them on the day itself."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "How much cream goes into one bun?",
+			"a": "About 20 grams. For 30 buns that is 600 grams of Swiss cream, exactly one batch of that base recipe."
+		},
+		"1": {
+			"q": "Can I fill the buns in advance?",
+			"a": "Better not. Filled they keep for a day in the fridge, but the wall goes soft. Bake and fill on the day you eat them, or keep the parts separate."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "soft, leathery buns",
+			"oorzaak": "filled too early or kept too long",
+			"fix": "fill when cold, serve within two hours"
+		},
+		"1": {
+			"symptoom": "bun bursts while filling",
+			"oorzaak": "pushed too hard, or the wall is too thin",
+			"fix": "pipe gently until resistance, and bake the buns golden brown and properly dried"
+		}
+	}
+}

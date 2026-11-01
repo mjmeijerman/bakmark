@@ -182,7 +182,7 @@ A recipe is either a **basisrecept** (its own ingredients and steps) or a **gere
 
 | Field | Meaning |
 |---|---|
-| `role` | `basis` or `gerecht`. The home page shows gerechten; `/recepten` shows everything, basisrecepten marked as such. |
+| `role` | `basis` or `eindproduct`. The home page shows a short "Nieuwste recepten" list (three, newest first) of *all* recipes; `/recepten` is the full catalogue, basisrecepten marked as such. |
 | `components[]` | `{ ref, factor }` or `{ ref, amount, unit }`. With `amount` the factor is derived from the linked recipe's own `result`, so "300 g banketbakkersroom" stays readable and the 1:1 in Zwitserse room is visible in the data. |
 | `result` | Every recipe states what one batch makes, in a unit. This is what makes `amount` links possible at all. |
 | `aliases[]` | Extra slugs that render the same page. `soezenbeslag` answers to `soezendeeg`, because that is the search query. |
@@ -340,6 +340,20 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 **Rejected:** a full brand/design system before launch (comfortable procrastination — five pages do not need it); dark mode "later" (a retrofit across every component); a landing page showing a recipe grid that does not exist (looks empty, and it lies); a cooking-blog look (stock-photo hero, three-column cards, sidebar ads) — that is the thing this site is against.
 
 ---
+
+### D22 — Two languages, one template: Dutch at the root, English under /en
+
+*Added 2026-11-01. Built and live: 13 Dutch routes, 13 English ones.*
+
+The pages that argue *why this site exists* are the ones a non-Dutch reader has to understand before anything else; six recipes in a language you cannot read are not a portfolio. So: Dutch at the root, English under `/en`, same design, same data.
+
+**Shape.** Each page body lives once, in `src/views/`, and takes a `lang` prop; `src/pages/*` and `src/pages/en/*` are three-line wrappers. Routes come from a route-key table in `src/lib/i18n.ts` (`recipes` → `/recepten` | `/en/recipes`), never from a literal string, so a link cannot fall out of its own language. `<html lang>` and `hreflang` alternates ship with the page, and the header toggle uses `alternatePath()` to land on the same page in the other language.
+
+**Recipe text is an overlay, not a fork.** `recipes/en/<slug>.json` carries words only — title, subtitle, context, ingredient names, steps, tools, FAQ, mistakes, bake fields. Numbers, factors and the component graph stay in the Dutch JSON, because `factorFor` validates component units against `result.unit` and scaling must not depend on which language the reader picked. `localize()` swaps the words at render time; a field with no translation falls back to Dutch, so a half-translated recipe renders, it does not break.
+
+**Query keys follow the language too.** On `/en/recipes` the facets write `?category=…&role=…&difficulty=…&time=…&sort=…`; the Dutch page keeps `categorie`, `rol`, `moeilijkheid`, `tijd`, `sorteer`. One client script serves both: the strings and parameter names travel in `data-strings` on the form, since a bundled client script cannot read frontmatter.
+
+**Rejected:** two separate sites (two sources of truth, and the six recipes drift apart immediately); translating the JSON wholesale into a second file (every number duplicated, `factorFor` comparing Dutch units against English ones, and a fix landing on one language only); a client-side language switch (nothing for a crawler, and a flash of the wrong language); machine translation at build time (unverified baking instructions in a language no one checked — the failure mode of this site is a recipe that does not work); English URLs with Dutch recipe slugs changed to English ones (deep links would break, and the slug is an id).
 
 ## 3. Roadmap
 

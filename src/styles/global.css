@@ -782,6 +782,55 @@
 		border-color: var(--border);
 	}
 
+	/* A section heading with the two things you reach for while cooking on its
+	   right edge: print, and the wake lock. */
+	.section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2) var(--space-4);
+		margin-bottom: var(--space-2);
+	}
+
+	.section-head h2 {
+		margin: 0;
+	}
+
+	.section-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.button-quiet {
+		padding: var(--space-1) var(--space-3);
+		background: transparent;
+		color: var(--text);
+		border: 1px solid var(--border-strong);
+		box-shadow: none;
+		font-size: var(--text-sm);
+	}
+
+	.button-quiet:hover {
+		transform: none;
+		box-shadow: none;
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.button-quiet[aria-pressed="true"] {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
+	}
+
+	.button-quiet:disabled {
+		color: var(--muted);
+		border-color: var(--border);
+		cursor: not-allowed;
+	}
+
 	/* Blocks on the recipe page are separated by one line on top of each. A
 	   plain section had none, so the rule stopped after Benodigdheden. */
 	.section-ruled {

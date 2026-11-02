@@ -80,10 +80,11 @@ const copy = {
 		cause: "Oorzaak",
 		fix: "Oplossing",
 		faq: "Veelgestelde vragen",
-		printing: "Printen",
-		printingText:
-			"De printversie houdt alleen de ingrediënten en de stappen over, zonder uitleg en zonder foto's. Twee kantjes op het aanrecht, niet meer.",
-		printButton: "Print dit recept",
+		print: "Print",
+		bakeToggle: "Bakstand",
+		bakeToggleOn: "Bakstand aan",
+		bakeHint: "Houdt het scherm aan terwijl je met je handen in het deeg zit.",
+		bakeUnsupported: "Deze browser kan het scherm niet wakker houden.",
 		tipHeading: "Een fooi?",
 		tipText:
 			"De recepten en video's zijn gratis. Wie er iets aan heeft, kan een fooi achterlaten. Wie dat niet doet, merkt daar niets van.",
@@ -143,10 +144,11 @@ const copy = {
 		cause: "Cause",
 		fix: "Fix",
 		faq: "Frequently asked questions",
-		printing: "Printing",
-		printingText:
-			"The print version keeps only the ingredients and the steps, without explanations and without photos. Two sides on the worktop, nothing more.",
-		printButton: "Print this recipe",
+		print: "Print",
+		bakeToggle: "Bake mode",
+		bakeToggleOn: "Bake mode on",
+		bakeHint: "Keeps the screen awake while both hands are in the dough.",
+		bakeUnsupported: "This browser cannot keep the screen awake.",
 		tipHeading: "A tip?",
 		tipText:
 			"The recipes and videos are free. If they helped you, you can leave a tip. If you don't, you notice nothing of it.",
@@ -478,8 +480,27 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		}
 
 		<section class="section section-ruled">
-			{/* Every part starts open; folded shut only if the reader closes it. */}
-			<h2>{copy.steps}</h2>
+			{/* The two things you reach for while cooking sit on the heading line:
+			   print, and keeping the screen awake. Every part starts open. */}
+			<div class="section-head no-print">
+				<h2>{copy.steps}</h2>
+				<div class="section-actions">
+					<button
+						class="button button-quiet"
+						type="button"
+						data-bake
+						data-off={copy.bakeToggle}
+						data-on={copy.bakeToggleOn}
+						data-unsupported={copy.bakeUnsupported}
+						title={copy.bakeHint}
+						aria-pressed="false"
+					>
+						{copy.bakeToggle}
+					</button>
+					<button class="button button-quiet" type="button" data-print>{copy.print}</button>
+				</div>
+			</div>
+			<h2 class="print-only">{copy.steps}</h2>
 			{
 				/* Folded only when there are parts to fold: a single-part recipe is one
 				   list, and a disclosure triangle over one list is furniture. */
@@ -560,14 +581,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				</RecipeSection>
 			) : null
 		}
-
-		<section class="section section-ruled no-print">
-			<h2>{copy.printing}</h2>
-			<p>{copy.printingText}</p>
-			<p>
-				<button class="button" type="button" data-print>{copy.printButton}</button>
-			</p>
-		</section>
 
 		<section class="callout no-print">
 			<h2>{copy.tipHeading}</h2>
@@ -658,4 +671,50 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 	// Print view is this page with the explanations hidden by @media print.
 	// One button, no second artifact that can drift from the data.
 	document.querySelector("[data-print]")?.addEventListener("click", () => window.print());
+
+	// Bake mode: keep the screen awake while both hands are in the dough. The
+	// lock dies whenever the tab goes to the background, so it is re-requested
+	// on the way back rather than pretending the setting survived.
+	const bake = document.querySelector<HTMLButtonElement>("[data-bake]");
+	if (bake) {
+		let lock: WakeLockSentinel | null = null;
+
+		const paint = (on: boolean) => {
+			bake.setAttribute("aria-pressed", String(on));
+			bake.textContent = (on ? bake.dataset.on : bake.dataset.off) ?? "";
+		};
+
+		const release = async () => {
+			await lock?.release().catch(() => {});
+			lock = null;
+			paint(false);
+		};
+
+		const acquire = async () => {
+			try {
+				lock = await navigator.wakeLock.request("screen");
+				lock.addEventListener("release", () => paint(false));
+				paint(true);
+				return true;
+			} catch {
+				return false;
+			}
+		};
+
+		if (!("wakeLock" in navigator)) {
+			bake.disabled = true;
+			bake.title = bake.dataset.unsupported ?? "";
+		} else {
+			bake.addEventListener("click", () => {
+				if (bake.getAttribute("aria-pressed") === "true") void release();
+				else void acquire();
+			});
+
+			document.addEventListener("visibilitychange", () => {
+				if (document.visibilityState === "visible" && bake.getAttribute("aria-pressed") === "true" && !lock) {
+					void acquire();
+				}
+			});
+		}
+	}
 </script>

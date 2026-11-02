@@ -1,0 +1,111 @@
+{
+	"slug": "zwitserse-room",
+	"title": "Zwitserse room",
+	"subtitle": "Banketbakkersroom met slagroom, de vulling voor soesjes en eclairs",
+	"role": "basis",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf gemaakt. De verhouding 1:1 is de klassieke crème légère; pas hem aan als je hem luchtiger of steviger wilt.",
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"result": {
+		"value": 600,
+		"unit": "g",
+		"note": "Genoeg voor 40 soesjes, ongeveer 15 g per soesje."
+	},
+	"category": "room-vulling",
+	"tags": [
+		"zwitserse room",
+		"crème légère",
+		"room",
+		"vulling",
+		"basisrecept"
+	],
+	"difficulty": 2,
+	"time": {
+		"active": 600,
+		"total": 600,
+		"note": "10 minuten, mits de banketbakkersroom al koud is.",
+		"wait": 0
+	},
+	"context": "Zwitserse room is banketbakkersroom die je luchtig maakt met stijfgeklopte slagroom. De banketbakkersroom geeft de smaak en de stevigheid, de slagroom geeft het volume en de lichte structuur. De verhouding bepaalt waarvoor je hem kunt gebruiken: meer banketbakkersroom en hij houdt vorm in een eclair, meer slagroom en hij is te luchtig om te stapelen. Het vouwen is de enige techniek die telt — roeren slaat de lucht er weer uit en dan wordt de room dun.",
+	"ingredients": [],
+	"components": [
+		{
+			"ref": "banketbakkersroom",
+			"amount": 300,
+			"unit": "g",
+			"note": "Koud en glad geroerd."
+		},
+		{
+			"ref": "slagroom",
+			"amount": 300,
+			"unit": "g",
+			"note": "Stevige pieken, niet korrelig."
+		}
+	],
+	"tools": [
+		{
+			"name": "spatel",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "kom",
+			"required": true,
+			"affiliate": null
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Banketbakkersroom gladroeren",
+			"duration": 120,
+			"t": null,
+			"photo": null,
+			"text": "Roer de koude banketbakkersroom los met een spatel tot hij weer glad en smeuïg is.",
+			"why": "Koude banketbakkersroom is stijf en breekt als je hem in één keer met de slagroom mengt. Losgeroerd neemt hij de slagroom gelijkmatig op.",
+			"tips": [
+				"Nog koud? Even 10 seconden doorroeren is genoeg, niet warm laten worden."
+			]
+		},
+		{
+			"id": "stap-2",
+			"title": "Slagroom erdoor vouwen",
+			"duration": 180,
+			"t": null,
+			"photo": null,
+			"text": "Voeg de slagroom in twee delen toe en vouw hem er met een spatel door: spatel onderlangs, omdraaien, kwartslag draaien. Stop zodra het egaal is.",
+			"why": "Vouwen houdt de lucht in de slagroom. Roeren of kloppen breekt de luchtbelletjes en dan wordt de room dun en waterig — precies het tegenovergestelde van wat je wilt.",
+			"tips": [
+				"In twee delen: het eerste deel maakt de banketbakkersroom soepel, het tweede deel blijft luchtig.",
+				"Direct gebruiken of maximaal twee uur in de koelkast; daarna zakt de room in."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Waarom wordt mijn Zwitserse room dun?",
+			"a": "Te lang geroerd of geroerd in plaats van gevouwen. De lucht is er dan uit. Ook te warme room wordt dun; houd alles koud en vouw alleen tot het net egaal is."
+		},
+		{
+			"q": "Kan ik de verhouding aanpassen?",
+			"a": "Ja. Meer banketbakkersroom geeft een steviger room die vorm houdt in eclairs; meer slagroom geeft een luchtiger room die je direct moet serveren. 1:1 is het uitgangspunt."
+		}
+	],
+	"mislukt": [
+		{
+			"symptoom": "dunne, waterige room",
+			"oorzaak": "geroerd in plaats van gevouwen, of te warm",
+			"fix": "spatel en vouwen, alles koud"
+		},
+		{
+			"symptoom": "schift of korrelt",
+			"oorzaak": "slagroom te stijf geklopt of banketbakkersroom te koud en stijf",
+			"fix": "banketbakkersroom eerst gladroeren, slagroom tot stevige maar gladde pieken"
+		}
+	],
+	"inspired_by": [],
+	"published": "2026-10-29"
+}

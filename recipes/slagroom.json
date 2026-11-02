@@ -1,0 +1,108 @@
+{
+	"slug": "slagroom",
+	"title": "Slagroom",
+	"subtitle": "Stijfgeklopte room, koud en zonder korrel",
+	"role": "basis",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf getimed.",
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"result": {
+		"value": 300,
+		"unit": "g",
+		"note": "Ongeveer 300 g geklopte room, genoeg om 600 g room te maken of 40 soesjes te vullen."
+	},
+	"category": "room-vulling",
+	"tags": [
+		"slagroom",
+		"room",
+		"basistechniek",
+		"basisrecept"
+	],
+	"difficulty": 1,
+	"time": {
+		"active": 300,
+		"total": 300,
+		"note": "5 minuten, mits de room en de kom koud zijn.",
+		"wait": 0
+	},
+	"context": "Slagroom klopt niet omdat je lucht in de room slaat, maar omdat vetbolletjes zich om de ingeslagen lucht vastzetten. Dat werkt alleen als de room koud is: bij 4 °C is het vet hard genoeg om het netwerk te vormen dat de lucht vasthoudt. Is de room te warm, dan gebeurt er lange tijd niets en klopt hij daarna in één beweging door naar boter. Daarom: alles koud, en stoppen zodra de pieken staan.",
+	"ingredients": [
+		{
+			"id": "room",
+			"name": "slagroom",
+			"amount": 300,
+			"unit": "g",
+			"scale": true,
+			"note": "Minstens 35% vet. Halfroom of kookroom wordt niet stijf."
+		},
+		{
+			"id": "suiker",
+			"name": "suiker",
+			"amount": 25,
+			"unit": "g",
+			"scale": true,
+			"note": "Ongeveer 8% van het gewicht. Minder voor hartig gebruik."
+		},
+		{
+			"id": "vanille",
+			"name": "vanille-extract (optioneel)",
+			"amount": 3,
+			"unit": "g",
+			"scale": false,
+			"optional": true,
+			"note": "Mee met de suiker."
+		}
+	],
+	"components": [],
+	"tools": [
+		{
+			"name": "kom en garde, koud",
+			"required": true,
+			"affiliate": null,
+			"note": "Tien minuten in de vriezer is genoeg."
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Koud opkloppen",
+			"duration": 300,
+			"t": null,
+			"photo": null,
+			"text": "Doe de slagroom en de suiker in een koude kom en klop op middelhoge snelheid. Stop zodra de room zachte, ronde pieken houdt. Voor het vullen van soesjes: net iets stijver, tot stevige pieken, maar niet korrelig.",
+			"why": "Koude room houdt het vet hard, en alleen hard vet vormt het netwerk dat de lucht vasthoudt. Te lang doorkloppen en de vetbolletjes klonteren samen: dan heb je boter met karnemelk.",
+			"tips": [
+				"Kom en garde tien minuten in de vriezer, room rechtstreeks uit de koelkast.",
+				"Suiker erbij vóór de room stijf is, anders klopt hij niet meer glad.",
+				"Met de hand kloppen geeft meer controle dan een machine; de machine schiet door."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Waarom wordt mijn slagroom niet stijf?",
+			"a": "Meestal te warm, of te weinig vet. Slagroom onder 35% vet wordt niet stijf, en een warme kom houdt het vet zacht. Zet kom en garde in de vriezer en gebruik room uit de koelkast."
+		},
+		{
+			"q": "Mijn room is korrelig geworden. Nog te redden?",
+			"a": "Dat is het begin van boter; terugdraaien lukt niet. Klop door tot je boter hebt en gebruik die, of begin opnieuw met koude room."
+		}
+	],
+	"mislukt": [
+		{
+			"symptoom": "wordt niet stijf",
+			"oorzaak": "room te warm of te weinig vet",
+			"fix": "koude kom, koude room, minstens 35% vet"
+		},
+		{
+			"symptoom": "korrelig",
+			"oorzaak": "te lang geklopt",
+			"fix": "stoppen bij stevige pieken; opnieuw beginnen kan niet"
+		}
+	],
+	"inspired_by": [],
+	"published": "2026-10-29"
+}

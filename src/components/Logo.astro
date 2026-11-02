@@ -1,0 +1,20 @@
+---
+interface Props {
+	/** Rendered size; the mark is square. */
+	size?: number;
+	class?: string;
+}
+
+const { size = 40, class: className } = Astro.props;
+---
+
+{/* Alt is empty on purpose: the wordmark next to it already says Bakmark. */}
+<img
+	class:list={["logo", className]}
+	src="/logo-bakmark.png"
+	alt=""
+	aria-hidden="true"
+	width={size}
+	height={size}
+	decoding="async"
+/>

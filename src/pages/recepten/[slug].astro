@@ -1,0 +1,15 @@
+---
+import RecipeView from "../../views/Recipe.astro";
+import { recipeRoutes } from "../../lib/recipes";
+
+export function getStaticPaths() {
+	return recipeRoutes().map(({ slug, canonical }) => ({
+		params: { slug },
+		props: { canonical },
+	}));
+}
+
+const { canonical } = Astro.props as { canonical: string };
+---
+
+<RecipeView slug={canonical} lang="nl" />

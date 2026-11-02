@@ -1,0 +1,1982 @@
+/* Design tokens and base styles. Documented in docs/design-tokens.md.
+   Colour pairs are light / dark and resolve through light-dark(), so the
+   system preference works with no JavaScript. The toggle only sets
+   data-theme on <html> and stores it. */
+
+@layer tokens, base, components;
+
+@layer tokens {
+	:root {
+		color-scheme: light dark;
+
+		--font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+			"Times New Roman", serif;
+		--font-sans: system-ui, -apple-system, "Segoe UI", Roboto,
+			"Helvetica Neue", Arial, sans-serif;
+
+		/* Type scale. Body never drops below 17px. */
+		--text-sm: 0.9375rem;
+		--text-body: 1.0625rem;
+		--text-lead: clamp(1.1875rem, 1.13rem + 0.35vw, 1.4375rem);
+		--text-h3: clamp(1.1875rem, 1.14rem + 0.3vw, 1.375rem);
+		--text-h2: clamp(1.5rem, 1.36rem + 0.8vw, 2rem);
+		--text-h1: clamp(2.25rem, 1.7rem + 2.4vw, 3.75rem);
+
+		--measure: 65ch;
+		--measure-wide: 76ch;
+
+		--space-1: 0.5rem;
+		--space-2: 0.75rem;
+		--space-3: 1rem;
+		--space-4: 1.5rem;
+		--space-5: 2rem;
+		--space-6: 3rem;
+		--space-7: 4rem;
+		--space-8: 6rem;
+
+		--radius: 0.5rem;
+		--radius-lg: 1rem;
+
+		/* Colours. The plain value is the light fallback for browsers
+		   without light-dark(); keep the pairs in sync. */
+		--bg: #f7f1e6;
+		--bg: light-dark(#f7f1e6, #15100c);
+		--surface: #fffaf1;
+		--surface: light-dark(#fffaf1, #211a14);
+		--surface-warm: #f6e7c8;
+		--surface-warm: light-dark(#f6e7c8, #2c2318);
+		--text: #221c16;
+		--text: light-dark(#221c16, #f1e8dc);
+		--muted: #6a5f52;
+		--muted: light-dark(#6a5f52, #b3a495);
+		--accent: #a1471b;
+		--accent: light-dark(#a1471b, #f4a97c);
+		--accent-deep: #7a3210;
+		--accent-deep: light-dark(#7a3210, #ffc9a6);
+		--on-accent: #fffaf1;
+		--on-accent: light-dark(#fffaf1, #201810);
+		--border: #e0d3bf;
+		--border: light-dark(#e0d3bf, #3a2f25);
+		--border-strong: #c9b79f;
+		--border-strong: light-dark(#c9b79f, #4d4034);
+
+		/* Warmth: a very soft two-stop wash, no image request. */
+		--wash-a: rgb(161 71 27 / 0.05);
+		--wash-b: rgb(120 84 40 / 0.04);
+		--shadow-soft: 0 1px 2px rgb(70 44 25 / 0.06), 0 8px 24px -12px rgb(70 44 25 / 0.18);
+		--shadow-lift: 0 2px 3px rgb(70 44 25 / 0.08), 0 16px 32px -16px rgb(70 44 25 / 0.24);
+
+		/* The mark is gold on transparent. Gold on cream paper is thin, so light
+		   mode deepens it a little; on the dark background it stays untouched. */
+		--logo-filter: brightness(0.82) saturate(1.15);
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--logo-filter: none;
+		}
+	}
+
+	:root[data-theme="light"] {
+		color-scheme: light;
+	}
+
+	:root[data-theme="dark"] {
+		color-scheme: dark;
+	}
+
+	:root[data-theme="light"] {
+		--logo-filter: brightness(0.82) saturate(1.15);
+		--wash-a: rgb(161 71 27 / 0.05);
+		--wash-b: rgb(120 84 40 / 0.04);
+		--shadow-soft: 0 1px 2px rgb(70 44 25 / 0.06), 0 8px 24px -12px rgb(70 44 25 / 0.18);
+		--shadow-lift: 0 2px 3px rgb(70 44 25 / 0.08), 0 16px 32px -16px rgb(70 44 25 / 0.24);
+	}
+
+	:root[data-theme="dark"] {
+		--logo-filter: none;
+		--wash-a: rgb(244 169 124 / 0.05);
+		--wash-b: rgb(120 90 60 / 0.06);
+		--shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+		--shadow-lift: 0 2px 3px rgb(0 0 0 / 0.5), 0 16px 32px -16px rgb(0 0 0 / 0.7);
+	}
+}
+
+@layer base {
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	html {
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+		scrollbar-gutter: stable;
+	}
+
+	body {
+		margin: 0;
+		/* Column, so a short page still puts the footer on the bottom edge. */
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		min-height: 100dvh;
+		background-color: var(--bg);
+		background-image:
+			radial-gradient(60rem 40rem at 85% -10%, var(--wash-a), transparent 70%),
+			radial-gradient(50rem 35rem at -10% 30%, var(--wash-b), transparent 70%);
+		background-repeat: no-repeat;
+		color: var(--text);
+		font-family: var(--font-sans);
+		font-size: var(--text-body);
+		line-height: 1.65;
+		text-rendering: optimizeLegibility;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-serif);
+		font-weight: 600;
+		line-height: 1.18;
+		letter-spacing: -0.015em;
+		text-wrap: balance;
+		margin: 0 0 var(--space-3);
+	}
+
+	h1 {
+		font-size: var(--text-h1);
+		line-height: 1.05;
+		letter-spacing: -0.025em;
+	}
+
+	h2 {
+		font-size: var(--text-h2);
+		margin-top: var(--space-6);
+	}
+
+	h3 {
+		font-size: var(--text-h3);
+		margin-top: var(--space-5);
+	}
+
+	p,
+	ul,
+	ol {
+		max-width: var(--measure);
+		margin: 0 0 var(--space-3);
+	}
+
+	ul,
+	ol {
+		padding-left: 1.25em;
+	}
+
+	li + li {
+		margin-top: var(--space-1);
+	}
+
+	a {
+		color: var(--accent);
+		text-decoration-thickness: max(1px, 0.08em);
+		text-underline-offset: 0.16em;
+	}
+
+	a:hover {
+		text-decoration-thickness: max(2px, 0.12em);
+	}
+
+	:focus-visible {
+		outline: 3px solid var(--accent);
+		outline-offset: 3px;
+		border-radius: 2px;
+	}
+
+	img {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+
+	strong {
+		font-weight: 600;
+	}
+
+	::selection {
+		background: var(--accent);
+		color: var(--on-accent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+	}
+}
+
+@layer components {
+	.wrap {
+		width: min(100% - 2 * var(--space-5), var(--measure-wide));
+		margin-inline: auto;
+	}
+
+	/* Takes the leftover height on a short page, so the footer lands at the
+	   bottom of the view instead of halfway up it. */
+	main {
+		flex: 1 0 auto;
+	}
+
+	.skip-link {
+		position: absolute;
+		left: var(--space-3);
+		top: -10rem;
+		z-index: 10;
+		padding: var(--space-2) var(--space-3);
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.skip-link:focus {
+		top: var(--space-3);
+	}
+
+	.lead {
+		font-size: var(--text-lead);
+		line-height: 1.5;
+		color: var(--muted);
+		max-width: var(--measure);
+	}
+
+	.muted {
+		color: var(--muted);
+	}
+
+	/* Header */
+	.site-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-4);
+		padding-block: var(--space-4) var(--space-3);
+		border-bottom: 1px solid var(--border);
+	}
+
+	.site-title {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		margin-right: auto;
+		font-family: var(--font-serif);
+		font-size: 1.375rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+		text-decoration: none;
+		color: var(--text);
+	}
+
+	/* The Bakmark mark, /logo-bakmark.png at 512px and downsampled to 160. */
+	.logo {
+		display: block;
+		flex: none;
+		filter: var(--logo-filter);
+	}
+
+	.site-logo {
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	.site-footer .site-logo {
+		width: 2rem;
+		height: 2rem;
+	}
+
+	.site-header nav {
+		flex-basis: 100%;
+		order: 3;
+	}
+
+	.site-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-4);
+		align-items: baseline;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-nav li {
+		margin: 0;
+	}
+
+	.site-nav a {
+		color: var(--text);
+		text-decoration: none;
+		font-size: var(--text-body);
+	}
+
+	.site-nav a:hover,
+	.site-nav a[aria-current="page"] {
+		color: var(--accent);
+		text-decoration: underline;
+		text-decoration-color: var(--accent);
+		text-decoration-thickness: max(2px, 0.12em);
+		text-underline-offset: 0.3em;
+	}
+
+	/* Theme toggle */
+	/* Language toggle and theme toggle sit together on the right. */
+	.header-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.lang-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.6rem;
+		padding: var(--space-2) var(--space-3);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		line-height: 1;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+		box-shadow: var(--shadow-soft);
+		text-decoration: none;
+	}
+
+	.lang-toggle:hover {
+		background: var(--surface-warm);
+	}
+
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font: inherit;
+		padding: var(--space-2);
+		line-height: 0;
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+		cursor: pointer;
+		box-shadow: var(--shadow-soft);
+	}
+
+	.theme-toggle:hover {
+		background: var(--surface-warm);
+	}
+
+	.theme-toggle .theme-icon {
+		width: 1.15rem;
+		height: 1.15rem;
+		display: block;
+	}
+
+	/* One icon at a time: the one for the mode the button switches to.
+	   Moon starts hidden so nothing flashes twice before the script runs. */
+	.theme-toggle .theme-icon-moon {
+		display: none;
+	}
+
+	.theme-toggle[data-state="light"] .theme-icon-sun {
+		display: none;
+	}
+
+	.theme-toggle[data-state="light"] .theme-icon-moon {
+		display: block;
+	}
+
+	/* Buttons */
+	.button {
+		display: inline-block;
+		padding: var(--space-2) var(--space-4);
+		background: var(--accent);
+		color: var(--on-accent);
+		font-weight: 600;
+		text-decoration: none;
+		border: 1px solid var(--accent);
+		border-radius: 999px;
+		box-shadow: 0 2px 0 var(--accent-deep);
+		transition: transform 120ms ease, box-shadow 120ms ease;
+	}
+
+	.button:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 3px 0 var(--accent-deep);
+	}
+
+	.button:active {
+		transform: translateY(1px);
+		box-shadow: 0 1px 0 var(--accent-deep);
+	}
+
+	.button-secondary {
+		display: inline-block;
+		padding: var(--space-2) var(--space-4);
+		background: transparent;
+		color: var(--text);
+		font-weight: 600;
+		text-decoration: none;
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+	}
+
+	.button-secondary:hover {
+		background: var(--surface-warm);
+	}
+
+	.button[aria-disabled="true"],
+	.button:disabled {
+		cursor: not-allowed;
+		background: var(--surface);
+		color: var(--muted);
+		border-color: var(--border);
+		box-shadow: none;
+		transform: none;
+	}
+
+	/* Hero */
+	.hero {
+		padding-block: var(--space-6) var(--space-5);
+	}
+
+	/* A hero whose next element already brings its own top margin. */
+	.hero-tight {
+		padding-bottom: 0;
+	}
+
+	.hero h1 {
+		max-width: 22ch;
+	}
+
+	.hero .lead {
+		margin-top: var(--space-4);
+	}
+
+	.hero .hero-more {
+		margin-top: var(--space-4);
+	}
+
+	/* Newest recipes as a plain list: the cards live on /recepten. */
+	.newest-list {
+		display: grid;
+		gap: var(--space-2);
+		margin: var(--space-4) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.newest-list li {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2);
+	}
+
+	.newest-list a {
+		font-weight: 600;
+	}
+
+	.newest-list .newest-meta {
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
+
+	/* Headings with a short accent rule above */
+	.section h2:first-child,
+	.section-title {
+		margin-top: 0;
+	}
+
+	.section {
+		padding-block: var(--space-4);
+	}
+
+	.section-lede {
+		color: var(--muted);
+		margin-top: calc(-1 * var(--space-1));
+	}
+
+	/* Cards */
+	.card {
+		display: grid;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.card-grid {
+		display: grid;
+		gap: var(--space-4);
+		/* Cards keep a card-like width instead of stretching to the column. */
+		grid-template-columns: repeat(auto-fill, minmax(16rem, 22rem));
+		justify-content: start;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-width: none;
+	}
+
+	.card-grid li {
+		margin: 0;
+	}
+
+	.recipe-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-soft);
+		text-decoration: none;
+		color: var(--text);
+		transition: transform 150ms ease, box-shadow 150ms ease,
+			border-color 150ms ease;
+	}
+
+	.recipe-card:hover,
+	.recipe-card:focus-visible {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-lift);
+		border-color: var(--accent);
+	}
+
+	.recipe-card h3 {
+		margin: var(--space-1) 0 0;
+	}
+
+	.recipe-card p {
+		margin: 0;
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
+
+	.recipe-card .recipe-card-cta {
+		margin-top: auto;
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--accent);
+	}
+
+	/* Chips */
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.chips li {
+		margin: 0;
+	}
+
+	.chip {
+		display: inline-block;
+		padding: 0.15rem 0.6rem;
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--text);
+		background: var(--surface-warm);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+	}
+
+	.chip-concept {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
+		font-weight: 600;
+	}
+
+	/* Placeholder figures: deliberately unfinished looking */
+	/* A real photo keeps its own ratio: a fixed frame would crop a portrait
+	   blind, and the point of this one is that it is not styled. */
+	.portrait {
+		margin: var(--space-4) 0;
+	}
+
+	.portrait img {
+		display: block;
+		width: 100%;
+		max-width: 22rem;
+		height: auto;
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.placeholder {
+		margin: var(--space-4) 0;
+	}
+
+	.placeholder-box {
+		display: grid;
+		place-content: center;
+		gap: var(--space-1);
+		aspect-ratio: var(--ratio, 3 / 2);
+		width: 100%;
+		max-width: 40rem;
+		background:
+			repeating-linear-gradient(
+				135deg,
+				transparent 0 14px,
+				var(--wash-a) 14px 28px
+			),
+			var(--surface);
+		border: 2px dashed var(--border-strong);
+		border-radius: var(--radius-lg);
+		text-align: center;
+		padding: var(--space-4);
+		color: var(--muted);
+	}
+
+	.recipe-card .placeholder-box {
+		max-width: none;
+		border-radius: var(--radius);
+	}
+
+	.placeholder-box span {
+		font-size: var(--text-sm);
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+	}
+
+	.placeholder-box strong {
+		color: var(--text);
+		font-family: var(--font-serif);
+		font-weight: 600;
+		font-size: var(--text-h3);
+	}
+
+	.placeholder figcaption {
+		max-width: 40rem;
+		margin-top: var(--space-2);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	/* Callouts, e.g. the tip block and the affiliate note */
+	.callout {
+		max-width: 34rem;
+		margin-block: var(--space-6);
+		padding: var(--space-5);
+		background: var(--surface-warm);
+		border: 1px dashed var(--border-strong);
+		border-radius: var(--radius-lg);
+	}
+
+	.callout h2,
+	.callout h3 {
+		margin-top: 0;
+	}
+
+	.callout p:last-child {
+		margin-bottom: 0;
+	}
+
+	.tips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin: var(--space-3) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tips li {
+		margin: 0;
+	}
+
+	.tip-amount {
+		display: inline-block;
+		padding: var(--space-1) var(--space-3);
+		font-weight: 600;
+		color: var(--accent-deep);
+		background: var(--surface);
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+	}
+
+	/* Newsletter */
+	.signup {
+		max-width: 36rem;
+		margin-top: var(--space-6);
+		padding: var(--space-5);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.signup h2 {
+		margin-top: 0;
+		font-size: var(--text-h3);
+	}
+
+	.signup p {
+		max-width: none;
+	}
+
+	.signup label {
+		display: block;
+		margin-bottom: var(--space-1);
+		font-size: var(--text-sm);
+	}
+
+	.signup-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.signup input {
+		flex: 1 1 14rem;
+		min-width: 0;
+		font: inherit;
+		padding: var(--space-2);
+		background: var(--bg);
+		color: var(--text);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+	}
+
+	.signup button {
+		font: inherit;
+		font-weight: 600;
+		padding: var(--space-2) var(--space-4);
+		background: var(--accent);
+		color: var(--on-accent);
+		border: 1px solid var(--accent);
+		border-radius: var(--radius);
+		cursor: pointer;
+	}
+
+	.signup button:disabled {
+		cursor: not-allowed;
+		background: var(--surface-warm);
+		color: var(--muted);
+		border-color: var(--border);
+	}
+
+	/* A section heading with the two things you reach for while cooking on its
+	   right edge: print, and the wake lock. */
+	.section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2) var(--space-4);
+		margin-bottom: var(--space-2);
+	}
+
+	.section-head h2 {
+		margin: 0;
+	}
+
+	.section-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.button-quiet {
+		padding: var(--space-1) var(--space-3);
+		background: transparent;
+		color: var(--text);
+		border: 1px solid var(--border-strong);
+		box-shadow: none;
+		font-size: var(--text-sm);
+	}
+
+	.button-quiet:hover {
+		transform: none;
+		box-shadow: none;
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.button-quiet[aria-pressed="true"] {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
+	}
+
+	.button-quiet:disabled {
+		color: var(--muted);
+		border-color: var(--border);
+		cursor: not-allowed;
+	}
+
+	/* Blocks on the recipe page are separated by one line on top of each. A
+	   plain section had none, so the rule stopped after Benodigdheden. */
+	.section-ruled {
+		border-top: 1px solid var(--border);
+	}
+
+	/* Each part's steps fold away: a composed recipe is five step lists, and
+	   only the assembly is this page's own work. */
+	/* Dashed, not solid: inside the steps these separate parts of one section,
+	   they do not end a block the way the section rules do. */
+	.step-group.collapsible {
+		border-top: 1px dashed var(--border);
+	}
+
+	.step-group.collapsible > summary {
+		/* Grid, not wrapping flex: the +/− belongs on the title line, and the
+		   times take the row under it without pushing the marker down. */
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: baseline;
+		gap: 0 var(--space-2);
+		padding-block: var(--space-3);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.step-group.collapsible > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.step-group.collapsible > summary h3 {
+		margin: 0;
+		font-size: var(--text-h3);
+	}
+
+	.step-group.collapsible > summary::after {
+		content: "+";
+		grid-column: 2;
+		grid-row: 1;
+		font-size: 1.4rem;
+		line-height: 1;
+		color: var(--accent);
+	}
+
+	.step-group.collapsible[open] > summary::after {
+		content: "−";
+	}
+
+	/* A part's times, right under its steps heading. */
+	.group-times {
+		margin: calc(-1 * var(--space-2)) 0 var(--space-3);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	/* Honeypot: invisible to a person, irresistible to a naive bot. */
+	.signup .hp {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	.form-status {
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	.form-status:empty {
+		display: none;
+	}
+
+	.form-status[data-state="ok"] {
+		color: var(--text);
+	}
+
+	.form-status[data-state="error"] {
+		color: var(--accent);
+		font-weight: 600;
+	}
+
+	.form-note {
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	/* Recipe page */
+	.recipe-video {
+		margin-block: var(--space-5);
+	}
+
+	.recipe-meta {
+		margin: var(--space-4) 0 var(--space-5);
+	}
+
+	.recipe-result {
+		font-size: var(--text-lead);
+		font-family: var(--font-serif);
+		margin-bottom: var(--space-2);
+	}
+
+	.ingredients {
+		margin: var(--space-3) 0 var(--space-5);
+		padding: 0;
+		list-style: none;
+		max-width: 34rem;
+	}
+
+	.ingredients li {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-4);
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.ingredients li:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.ingredients .amount {
+		color: var(--muted);
+		white-space: nowrap;
+	}
+
+	.steps {
+		margin: var(--space-4) 0;
+		padding: 0;
+		list-style: none;
+		max-width: var(--measure);
+	}
+
+	.steps li {
+		position: relative;
+		padding-left: var(--space-6);
+		margin-bottom: var(--space-4);
+	}
+
+	/* The number is real text, not a CSS counter: counters are the first thing
+	   a print stylesheet loses, and the number is what you follow on paper. */
+	.steps .step-num {
+		position: absolute;
+		left: 0;
+		top: 0.1em;
+		display: grid;
+		place-content: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--on-accent);
+		background: var(--accent);
+		border-radius: 50%;
+	}
+
+	.steps p {
+		max-width: none;
+		margin-bottom: var(--space-1);
+	}
+
+	/* Footer */
+	.site-footer {
+		margin-top: var(--space-8);
+		padding-block: var(--space-6);
+		background: var(--surface);
+		border-top: 1px solid var(--border);
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
+
+	.site-footer-line {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-1) var(--space-2);
+		max-width: none;
+		margin: 0;
+	}
+
+	.rule {
+		height: 1px;
+		border: 0;
+		background: var(--border);
+		margin-block: var(--space-6);
+	}
+}
+
+/* Recipe content rendered from recipes/<slug>.json. */
+@layer components {
+	.verified-note {
+		max-width: var(--measure);
+		margin-block: var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		background: var(--surface-warm);
+		border-left: 3px solid var(--accent);
+		border-radius: var(--radius);
+		font-size: var(--text-sm);
+	}
+
+	/* Ingredient note behind an info toggle, so the list stays scannable.
+	   <details> keeps it keyboard-operable and needs no JavaScript. */
+	.ingredients li {
+		position: relative;
+	}
+
+	.ingredient-name {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-1);
+	}
+
+	.ingredient-info {
+		position: relative;
+		display: inline-block;
+	}
+
+	.ingredient-info > summary {
+		display: inline-grid;
+		place-content: center;
+		width: 1.15rem;
+		height: 1.15rem;
+		border: 1px solid var(--border-strong);
+		border-radius: 50%;
+		color: var(--muted);
+		font-family: var(--font-serif);
+		font-size: 0.75rem;
+		font-style: italic;
+		line-height: 1;
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+	}
+
+	.ingredient-info > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.ingredient-info > summary:hover,
+	.ingredient-info[open] > summary {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.ingredient-info > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.ingredient-info-panel {
+		position: absolute;
+		top: calc(100% + 0.35rem);
+		left: -0.5rem;
+		z-index: 10;
+		width: min(26rem, calc(100vw - 4rem));
+		padding: var(--space-2) var(--space-3);
+		background: var(--surface);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+		box-shadow: 0 6px 24px rgb(0 0 0 / 0.14);
+		color: var(--text);
+		font-size: var(--text-sm);
+		line-height: 1.5;
+	}
+
+	.ingredient-info-panel p {
+		margin: 0;
+		max-width: none;
+	}
+
+	.bake {
+		margin: var(--space-3) 0;
+		max-width: var(--measure);
+	}
+
+	.bake > div {
+		display: grid;
+		grid-template-columns: 10rem 1fr;
+		gap: var(--space-3);
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.bake > div:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.bake dt {
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
+
+	.bake dd {
+		margin: 0;
+	}
+
+	.step-extra {
+		margin-top: var(--space-1);
+	}
+
+	.step-extra > summary {
+		cursor: pointer;
+		font-size: var(--text-sm);
+		color: var(--accent);
+		list-style: none;
+	}
+
+	.step-extra > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.step-extra > summary::before {
+		content: "+ ";
+	}
+
+	.step-extra[open] > summary::before {
+		content: "− ";
+	}
+
+	.step-extra > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.step-why {
+		padding-left: var(--space-3);
+		border-left: 2px solid var(--accent);
+		color: var(--muted);
+	}
+
+	.step-tips {
+		margin: var(--space-1) 0 var(--space-2);
+		padding-left: var(--space-4);
+		color: var(--muted);
+	}
+
+	.step-tips li {
+		margin-bottom: var(--space-1);
+		max-width: none;
+	}
+
+	.mislukt {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: var(--text-sm);
+	}
+
+	.mislukt th,
+	.mislukt td {
+		text-align: left;
+		padding: var(--space-2) var(--space-2) var(--space-2) 0;
+		border-bottom: 1px dashed var(--border);
+		vertical-align: top;
+	}
+
+	.mislukt th {
+		color: var(--muted);
+		font-weight: 600;
+	}
+
+	.faq {
+		max-width: var(--measure);
+	}
+
+	.faq details {
+		border-bottom: 1px dashed var(--border);
+		padding-block: var(--space-2);
+	}
+
+	.faq summary {
+		cursor: pointer;
+		font-weight: 600;
+	}
+
+	.faq details p {
+		margin: var(--space-2) 0 0;
+	}
+}
+
+/* Print view: ingredients and steps only. No explanations, no photos, no
+   navigation, no newsletter. Same page, same data — nothing to keep in sync. */
+@layer components {
+	.print-only {
+		display: none;
+	}
+}
+
+@media print {
+	:root {
+		color-scheme: light;
+		--bg: #fff;
+		--surface: #fff;
+		--surface-warm: #fff;
+		--text: #000;
+		--muted: #333;
+		--border: #bbb;
+		--border-strong: #888;
+		--accent: #000;
+		--accent-deep: #000;
+		--on-accent: #fff;
+	}
+
+	@page {
+		size: A4;
+		margin: 16mm;
+	}
+
+	body {
+		background: #fff;
+		color: #000;
+		font-size: 11pt;
+		line-height: 1.45;
+	}
+
+	.no-print,
+	.site-header,
+	.site-footer,
+	.skip-link,
+	.signup,
+	.placeholder-box,
+	.verified-note,
+	.step-extra,
+	.step-why,
+	.step-tips,
+	.faq,
+	.ingredient-info {
+		display: none !important;
+	}
+
+	.wrap,
+	main {
+		max-width: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.print-only {
+		display: block;
+	}
+
+	h1 {
+		font-size: 22pt;
+		margin: 0 0 0.2rem;
+	}
+
+	h2 {
+		font-size: 13pt;
+		margin: 0.75rem 0 0.25rem;
+		break-after: avoid;
+		page-break-after: avoid;
+	}
+
+	.hero {
+		padding: 0 0 0.4rem;
+	}
+
+	.recipe-result {
+		font-size: 11pt;
+		margin: 0 0 0.2rem;
+	}
+
+	.print-only {
+		font-size: 10pt;
+		color: #333;
+		margin: 0.35rem 0 0;
+	}
+
+	/* The header is hidden on paper, so the sheet carries the mark itself. */
+	.print-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0 0 0.6rem;
+		font-size: 12pt;
+		font-weight: 600;
+		color: #000;
+	}
+
+	.print-brand img {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	a {
+		color: #000;
+		text-decoration: none;
+	}
+
+	.ingredients,
+	.bake,
+	.steps,
+	.tools {
+		max-width: none;
+		margin-block: 0.2rem 0.25rem;
+	}
+
+	/* The tick boxes are for gathering at the worktop, not for paper: they took
+	   a column and pushed every row apart. Hiding the input lets the list
+	   marker back in, so the lists lose that too. */
+	.gather-check {
+		display: none !important;
+	}
+
+	ul.ingredients,
+	ul.tools {
+		list-style: none;
+		padding-left: 0;
+	}
+
+	/* Paper cannot be clicked, so a disclosure triangle is furniture. */
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary {
+		list-style: none;
+	}
+
+	/* Ingredients and tools are reference lists, not prose: two columns at 9pt
+	   fits a batch on half the sheet it used to take. */
+	.ingredients {
+		columns: 2;
+		column-gap: 12mm;
+		column-rule: 1px solid #ddd;
+		font-size: 9pt;
+		line-height: 1.3;
+	}
+
+	.ingredients li {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		padding-block: 0.4pt;
+		border-bottom: 1px solid #ddd;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	/* A rule under each group, so two columns still say what belongs to what,
+	   and a group never splits across a column or a page. */
+	.ingredient-group {
+		break-inside: avoid;
+		page-break-inside: avoid;
+		padding-bottom: 1.5mm;
+		border-bottom: 1px solid #999;
+	}
+
+	.ingredient-group + .ingredient-group {
+		margin-top: 1.5mm;
+	}
+
+	.ingredient-group:last-child {
+		border-bottom: 0;
+	}
+
+	.ingredient-group h3 {
+		font-size: 10pt;
+		margin: 0 0 0.1rem;
+	}
+
+	.tools {
+		columns: 2;
+		column-gap: 10mm;
+		column-rule: 1px solid #ddd;
+		font-size: 9pt;
+		line-height: 1.2;
+		margin-block: 0.2rem 0.3rem;
+	}
+
+	.tools li {
+		grid-template-columns: 1fr;
+		gap: 0;
+		padding-block: 0.4pt;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.tools .form-note {
+		font-size: 8.5pt;
+	}
+
+	.ingredients li:first-child {
+		border-top: none;
+	}
+
+	.bake > div {
+		border-bottom: 1px solid #ddd;
+		padding-block: 1pt;
+	}
+
+	/* A bake table under a heading on the previous page is a lost page. */
+	.bake-block {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	/* The disclosure markers belong to the screen: paper cannot be clicked. */
+	details.collapsible > summary::after,
+	.step-extra::before {
+		content: none !important;
+	}
+
+	details.collapsible > summary {
+		padding-block: 0;
+	}
+
+	details.collapsible {
+		border-top: 1px solid #ddd;
+	}
+
+	/* On paper the number comes from the <ol> itself. The screen badge is a
+	   fixed-size grid box, and that clipped its own digit in the print pass. */
+	.steps {
+		list-style: decimal;
+		padding-left: 1.4rem;
+	}
+
+	.steps li {
+		padding-left: 0;
+		break-inside: avoid;
+		page-break-inside: avoid;
+		margin-bottom: 0.7rem;
+	}
+
+	/* A part heading on one page and its steps on the next is a wasted step:
+	   keep the block together, and only split it when it cannot fit at all. */
+	.step-group {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.step-group.collapsible > summary {
+		break-after: avoid;
+		page-break-after: avoid;
+	}
+
+	.steps .step-num {
+		display: none;
+	}
+
+	.section {
+		margin-block: 0.9rem 0;
+	}
+}
+
+/* Composed recipes: one block per basisrecept, in dependency order. */
+@layer components {
+	.parts {
+		margin: var(--space-3) 0;
+		padding: 0;
+		list-style: none;
+		max-width: var(--measure);
+	}
+
+	.parts li {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		justify-content: space-between;
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.parts li:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.ingredient-group + .ingredient-group,
+	.step-group + .step-group {
+		margin-top: var(--space-5);
+	}
+
+	.step-group.collapsible > summary .group-times {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		margin: 0;
+	}
+
+	.ingredient-group h3,
+	.step-group h3 {
+		font-size: var(--text-h3);
+		margin-bottom: var(--space-2);
+	}
+
+}
+
+/* Named variants of a basisrecept: same steps, different composition. */
+@layer components {
+	.variants {
+		margin: var(--space-3) 0;
+		max-width: var(--measure);
+	}
+
+	.variants > div {
+		padding-block: var(--space-2);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.variants > div:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.variants dt {
+		font-weight: 600;
+	}
+
+	.variants dd {
+		margin: 0;
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
+}
+
+/* Facet filters on /recepten. Server-rendered list, client-side narrowing;
+   with JavaScript off every chip is inert and the full list stays. */
+@layer components {
+	.filters {
+		margin-top: var(--space-3);
+	}
+
+	.filters fieldset {
+		border: 0;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+	}
+
+	.filters legend {
+		padding: 0;
+		margin-bottom: var(--space-1);
+		font-size: var(--text-sm);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+
+	.filter-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+
+	.filter-chip:hover:not(:disabled) {
+		border-color: var(--accent);
+	}
+
+	.filter-chip[aria-pressed="true"] {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
+	}
+
+	.filter-chip:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.filter-chip:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.filter-count {
+		font-size: 0.8em;
+		opacity: 0.7;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.filter-reset {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		margin: 0 0 var(--space-1);
+	}
+
+	.filter-reset-button {
+		font: inherit;
+		font-size: var(--text-sm);
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+
+	.card-grid li[hidden] {
+		display: none;
+	}
+}
+
+/* Sticky header plus a collapsible, sticky filter panel (D20 follow-up).
+   On a phone the panel was a wall of chips before the first recipe; now it is
+   one row that opens, and both stay reachable while scrolling. */
+@layer components {
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 30;
+		background: var(--bg);
+		border-bottom: 1px solid var(--border);
+	}
+
+	.filter-bar {
+		position: sticky;
+		top: var(--header-height, 6.5rem);
+		z-index: 20;
+		margin: var(--space-4) 0 var(--space-3);
+		background: var(--bg);
+		border-block: 1px solid var(--border);
+	}
+
+	.filter-panel > summary {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding-block: var(--space-2);
+		cursor: pointer;
+		list-style: none;
+		font-weight: 600;
+	}
+
+	.filter-panel > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.filter-panel > summary::after {
+		content: "+";
+		margin-left: auto;
+		font-weight: 400;
+		color: var(--accent);
+	}
+
+	.filter-panel[open] > summary::after {
+		content: "−";
+	}
+
+	.filter-panel > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.filter-summary-state:not(:empty) {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--on-accent);
+		background: var(--accent);
+		border-radius: 999px;
+		padding: 0.05rem 0.5rem;
+	}
+
+	.filter-panel[open] .filters {
+		padding-bottom: var(--space-3);
+	}
+
+	.filter-panel:not([open]) .filters {
+		display: none;
+	}
+
+	.filter-status {
+		margin: 0;
+		padding-bottom: var(--space-2);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	.search-row {
+		margin: 0 0 var(--space-3);
+	}
+
+	.search-row label {
+		display: block;
+		margin-bottom: var(--space-1);
+		font-size: var(--text-sm);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.search-row input {
+		width: 100%;
+		max-width: 32rem;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+	}
+
+	.search-row input:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+}
+
+/* Recipe grid centred, and cheap to scroll once there are many cards. */
+@layer components {
+	.card-grid {
+		justify-content: center;
+	}
+
+	.card-grid > li {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 30rem;
+		/* content-visibility paints inside the li box, so the card's 2px hover
+		   lift and its shadow were clipped along the top edge. */
+		padding-block: 3px;
+	}
+
+	[data-results-section] {
+		scroll-margin-top: calc(var(--header-height, 6.5rem) + var(--space-4));
+	}
+
+	[data-results-section]:focus-visible {
+		outline: none;
+	}
+}
+
+/* Difficulty chips: the chef's hat, filled up to the level. */
+@layer components {
+	.filter-chip-difficulty {
+		gap: var(--space-1);
+	}
+
+	.difficulty-icons {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+	}
+
+	/* One hat asset for every size. Used as a mask so it takes the colour of
+	   whatever it sits in; /koksmuts.svg is a plain black silhouette. */
+	.difficulty-icon {
+		display: inline-block;
+		flex: none;
+		width: 1.6rem;
+		height: 1.35rem;
+		background-color: currentColor;
+		-webkit-mask: url("/koksmuts.svg") no-repeat center / contain;
+		mask: url("/koksmuts.svg") no-repeat center / contain;
+	}
+
+	.difficulty-icon.is-off {
+		opacity: 0.25;
+	}
+
+	.filter-feedback {
+		color: var(--accent);
+	}
+}
+
+/* Difficulty badge (one chef's hat plus a word), ingredient checkboxes and the
+   benodigdheden list. */
+@layer components {
+	.difficulty-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+
+	.difficulty-badge .difficulty-icon {
+		width: 1.6rem;
+		height: 1.35rem;
+		color: var(--accent);
+	}
+
+	.recipe-card-labels {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-1);
+	}
+
+	.recipe-card-labels .difficulty-badge {
+		font-size: var(--text-sm);
+	}
+
+	.ingredients li {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: baseline;
+		justify-content: normal;
+		gap: var(--space-2);
+	}
+
+	.gather-check {
+		width: 1.15rem;
+		height: 1.15rem;
+		margin: 0;
+		accent-color: var(--accent);
+		cursor: pointer;
+		align-self: center;
+	}
+
+	.ingredients li.is-checked .ingredient-name,
+	.ingredients li.is-checked .amount {
+		text-decoration: line-through;
+		opacity: 0.55;
+	}
+
+	.tools {
+		margin: var(--space-3) 0;
+		padding: 0;
+		list-style: none;
+		max-width: var(--measure);
+	}
+
+	.tools li {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: baseline;
+		gap: var(--space-2);
+		padding-block: var(--space-1);
+		border-bottom: 1px dashed var(--border);
+	}
+
+	.tools li.is-checked span {
+		text-decoration: line-through;
+		opacity: 0.55;
+	}
+
+	.tools .form-note {
+		margin: 0;
+	}
+
+	.tools li:first-child {
+		border-top: 1px dashed var(--border);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
+	}
+}
+
+/* Sort control inside the sticky filter bar. */
+@layer components {
+	.filter-status {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.sort-control {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+	}
+
+	.sort-control span {
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sort-control select {
+		font: inherit;
+		font-size: var(--text-sm);
+		padding: 0.25rem 0.4rem;
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--text);
+	}
+}
+
+/* Time breakdown per component. */
+@layer components {
+}
+
+/* Collapsible recipe sections: the reasoning folds away, the steps do not. */
+@layer components {
+	details.collapsible {
+		border-top: 1px solid var(--border);
+	}
+
+	details.collapsible > summary {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding-block: var(--space-4);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	details.collapsible > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	details.collapsible > summary h2 {
+		margin: 0;
+		font-size: var(--text-h2);
+	}
+
+	details.collapsible > summary::after {
+		content: "+";
+		margin-left: auto;
+		font-size: 1.4rem;
+		line-height: 1;
+		color: var(--accent);
+	}
+
+	details.collapsible[open] > summary::after {
+		content: "−";
+	}
+
+	details.collapsible > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	details.collapsible .section-body {
+		padding-bottom: var(--space-4);
+	}
+
+	details.collapsible .section-body > :last-child {
+		margin-bottom: 0;
+	}
+}

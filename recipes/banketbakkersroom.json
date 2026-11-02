@@ -1,0 +1,196 @@
+{
+	"slug": "banketbakkersroom",
+	"title": "Banketbakkersroom",
+	"subtitle": "Een veelzijdige room, ook bekend als gele room.",
+	"role": "basis",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf getimed. Tijden zijn startwaarden.",
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"result": {
+		"value": 600,
+		"unit": "g",
+		"note": "Genoeg voor 40 soesjes of één tompoesbodem van 24 cm."
+	},
+	"category": "room-vulling",
+	"tags": [
+		"banketbakkersroom",
+		"pastry cream",
+		"room",
+		"vulling",
+		"basisrecept",
+		"gele room"
+	],
+	"difficulty": 3,
+	"time": {
+		"active": 900,
+		"total": 3600,
+		"note": "15 min actief, daarna 45 min koelen in de koelkast.",
+		"wait": 2700
+	},
+	"context": "Banketbakkersroom is melk die je bindt met eierdooiers en zetmeel. Twee dingen maken het verschil. De dooiers worden getemperd — een deel van de hete melk er eerst bij, dan pas alles terug in de pan — anders stollen ze meteen tot stukjes. En de room mag na het binden niet meer hard koken, want dan schift hij. Bindt het zetmeel eenmaal, dan is de room dik en glad, en dat is precies de structuur die Zwitserse room nodig heeft om niet in te zakken.",
+	"ingredients": [
+		{
+			"id": "melk",
+			"name": "volle melk",
+			"amount": 500,
+			"unit": "g",
+			"scale": true,
+			"note": "Volle melk; halfvol geeft een dunnere room."
+		},
+		{
+			"id": "vanille",
+			"name": "vanillestokje",
+			"amount": 1,
+			"unit": "stuk",
+			"amount_display": "1 stokje",
+			"scale": false,
+			"note": "Of 8 g vanille-extract, dan mee met de dooiers."
+		},
+		{
+			"id": "suiker",
+			"name": "suiker",
+			"amount": 100,
+			"unit": "g",
+			"scale": true,
+			"note": "Losgeroerd met de dooiers, niet met de melk."
+		},
+		{
+			"id": "dooiers",
+			"name": "eierdooiers",
+			"amount": 80,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "weight",
+			"note": "Op kamertemperatuur; koude dooiers mengen slechter. Een medium ei weegt 50 g: 17,5 g dooier en 32,5 g eiwit, dus 80 g is ongeveer 4,5 dooier."
+		},
+		{
+			"id": "maizena",
+			"name": "maïzena",
+			"amount": 40,
+			"unit": "g",
+			"scale": true,
+			"note": "Bindt bij ~85 °C. Bloem kan ook, maar geeft een meelachtige smaak."
+		},
+		{
+			"id": "boter",
+			"name": "roomboter",
+			"amount": 25,
+			"unit": "g",
+			"scale": true,
+			"note": "Pas erdoor als de room van het vuur is; geeft glans en smaak."
+		}
+	],
+	"components": [],
+	"tools": [
+		{
+			"name": "pan met dikke bodem",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "garde",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "plasticfolie",
+			"required": true,
+			"affiliate": null
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Melk met vanille op smaak brengen",
+			"duration": 600,
+			"t": null,
+			"photo": null,
+			"text": "Snijd het vanillestokje open, schraap het merg eruit en doe merg en stokje met de melk in de pan. Langzaam tegen de kook brengen en laat het tien minuten zacht trekken. Haal het stokje eruit.",
+			"why": "De vanillesmaak zit in het merg en de vetdeeltjes rondom het stokje; die hebben warmte en tijd nodig. Korter trekken geeft alleen de geur van het stokje, niet de smaak.",
+			"tips": [
+				"Uitgeschraapte stokjes kun je drogen en later in een potje suiker leggen."
+			]
+		},
+		{
+			"id": "stap-2",
+			"title": "Dooiers, suiker en maizena gladroeren",
+			"duration": 180,
+			"t": null,
+			"photo": null,
+			"text": "Roer de dooiers los met de suiker en voeg de maïzena toe. Roer glad tot er geen klontje meer in zit.",
+			"why": "Losgeklopte dooiers met zetmeel binden gelijkmatig. Klontjes maïzena binden pas op het laatste moment en worden dan kleine harde plekjes in de afgekoelde room.",
+			"tips": [
+				"Niet laten staan: zetmeel zakt naar de bodem en klontert."
+			]
+		},
+		{
+			"id": "stap-3",
+			"title": "Tempereren",
+			"duration": 120,
+			"t": null,
+			"photo": null,
+			"text": "Giet een derde van de hete melk al roerend bij de dooiers. Roer het mengsel terug in de pan en zet die op laag vuur.",
+			"why": "De dooiers stollen rond 85 °C. In één keer bij de hete melk geven ze meteen stukjes ei; eerst een derde erbij brengt ze geleidelijk op temperatuur.",
+			"tips": [
+				"Blijven roeren tijdens het gieten, niet erna."
+			]
+		},
+		{
+			"id": "stap-4",
+			"title": "Binden",
+			"duration": 300,
+			"t": null,
+			"photo": null,
+			"text": "Blijf op laag vuur roeren tot de room bindt en één keer pruttelt, ongeveer 3-5 minuten. Direct van het vuur.",
+			"why": "Het zetmeel verstijfselt bij ~85 °C en dat maakt de room dik. Eén pruttel is het bewijs dat hij de temperatuur gehaald heeft; langer doorkoken en de room schift of gaat naar ei smaken.",
+			"tips": [
+				"Roer ook de bodem en de randen mee.",
+				"Wordt het niet dik? Nog even door, het gebeurt opeens."
+			]
+		},
+		{
+			"id": "stap-5",
+			"title": "Boter erdoor en koelen",
+			"duration": 300,
+			"t": null,
+			"photo": null,
+			"text": "Roer de room van het vuur, roer de boter erdoor en stort de room in een ondiepe schaal. Dek af met plasticfolie op de room zelf en zet minimaal 45 minuten in de koelkast.",
+			"why": "Plastic op contact houdt lucht en vocht tegen: anders vormt zich een vel, en dat vel is precies wat je straks glad moet roeren. Boter erdoor op het laatst geeft glans en rondt de smaak af.",
+			"tips": [
+				"Warm erdoor is genoeg; laat de room eerst tien tellen staan."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Waarom schift mijn banketbakkersroom?",
+			"a": "Te heet of te lang. De dooiers stollen boven 85 °C en dan komt het vet los. Eén keer pruttelen is genoeg. Geschift? Zet de pan van het vuur en meng met de staafmixer; vaak komt hij weer glad."
+		},
+		{
+			"q": "Hoe lang houdbaar?",
+			"a": "Drie dagen in de koelkast, afgedekt op de room. Niet invriezen: het zetmeel valt tijdens het ontdooien uit elkaar en de room wordt korrelig."
+		}
+	],
+	"mislukt": [
+		{
+			"symptoom": "klontjes room",
+			"oorzaak": "niet getemperd, of maïzena niet glad geroerd",
+			"fix": "een derde hete melk eerst, maïzena vooraf door de dooiers roeren"
+		},
+		{
+			"symptoom": "geschifte room",
+			"oorzaak": "te lang of te heet gegaard",
+			"fix": "één pruttel en direct van het vuur; geschift? staafmixer"
+		},
+		{
+			"symptoom": "te dunne room",
+			"oorzaak": "te kort gebonden",
+			"fix": "doorroeren tot hij één keer pruttelt, niet eerder stoppen"
+		}
+	],
+	"inspired_by": [],
+	"published": "2026-10-29"
+}

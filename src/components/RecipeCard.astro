@@ -1,0 +1,60 @@
+---
+import DifficultyBadge from "./DifficultyBadge.astro";
+import { DEFAULT_LANG, isLang, type Lang } from "../lib/i18n";
+
+interface Props {
+	href: string;
+	title: string;
+	description: string;
+	imageLabel: string;
+	chips?: string[];
+	concept?: boolean;
+	/** Shown on the card so the overview says how hard something is at a glance. */
+	difficulty?: number;
+	lang?: Lang;
+}
+
+const {
+	href,
+	title,
+	description,
+	imageLabel,
+	chips = [],
+	concept = false,
+	difficulty,
+	lang: rawLang,
+} = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+const conceptLabel = lang === "en" ? "Draft" : "Concept";
+const cta = lang === "en" ? "Open the recipe →" : "Bekijk het recept →";
+---
+
+<a class="recipe-card" href={href}>
+	<div
+		class="placeholder-box"
+		style="--ratio: 16 / 10"
+		role="img"
+		aria-label={`Placeholder: ${imageLabel}`}
+	>
+		<span aria-hidden="true">Placeholder</span>
+		<strong aria-hidden="true">{imageLabel}</strong>
+	</div>
+	<p class="recipe-card-labels">
+		{concept && <span class="chip chip-concept">{conceptLabel}</span>}
+		{difficulty ? <DifficultyBadge level={difficulty} lang={lang} /> : null}
+	</p>
+	<h3>{title}</h3>
+	<p>{description}</p>
+	{
+		chips.length > 0 && (
+			<ul class="chips">
+				{chips.map((chip) => (
+					<li>
+						<span class="chip">{chip}</span>
+					</li>
+				))}
+			</ul>
+		)
+	}
+	<span class="recipe-card-cta" aria-hidden="true">{cta}</span>
+</a>

@@ -180,7 +180,7 @@ Build to video 1: **~32–40h**, plus ~12–18h of content and shooting. Per vid
 
 ### D12 — Recipes must be findable: the taxonomy is data from day one, the search UI is not
 
-Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
+Every recipe carries `category`, `tags[]`, `difficulty` (1–5, revised in D20), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
 
 - **In Gate A:** the fields, ~30 minutes while writing `soezendeeg.json`. Retrofitting a taxonomy over five finished recipes is a data migration.
 - **Not in Gate A:** search and filter. Facets (category, difficulty, time, site search) ship at **recipe 4**. With one to three recipes the home page is simply a list; a search box over three items is decoration.
@@ -189,15 +189,123 @@ Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active 
 
 **Rejected:** search/filter in Gate A (solves a problem the site cannot have yet); free-text tags without a fixed category list (five spellings of "deeg"); search only, no categories (you cannot browse a category you cannot name).
 
-### D13 — No PDF. A print view with a photo choice and a QR code.
+### D13 — No PDF. A print view of the recipe, and nothing else on the sheet.
 
-The PDF is cut. Printing is handled by a print button that builds a print view from the same data, with one choice: **met foto's** / **zonder foto's**. The donate QR code prints on both variants, always.
+*Revised 2026-10-29: the met foto's / zonder foto's choice is dropped. The sheet carries the ingredients and the steps, and nothing else — no photos, no explanations, no FAQ, no navigation.*
 
-**Why:** the PDF only ever existed to be printed. A print view removes a build pipeline (~2h in Gate A plus its maintenance), removes a second artifact per recipe that can go stale, and hands the printer the same sheet. "Zonder foto's" matters because a recipe you are actually cooking from does not want four pages of pictures on the counter.
+The PDF is cut. Printing is handled by a print button that prints the recipe page itself, with `@media print` hiding everything that is not the recipe. Two A4 sides on the counter.
 
-**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event), and the printed sheet replaces the PDF as the place the donate ask lives last.
+**Why:** the PDF only ever existed to be printed, and a print view removes a build pipeline plus a second artifact per recipe that can go stale. The photo choice goes too: a sheet you cook from wants the ingredients and the steps, and a photo of the finished product costs ink and a page without helping. The *why* behind each step stays on screen, where you read it once; on paper it is a second page of text you will not read with dough on your hands.
 
-**Rejected:** build-time PDF per recipe (removed); print button without the photo choice (the printer gets photos whether they help or not); email-gated PDF (never); relying on the plain browser print (no photo choice, no QR code, no page-break control).
+**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event). The donate ask sits directly under the print button on the page; the printed sheet itself carries no QR code yet, because there is no donate link to encode — add it when the Stripe link exists.
+
+**Rejected:** build-time PDF per recipe (removed); a photo yes/no choice (ink and pages for nothing); explanations and FAQ on paper (duplicates the page, lengthens the sheet); email-gated PDF (never); relying on the plain browser print with no print stylesheet (navigation, newsletter and video placeholder end up on the sheet).
+
+### D19 — Recipes reference recipes; a component exists once
+
+*Added 2026-10-29. Extends the D4 schema.*
+
+A recipe is either a **basisrecept** (its own ingredients and steps) or a **gerecht** that lists `components`: links to other recipes by slug. Nothing is copied. Changing `soezenbeslag.json` changes every recipe that uses it, which is the whole point: soesjes, eclairs, Paris-Brest and a filled soesje all share one dough.
+
+**The model:**
+
+| Field | Meaning |
+|---|---|
+| `role` | `basis` or `eindproduct`. The home page shows a short "Nieuwste recepten" list (three, newest first) of *all* recipes; `/recepten` is the full catalogue, basisrecepten marked as such. |
+| `components[]` | `{ ref, factor }` or `{ ref, amount, unit }`. With `amount` the factor is derived from the linked recipe's own `result`, so "300 g banketbakkersroom" stays readable and the 1:1 in Zwitserse room is visible in the data. |
+| `result` | Every recipe states what one batch makes, in a unit. This is what makes `amount` links possible at all. |
+| `aliases[]` | Extra slugs that render the same page. `soezenbeslag` answers to `soezendeeg`, because that is the search query. |
+| `variants{}` | Named presets of one recipe: `{ label, note, ingredients: { id: amount } }`. Same steps, different composition. A link picks one with `variant: "water"`. |
+| `video` | Per recipe, including components: `{status, youtube_id}`. Every basisrecept gets its own uncut video and its own page. |
+
+**Rendering:** a build-time resolver walks the tree depth-first and flattens it, so a component's steps always come before the steps that assemble it. Ingredient amounts are multiplied by the cumulative factor; `scale: false` items (salt, a vanilla pod, a baking sheet) do not scale. Cycles throw at build time instead of hanging. The page shows one ingredient block and one step block per component, each linking to its own page.
+
+**Variants, not forks:** the dough is 100 ml milk plus 100 ml water by default, and 200 ml water for a firmer dough — the difference between a soesje and a Bossche bol. That is not a second recipe: the steps, the timings and the failure modes are identical. So `soezenbeslag` declares a `water` variant that sets milk to 0 and water to 200, and a link asks for it by name. Fork it into `soezenbeslag-water` instead and the day the dough gets fixed, half the site is stale. Same mechanism covers any "same technique, other mix" case.
+
+**What still lives on the derived recipe:** things that are genuinely different, not parameterised — the size of the pipe, the filling, a glaze, the chocolate. Bossche bollen are therefore `ref soesjes (variant groot)` plus `ref slagroom` plus a glaze component, not a variant of `soesjes`.
+
+**Why references and not a shared ingredient file:** the user's actual requirement is that a fix to the dough lands in every recipe. Options were a shared ingredient library (only ingredients shared, steps still duplicated), a preprocessor that pastes files together (a second artifact, like the PDF), or references resolved at build time. References are the only version where the *steps* and the *timings* are shared too, and they cost one field.
+
+**Consequence for D5:** the rescaler operates on the flat resolved list, and rounding happens per component, not per page. Asking for 60 soesjes doubles the dough and both fillings, and the `factor` shown per block explains where the numbers came from.
+
+**Consequence for D1:** five videos instead of one. Soezenbeslag, soesjes, banketbakkersroom, slagroom and Zwitserse room are each a technique with its own payoff, which fits the format better than one 20-minute video that hides four of them.
+
+**Rejected:** copying ingredients into each recipe (drift, and the requirement was explicitly the opposite); only sharing ingredients, not steps (the timing is the part that gets fixed); a template/include system in the build (another artifact that can go stale); one mega-recipe with all five techniques inline (no separate page, no separate video, no reuse).
+
+### D20 — One category per recipe, facets for everything else, difficulty 1–5
+
+*Added 2026-10-29. Extends D12.*
+
+**The category list is closed and short:** `basistechniek`, `deeg-beslag`, `room-vulling`, `gebak`, `brood`, `chocolade`, `hartig`. One value per recipe. It answers "what is this", which is the only question a single list can answer well.
+
+**Everything that is not "what is this" is a facet, not a category:**
+
+| Facet | Source | Why not a category |
+|---|---|---|
+| Rol (basisrecept / eindproduct) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Renamed twice in D20: "gerecht" reads as a savoury dinner, "afgewerkt" reads as a chore. The finished bake is the eindproduct. |
+| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". Shown as **one chef's hat plus a word** ("gemiddeld", "lastig"), on the recipe page, on every recipe card and in the filter chips. The five-icons-in-a-row idea was tried and abandoned: at chip size a row of silhouettes reads as a row of specks, and the level has to be counted. A word needs no counting, and it survives being 13px. The word list is 1 makkelijk, 2 goed te doen, 3 gemiddeld, 4 lastig, 5 gevorderd. (Chef's hat, outlined whisk, rolling pin, spoon and bowl were each rendered at chip size first; chef's hat read as a mushroom.) The hat that ships now is the one drawn for the logo set: at 24px the outline plus three seams still reads as a hat, a whisk at that size reads as a spoon with a fork in it.
+
+**Ingredient checkboxes.** Each ingredient is a tick box, so a reader can mark what is already on the counter. Ticked rows are struck through and dimmed, and the state is kept in `localStorage` keyed by page path — nothing leaves the browser, and private mode silently keeps working without remembering. On paper the boxes print empty and get a pen.
+
+**Benodigdheden are part of the recipe, not an afterthought.** `tools[]` existed in the schema and rendered nowhere; a recipe that needs a piping bag but never says so is a recipe someone starts and then stops. The list is deduped across components (a composite should not list "pan" three times), carries each tool's note, and has the same tick boxes as the ingredients — you gather both at the same moment. |
+
+**Sorting is a view, not a filter.** `/recepten` sorts on **Nieuwste eerst** (default), **Alfabetisch**, **Makkelijk eerst** and **Snelst klaar**; the choice lives in the same query string (`sorteer=`) as the filters, so a sorted view is linkable and survives the trip to a recipe and back. Sorting is a DOM reorder of the same cards, so it composes with every filter and with the keyword.
+
+**The page opens on the recipe, not on the reasoning.** *Waarom dit werkt*, *Varianten*, *Opbouw*, *Gebruikt in*, *Tijdsindeling*, *Ingrediënten* and *Benodigdheden* are collapsed \`<details>\` sections, and under every step the "Waarom en tips" folds away too. The step list is what someone standing at the counter needs; the reasoning is what they read once, on the couch. Collapsed is not hidden: one click opens it, it stays in the HTML for search engines, and screen readers announce it as a disclosure.
+
+**Print is the exception.** A sheet cannot be clicked, so \`beforeprint\` opens every collapsible, \`afterprint\` restores it, and the per-step extras are dropped from the print stylesheet entirely — on paper they are a second page nobody reads with dough on their hands.
+
+**Time is broken down, not summed.** A composite page shows a *Tijdsindeling* table: one row per component with actief / oven / wacht / totaal, and a footer with the sums plus the wall-clock total. The four buckets are separate because they are not interchangeable — "2,5 uur" for filled soesjes is 1 uur 15 min with your hands in it, 30 min oven and 55 min waiting, and a reader deciding whether to start at 20:00 needs exactly that split. `time.wait` was added for cooling and resting, which \`afterbake\` was standing in for.
+
+**`published` is a schema field now.** Every recipe carries its publication date, shown on the recipe page as "geplaatst 29 oktober 2026". Until launch all six carry their creation date, which is why "nieuwste eerst" currently equals alphabetical — ties fall back to the title. That is the honest state, not a sorting bug.
+| — | — | The facet label for `role` was "Rol", which is a database word, not a baker's word. It is **"Soort recept"** now, with two values: a basisrecept is used by other recipes; an eindproduct is what you serve. A third value only earns its place if a recipe is neither — a pure technique with no product. |
+| Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
+| Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
+| Gebruikt in | `components[]`, reverse | Unique to this model. Answers "what can I make with this basisrecept" and turns the component graph into navigation. |
+
+**Why not multiple categories:** a recipe in two categories makes the counts lie (six recipes, eight results), makes "alle gebak" ambiguous, and forces every new category decision twice. A thing is one kind of thing; the occasion (Kerst), the diet (glutenvrij) and the technique (kookdeeg) are properties, and those are tags. Tags never appear as filters until a tag has two recipes.
+
+**Every value is clickable, with a live count.** *Revised twice on 2026-10-29.* The ≥2 rule is dropped: greying out a value with one recipe refused a reader who knew what they wanted. Counts are now **context-aware** — each chip shows how many recipes its value holds under the other facets and the search term, so picking "basistechniek" drops "eindproduct" to 0 and the numbers under category stay honest (2, 3, 1) instead of all collapsing to the current total.
+
+**You cannot filter yourself into an empty list.** Two rules, both needed, because the first one alone was not enough:
+
+1. A chip is disabled unless picking it would still show at least one recipe. That test is the **union** (this facet's current values *plus* the candidate), not the chip's own count: with "basistechniek" and "room & vulling" already selected, a chip whose own value holds recipes still has to prove the combined filter is non-empty.
+2. Every click is a transaction. If the result is somehow empty anyway — deselection can do it, since two facets can each hold recipes while their intersection holds none — the previous selection is restored and a line says the combination was reverted.
+
+A random walk of 400 clicks over the live UI never left the list empty, and the revert fired once, so the second rule is not decoration. Only a hand-edited query string can still land on zero, and there the empty state offers the reset. Zero-value *categories* render nothing at all.
+
+**Two different numbers, on purpose:** a chip counts its own value; the counter under the panel counts the union ("5 van 6"). A chip is not a prediction of the result total, it is a description of the value — and the union is what facets are OR'd into.
+
+Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+
+**The URL is the filter state.** Every change writes `?categorie=…&rol=…&moeilijkheid=…&tijd=…&q=…` with `history.replaceState`, and the page reads that query on load: the chips light up, the keyword returns, the panel opens, and the list is already narrowed. That means a filtered view is linkable, a returned-from-recipe view is intact without re-filtering, and page 2 of D21 inherits the same mechanism.
+
+**Filtering is server-rendered and narrowed client-side:** every card is in the HTML, the chips only hide and reveal. With JavaScript off the full list stays and the chips are inert — no blank page, no spinner. OR within a facet, AND across facets, with a live "x van y recepten" counter and a reset.
+
+**The panel is collapsed by default and sticky.** As a wall of chips it pushed the first recipe off a phone screen, so it is a `<details>` that opens to a summary line, with an active-filter count on the closed state. The header and the filter bar stay visible while scrolling; the bar's `top` is measured from the real header height (the nav wraps on narrow screens), not guessed.
+
+**Keyword search covers the whole recipe, not just the title:** the search blob is built at build time from title, subtitle, role, category, tags, ingredient names, component names, every step title and text, and the FAQ questions. A search box without that data would only find titles. Two-character terms match at a word start (`ei` finds eieren, not kleiner); four characters or more match anywhere, because Dutch compounds would otherwise hide `room` inside `banketbakkersroom`.
+
+**Enter keeps the query.** The form submitted and reloaded the page, which wiped the search field. Enter now prevents the submit, closes the panel so the results are visible, and moves focus to the result list. The input keeps its value, and the query stays in the DOM when the panel is closed.
+
+**Known limitation:** matching is literal, so "soes" finds "soesjes" and "soesje" but not a misspelling, and there is no ranking — with six recipes the count is the ranking. Revisit at ~40 recipes, where a real index (Pagefind) is cheaper than hand-rolled scoring.
+
+### D21 — The catalogue gets pagination, not infinite scroll
+
+*Added 2026-10-29. Nothing is built yet; this records the trigger and the shape.*
+
+Today there is nothing to paginate: six recipes, one page, and the filter narrows client-side. The trigger is **more than 24 recipes**, which is one screen of cards per row-count at three columns.
+
+**Shape when it lands:** static routes `/recepten`, `/recepten/2`, `/recepten/3`, generated at build time, carrying the same filters as `?categorie=…&moeilijkheid=…` so a narrowed view is linkable and crawlable.
+
+**Why pagination and not infinite scroll:** a recipe catalogue is browsed by looking for one thing, and it is shared as a link. Pagination gives every recipe a URL a search engine reaches without scrolling, works with the back button, keeps the footer reachable, and prints. Infinite scroll breaks all four and buys nothing here — the list is short by nature, and a reader who reaches the end of page 1 wants page 2, not a spinner. A "meer laden" button is the acceptable middle ground *if* the URL updates; it is not the default.
+
+**Cost note for the filter at that size:** the client-side filter is O(n) over rendered cards — 6 today, ~few ms at 200, since the search blobs average under 1 KB. Beyond roughly 200 cards the cost is rendering, not matching, so pagination is what fixes it, not a bigger index.
+
+**Rejected:** infinite scroll (breaks crawlability, back button, footer); client-side pagination over one giant HTML page (defeats the crawlability argument); a database-backed search before Pagefind is tried (static index, no server).
+
+**Rejected:** multi-value categories (lying counts); occasion and diet as categories (they multiply the list and every recipe collects three of them); a search box as the primary navigation (there are six recipes; facets are faster than typing and they teach the catalogue); a filter UI before recipe 4 (D12 — the data shipped first; the UI arrives when there is something to filter); difficulty 1–3 (no room to distinguish "folding cream" from "tempering custard").
+
 
 ### D14 — The result is the headline: every recipe says what it makes
 
@@ -261,6 +369,20 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 **Rejected:** a full brand/design system before launch (comfortable procrastination — five pages do not need it); dark mode "later" (a retrofit across every component); a landing page showing a recipe grid that does not exist (looks empty, and it lies); a cooking-blog look (stock-photo hero, three-column cards, sidebar ads) — that is the thing this site is against.
 
 ---
+
+### D22 — Two languages, one template: Dutch at the root, English under /en
+
+*Added 2026-11-01. Built and live: 13 Dutch routes, 13 English ones.*
+
+The pages that argue *why this site exists* are the ones a non-Dutch reader has to understand before anything else; six recipes in a language you cannot read are not a portfolio. So: Dutch at the root, English under `/en`, same design, same data.
+
+**Shape.** Each page body lives once, in `src/views/`, and takes a `lang` prop; `src/pages/*` and `src/pages/en/*` are three-line wrappers. Routes come from a route-key table in `src/lib/i18n.ts` (`recipes` → `/recepten` | `/en/recipes`), never from a literal string, so a link cannot fall out of its own language. `<html lang>` and `hreflang` alternates ship with the page, and the header toggle uses `alternatePath()` to land on the same page in the other language.
+
+**Recipe text is an overlay, not a fork.** `recipes/en/<slug>.json` carries words only — title, subtitle, context, ingredient names, steps, tools, FAQ, mistakes, bake fields. Numbers, factors and the component graph stay in the Dutch JSON, because `factorFor` validates component units against `result.unit` and scaling must not depend on which language the reader picked. `localize()` swaps the words at render time; a field with no translation falls back to Dutch, so a half-translated recipe renders, it does not break.
+
+**Query keys follow the language too.** On `/en/recipes` the facets write `?category=…&role=…&difficulty=…&time=…&sort=…`; the Dutch page keeps `categorie`, `rol`, `moeilijkheid`, `tijd`, `sorteer`. One client script serves both: the strings and parameter names travel in `data-strings` on the form, since a bundled client script cannot read frontmatter.
+
+**Rejected:** two separate sites (two sources of truth, and the six recipes drift apart immediately); translating the JSON wholesale into a second file (every number duplicated, `factorFor` comparing Dutch units against English ones, and a fix landing on one language only); a client-side language switch (nothing for a crawler, and a flash of the wrong language); machine translation at build time (unverified baking instructions in a language no one checked — the failure mode of this site is a recipe that does not work); English URLs with Dutch recipe slugs changed to English ones (deep links would break, and the slug is an id).
 
 ## 3. Roadmap
 

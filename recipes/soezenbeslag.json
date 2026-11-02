@@ -1,0 +1,299 @@
+{
+	"slug": "soezenbeslag",
+	"title": "Soezenbeslag",
+	"subtitle": "Kookdeeg voor soezen, soesjes, eclairs en Paris-Brest",
+	"language": "nl",
+	"verified": false,
+	"verified_note": "Nog niet door de maker zelf getimed en gebakken. Tijden en temperaturen zijn startwaarden, geen gemeten waarden.",
+	"result": {
+		"value": 700,
+		"unit": "g",
+		"note": "Eén portie beslag, genoeg voor 25-35 soesjes, 8-10 grote soezen of 10-12 eclairs."
+	},
+	"yield": {
+		"beslag_g": 700,
+		"soesjes": "25-35",
+		"grote_soezen": "8-10",
+		"eclairs": "10-12"
+	},
+	"category": "basistechniek",
+	"tags": [
+		"soezendeeg",
+		"kookdeeg",
+		"choux",
+		"soezen",
+		"soesjes",
+		"eclairs",
+		"basisrecept"
+	],
+	"difficulty": 4,
+	"time": {
+		"active": 1500,
+		"total": 1800,
+		"note": "25 min actief. Bakken staat bij het recept Soesjes.",
+		"wait": 0
+	},
+	"context": "Soezendeeg is een kookdeeg: het wordt eerst in de pan gegaard en gaat daarna de oven in. Tijdens het garen verstijfselt het zetmeel in de bloem, waardoor het deeg veel vocht kan opnemen — water, melk en ei. Dat vocht is het hele mechanisme: in de oven wordt het stoom, stoom neemt veel meer ruimte in dan water, en die druk blaast het deeg van binnen uit hol. Daarom zijn er maar twee momenten waarop het misgaat: de bloem is niet lang genoeg gegaard (dan neemt het deeg minder ei op en blijven de soezen plat), of de wand is nog niet stevig als de hitte eruit gaat (dan storten ze in). Al het overige is marge. Zodra je dit deeg beheerst, beheers je ook eclairs, Bossche bollen, Paris-Brest en tijgersoesjes — het is één techniek met andere vormen.",
+	"ingredients": [
+		{
+			"id": "melk",
+			"name": "volle melk",
+			"amount": 100,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "volume",
+			"note": "Zachtere structuur en mooiere kleuring. Vervang door water voor steviger soezen."
+		},
+		{
+			"id": "water",
+			"name": "water",
+			"amount": 100,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "volume",
+			"note": "In de watervariant is dit het enige vocht: 200 g, geen melk."
+		},
+		{
+			"id": "boter",
+			"name": "roomboter",
+			"amount": 100,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "weight",
+			"note": "In blokjes, zodat het smelt voordat het vocht kookt."
+		},
+		{
+			"id": "zout",
+			"name": "zout",
+			"amount": 1.5,
+			"unit": "g",
+			"scale": false,
+			"note": "Niet mee opschalen; ongeveer 1,5 g per 100 g bloem aanhouden."
+		},
+		{
+			"id": "bloem",
+			"name": "patentbloem of T65",
+			"amount": 100,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "weight",
+			"note": "Eiwitrijk en fijn, 10-11% eiwit. Patentbloem geeft meer marge dan T65. Geen zelfrijzend bakmeel, cakebloem of Zeeuwse bloem."
+		},
+		{
+			"id": "ei",
+			"name": "ei",
+			"amount": 200,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "weight",
+			"round": "half-ei",
+			"note": "Op kamertemperatuur. 200 g is vier medium eieren; begin met drie (150 g) en voeg de vierde toe als het beslag nog te dik is."
+		},
+		{
+			"id": "suiker",
+			"name": "suiker (optioneel)",
+			"amount": 5,
+			"unit": "g",
+			"scale": true,
+			"scale_by": "weight",
+			"optional": true,
+			"note": "Alleen voor extra kleuring."
+		}
+	],
+	"tin": null,
+	"tools": [
+		{
+			"name": "pan met dikke bodem",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "spatel of houten lepel",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "keukenweegschaal",
+			"required": true,
+			"affiliate": null
+		},
+		{
+			"name": "spuitzak met glad spuitmondje 12 mm",
+			"required": false,
+			"affiliate": null,
+			"note": "Twee theelepels werken ook, minder gelijkmatig."
+		},
+		{
+			"name": "bakpapier of siliconenmatje",
+			"required": true,
+			"affiliate": null,
+			"note": "Siliconenmatjes met voorgedrukte cirkels geven gelijke maten."
+		}
+	],
+	"steps": [
+		{
+			"id": "stap-1",
+			"title": "Vocht, boter en zout aan de kook",
+			"duration": 300,
+			"t": null,
+			"photo": null,
+			"text": "Doe de melk, het water, de boter en het zout in de pan. Breng langzaam aan de kook en zorg dat alle boter gesmolten is voordat het mengsel kookt. Laat het daarna één keer goed doorkoken.",
+			"why": "Het vocht moet later in de oven stoom worden — dat is het enige mechanisme dat de soezen hol maakt. Een dikke bodem houdt de warmte gelijk, zodat de bloem straks overal even gaar wordt.",
+			"tips": [
+				"Boter in blokjes, niet als één klomp.",
+				"Niet roeren als het kookt; draai de pan rond.",
+				"Te hoog vuur geeft aanslag op de bodem en bloem die van buiten gaart en van binnen niet."
+			]
+		},
+		{
+			"id": "stap-2",
+			"title": "Bloem erbij, van het vuur",
+			"duration": 60,
+			"t": null,
+			"photo": null,
+			"text": "Haal de pan van het vuur, voeg de bloem in één keer toe en roer direct stevig door tot alle bloem is opgenomen. Zet de pan terug op middelhoog vuur.",
+			"why": "In één keer voorkomt klonten. Van het vuur voorkomt dat de bloem op de hete bodem verbrandt voordat je hebt geroerd.",
+			"tips": [
+				"Langs de randen roeren, daar blijft de droge bloem zitten.",
+				"Een platte menghaak in de standmixer mag, maar niet te lang — te veel lucht klopt het deeg op."
+			]
+		},
+		{
+			"id": "stap-3",
+			"title": "Garen",
+			"duration": 180,
+			"t": null,
+			"photo": null,
+			"text": "Blijf 2-3 minuten goed roeren op middelhoog vuur. Het deeg vormt één bal, sist zacht en er blijft een dun filmpje achter op de bodem. Dan direct van het vuur.",
+			"why": "Door de hitte verstijfselt het zetmeel in de bloem, en pas dan kan het deeg al dat vocht en ei opnemen. Te kort garen geeft platte, kleiachtige soezen met een nasmaak van rauwe bloem. Te lang garen en de boter scheidt uit: het deeg wordt vettig, dof en kruimelig, het eerste ei wordt niet meer egaal opgenomen en de soezen rijzen minder.",
+			"tips": [
+				"Het sissen is je geluidssignaal, het filmpje op de bodem je vizuele signaal.",
+				"Eén minuut extra 'voor de zekerheid' is precies de verkeerde zet.",
+				"Zie je het deeg glimmen en zweten, dan is de boter eruit: stoppen en accepteren dat deze batch minder rijst."
+			]
+		},
+		{
+			"id": "stap-4",
+			"title": "Even afkoelen",
+			"duration": 240,
+			"t": null,
+			"photo": null,
+			"text": "Doe het deeg over in een kom, roer het even los zodat de stoom ontsnapt, en laat het een paar minuten afkoelen tot lauwwarm.",
+			"why": "Te heet en het ei stolt meteen tot stukjes. Te koud en de boter stolt, waardoor het beslag korrelig wordt en het ei niet meer wordt opgenomen.",
+			"tips": [
+				"Lauwwarm aan je handpalm is de test.",
+				"Een paar minuten is genoeg; niet koud laten worden.",
+				"Tijdens het afkoelen een paar keer doorroeren."
+			]
+		},
+		{
+			"id": "stap-5",
+			"title": "Ei in delen toevoegen",
+			"duration": 300,
+			"t": null,
+			"photo": null,
+			"text": "Klop de eieren los. Voeg ze in delen toe en roer na elk deel tot het ei volledig is opgenomen. Het laatste ei er alleen bij als het beslag nog te dik is; een half ei mag ook. Stop bij glad en glanzend beslag dat in een V van je spatel loopt.",
+			"why": "Hoeveel ei het deeg opneemt is geen vast getal — het hangt af van hoe goed je de bloem hebt gegaard en hoeveel vocht er nog in de pan zat. Daarom is ei een variabele, geen vaste hoeveelheid.",
+			"tips": [
+				"Te dik kun je altijd redden met ei; te dun niet meer met bloem. Liever iets te dik dan te dun.",
+				"Wordt het beslag dikker in plaats van dunner bij het toevoegen van ei? Dan was het deeg te warm.",
+				"Roer met een spatel, niet met een garde — je wilt geen lucht inslaan."
+			]
+		},
+		{
+			"id": "stap-6",
+			"title": "Opspuiten",
+			"duration": 420,
+			"t": null,
+			"photo": null,
+			"text": "Doe het beslag in een spuitzak met een glad spuitmondje van 12 mm. Spuit doppen van 3-4 cm met 3-4 cm ruimte ertussen. Druk puntjes die omhoog blijven staan plat met een natte vinger.",
+			"why": "Gelijke grootte is niet cosmetisch: ongelijke doppen bakken ongelijk, en dan haal je de kleine er te vroeg uit (ze vallen in) of de grote te vroeg (idem). Ruimte ertussen is nodig omdat de warme lucht erlangs moet kunnen.",
+			"tips": [
+				"Ze zetten ongeveer dubbel zo breed uit; dichter dan 3 cm op elkaar geeft bleke, zachte raakvlakken.",
+				"Teken met een glas en een watervaste stift rondjes op het bakpapier en draai het papier om.",
+				"Of maak afdrukken met een uitsteker die je in bloem hebt gedoopt."
+			]
+		}
+	],
+	"faq": [
+		{
+			"q": "Waarom worden soezen hol?",
+			"a": "Omdat het vocht in het deeg in de oven stoom wordt, en stoom neemt veel meer ruimte in dan water. Die druk duwt het deeg van binnen uit. De holle ruimte is dus geen truc met gist of bakpoeder, maar het gevolg van vocht plus hitte."
+		},
+		{
+			"q": "Waarom zakken mijn soezen in?",
+			"a": "Bijna altijd omdat ze te bleek uit de oven kwamen, of omdat de deur te vroeg open ging. In beide gevallen was de wand nog niet stevig toen de hitte en de stoom ontsnapten. Oplossing: langer bakken tot ze echt goudbruin zijn, en daarna 10 minuten nadrogen met de deur op een kier."
+		},
+		{
+			"q": "Waarom zit er melk in en niet alleen water?",
+			"a": "Melk maakt de structuur zachter en de kleur mooier. Wil je juist steviger soezen — voor een croquembouche of een soezenkrans — gebruik dan alleen water. Ze worden dan iets steviger en blijven iets lichter van kleur."
+		},
+		{
+			"q": "Mijn beslag is te dun. Kan ik er bloem bij doen?",
+			"a": "Nee, dat werkt niet: je krijgt geen egale massa en de verhoudingen kloppen niet meer. Te dun betekent meestal dat de bloem te kort heeft gegaard of dat er te veel ei in zit. Volgende keer het laatste ei in delen toevoegen en steeds tussendoor kijken."
+		},
+		{
+			"q": "Waarom scheidt de boter uit tijdens het garen?",
+			"a": "Dan is het deeg te lang of te heet gegaard. Het deeg wordt vettig en kruimelig in plaats van glad, en neemt daarna minder ei op. Stop zodra het deeg een bal vormt, zacht sist en een dun filmpje op de bodem achterlaat."
+		},
+		{
+			"q": "Kan ik het deeg of de gebakken soezen bewaren?",
+			"a": "Ongevulde soezen blijven luchtdicht op kamertemperatuur ongeveer een week goed en zijn prima in te vriezen. Gevuld bewaar je ze in de koelkast, een paar dagen; haal ze 15-30 minuten voor het serveren eruit. Gevuld invriezen is geen succes. Het deeg zelf kun je kort invriezen als bolletjes op een siliconenmatje: laten ontdooien op kamertemperatuur en dan afbakken."
+		},
+		{
+			"q": "Kan ik het recept halveren of verdubbelen?",
+			"a": "Halveren kan prima. Verdubbelen ook, maar let op: het past niet in één pan en niet op één plaat, en de baktijd verandert niet mee. Bak in batches en houd het beslag afgedekt in de koelkast."
+		}
+	],
+	"inspired_by": [],
+	"role": "basis",
+	"aliases": [
+		"soezendeeg"
+	],
+	"video": {
+		"status": "concept",
+		"youtube_id": null
+	},
+	"mislukt": [
+		{
+			"symptoom": "platte, kleiachtige soezen",
+			"oorzaak": "bloem te kort gegaard",
+			"fix": "2-3 minuten garen tot het deeg een bal vormt en een filmpje achterlaat"
+		},
+		{
+			"symptoom": "ingezakt na het bakken",
+			"oorzaak": "te bleek uit de oven, of deur te vroeg open",
+			"fix": "bakken tot goudbruin, daarna 10 min nadrogen met de deur op een kier"
+		},
+		{
+			"symptoom": "vettig, kruimelig deeg",
+			"oorzaak": "te lang of te heet gegaard, boter scheidt uit",
+			"fix": "middelhoog vuur, stoppen zodra de bal vormt en zacht sist"
+		},
+		{
+			"symptoom": "opengebarsten bovenkant",
+			"oorzaak": "beslag te dik, of puntjes niet platgedrukt",
+			"fix": "beslag tot V-consistentie brengen, puntjes platdrukken met een natte vinger"
+		}
+	],
+	"variants": {
+		"klassiek": {
+			"label": "melk + water",
+			"note": "De standaard: 100 g melk en 100 g water. Zachtere structuur en mooiere kleur.",
+			"ingredients": {
+				"melk": 103,
+				"water": 100
+			}
+		},
+		"water": {
+			"label": "alleen water",
+			"note": "200 g water en geen melk. Steviger deeg dat minder kleurt: voor grote soezen, Bossche bollen, een croquembouche of een soezenkrans.",
+			"ingredients": {
+				"melk": 0,
+				"water": 200
+			}
+		}
+	},
+	"components": [],
+	"published": "2026-10-29"
+}

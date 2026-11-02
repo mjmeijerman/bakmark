@@ -8,7 +8,7 @@
  * Double opt-in is not wired yet: `confirmed_at` stays NULL until the
  * confirmation mail exists. Nothing sends from this endpoint today.
  */
-import { mkdirSync } from "node:fs";
+import { chmodSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { APIRoute } from "astro";
@@ -22,9 +22,19 @@ let db: DatabaseSync | undefined;
 
 const openDb = (): DatabaseSync => {
 	if (db) return db;
-	mkdirSync(dirname(DB_PATH), { recursive: true });
+	mkdirSync(dirname(DB_PATH), { recursive: true, mode: 0o700 });
 	db = new DatabaseSync(DB_PATH);
+
+	// The list is nobody else's business: 0600 on the file, 0700 on the folder.
+	try {
+		chmodSync(DB_PATH, 0o600);
+	} catch {
+		/* a read-only file system fails later and louder */
+	}
+
 	db.exec(`
+		PRAGMA journal_mode = WAL;
+		PRAGMA synchronous = NORMAL;
 		CREATE TABLE IF NOT EXISTS subscribers (
 			email TEXT PRIMARY KEY,
 			lang TEXT NOT NULL,
@@ -32,6 +42,7 @@ const openDb = (): DatabaseSync => {
 			created_at TEXT NOT NULL,
 			confirmed_at TEXT
 		);
+		CREATE INDEX IF NOT EXISTS subscribers_created_at ON subscribers (created_at);
 	`);
 	return db;
 };
@@ -75,6 +86,18 @@ const MIN_FILL_MS = 1500;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 5;
 
+/** A distributed flood rotates IPs, so the day gets its own ceiling. */
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DAY_MAX = 200;
+
+const storedInLastDay = (): number => {
+	const since = new Date(Date.now() - DAY_MS).toISOString();
+	const row = openDb()
+		.prepare("SELECT COUNT(*) AS n FROM subscribers WHERE created_at >= ?")
+		.get(since) as { n: number } | undefined;
+	return row?.n ?? 0;
+};
+
 const attempts = new Map<string, number[]>();
 
 const overLimit = (ip: string): boolean => {
@@ -98,6 +121,12 @@ const isBot = (request: Request, body: Payload, ip: string): boolean => {
 	if (overLimit(ip)) return true;
 
 	if (normalise(body[HONEYPOT_FIELD]) !== "") return true;
+
+	try {
+		if (storedInLastDay() >= DAY_MAX) return true;
+	} catch {
+		/* a broken count must not take the form down with it */
+	}
 
 	// The script sends its own fill time; a missing value is a plain form post, not a bot.
 	const elapsed = Number(body.elapsed);
@@ -141,9 +170,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	const lang = isLang(body.lang);
 	const source = typeof body.source === "string" ? body.source.slice(0, 200) : null;
 
-	const answer = (status: number, ok: boolean, error?: string, duplicate?: boolean) => {
+	const answer = (status: number, ok: boolean, error?: string) => {
 		if (json) {
-			return new Response(JSON.stringify({ ok, error, duplicate }), {
+			return new Response(JSON.stringify({ ok, error }), {
 				status,
 				headers: { "content-type": "application/json" },
 			});
@@ -162,11 +191,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		"unknown";
 
 	// Say "saved" and save nothing: a bot gets no signal to retune against.
-	if (isBot(request, body, ip)) return answer(201, true, undefined, false);
+	if (isBot(request, body, ip)) return answer(201, true);
 
 	try {
-		const inserted = store(email, lang, source);
-		return answer(inserted ? 201 : 200, true, undefined, !inserted);
+		// Same answer whether it was new or already there: "are you on this
+		// list?" is not a question a stranger gets to ask.
+		store(email, lang, source);
+		return answer(201, true);
 	} catch (error) {
 		console.error("[subscribe] could not store address", error);
 		return answer(500, false, "server_error");

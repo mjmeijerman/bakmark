@@ -782,6 +782,12 @@
 		border-color: var(--border);
 	}
 
+	/* Blocks on the recipe page are separated by one line on top of each. A
+	   plain section had none, so the rule stopped after Benodigdheden. */
+	.section-ruled {
+		border-top: 1px solid var(--border);
+	}
+
 	/* Each part's steps fold away: a composed recipe is five step lists, and
 	   only the assembly is this page's own work. */
 	.step-group.collapsible {

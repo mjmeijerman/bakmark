@@ -431,7 +431,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 		{
 			bakeGroups.map((group) => (
-				<section class="section">
+				<section class="section section-ruled">
 					<h2>
 						{copy.baking}
 						{composed ? ` — ${group.recipe.title.toLocaleLowerCase(lang)}` : ""}
@@ -477,7 +477,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			))
 		}
 
-		<section class="section">
+		<section class="section section-ruled">
 			{/* Every part starts open; folded shut only if the reader closes it. */}
 			<h2>{copy.steps}</h2>
 			{
@@ -561,7 +561,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			) : null
 		}
 
-		<section class="section no-print">
+		<section class="section section-ruled no-print">
 			<h2>{copy.printing}</h2>
 			<p>{copy.printingText}</p>
 			<p>

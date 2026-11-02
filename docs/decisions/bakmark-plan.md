@@ -72,15 +72,25 @@ What the feature actually is:
 2. **The result is a driver, both ways.** "300 gram fondant" and "30 soezen" are inputs, not just labels: ask for 30 soezen and the ingredient list rescales; change an ingredient and the displayed result updates.
 3. **The tin is a driver** (D17) for anything baked in a bakvorm: change the diameter, shape or height and the ingredients rescale on volume.
 4. **Rounding is a rule, not a guess.** Every scaled amount is formatted per ingredient: grams to sensible precision, eggs in halves then wholes, sachets in wholes. No false precision, no "1.333 eggs".
+5. **Scaling down has a floor, and the recipe says so.** Below roughly half of the written batch the arithmetic still works and the result does not: half an egg in a pastry cream, 2 g of gelatine in a mousse, 12 g of butter in a roux, 40 g of cream under a whisk — the thing either cannot be measured, cannot be mixed, or does not set. So the rescaler warns instead of quietly producing a number nobody should cook from.
+
+**The downscaling warning, concretely.** Every recipe carries the smallest batch it still works at — one number, `scale_min` (as a factor of the written recipe; default ½, and set higher per recipe where the technique needs it: a meringue below 2 whites, a caramel below 100 g of sugar). Below that factor:
+
+- The rescaler still calculates. Blocking a cook who wants a third of a batch is not the job; warning them is.
+- A warning sits next to the rescaler, not in a footnote: *"Dit is minder dan de helft van het recept. Onder ongeveer de helft worden de hoeveelheden te klein om goed af te meten en te kloppen; de room kan schiften of niet opstijven. Reken liever het hele recept en bewaar of weeg wat je overhoudt."* Same wording on the static table when ½× is under the floor.
+- `scale: false` items show what rounding really does: one egg where the factor asks for half, with the note that the ratio is now off.
+- The reason is named, not just "results may vary": which ingredient, which technique, and what happens when it goes wrong. Per-recipe wording, in the recipe file, so the warning is about that recipe.
+
+The alternative — a silent floor that refuses anything under ½× — was rejected below: it hides the reason and it lies about the arithmetic.
 
 Order of work:
 1. **Gate A (~20 min):** the schema fields — `scale`, `scale_by`, `unit` per ingredient, `result {value, unit}`, `tin`, `bake`. Adding these later is a data migration.
 2. **Gate A (~2h):** the **static ½× / 1× / 2× table**, generated at build time per recipe, non-scaling items shown as "2 eggs" / "1 sachet of yeast". Zero JavaScript, works with dough on your hands.
-3. **Weeks 4–6 (~1–2 days):** the **interactive rescaler on every recipe page**. Live rescale, `?ref=500` / `?result=30` URL state, `scale: false` respected, mounted in the ingredient block. Not gated on the brooddeeg video and not gated on traffic — applicability and traffic were never the real constraint, only hours.
+3. **Weeks 4–6 (~1–2 days):** the **interactive rescaler on every recipe page**. Live rescale, `?ref=500` / `?result=30` URL state, `scale: false` respected, mounted in the ingredient block, with the downscaling warning from rule 5. Not gated on the brooddeeg video and not gated on traffic — applicability and traffic were never the real constraint, only hours.
 
 **Why the static table still ships:** it is 2 hours against 1–2 days, it works when JavaScript does not, and it is the layout the interactive version plugs into. It is a step, not a substitute.
 
-**Rejected:** a flour-anchored baker's-percentage calculator (the misreading — computes a percentage of nothing on the fondant page); the interactive rescaler in Gate A (the budget is full at 22–26h, and Gate A exists to publish video 1); gating the rescaler on the brooddeeg video or on visit counts (both artificial once the flour premise is gone); the rescaler as a separate calculator page (rescaling belongs where the recipe is).
+**Rejected:** a flour-anchored baker's-percentage calculator (the misreading — computes a percentage of nothing on the fondant page); the interactive rescaler in Gate A (the budget is full at 22–26h, and Gate A exists to publish video 1); gating the rescaler on the brooddeeg video or on visit counts (both artificial once the flour premise is gone); the rescaler as a separate calculator page (rescaling belongs where the recipe is); a silent floor that refuses anything under ½× (the numbers are still arithmetic, and a refusal without the reason teaches nobody why a half batch of pastry cream fails); trusting one global minimum for every recipe (a 2-white meringue and a 3-egg dough do not fail at the same point).
 
 ### D6 — Email: our own mail server on the VPS, no ESP
 

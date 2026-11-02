@@ -250,15 +250,6 @@
 		color: var(--muted);
 	}
 
-	.kicker {
-		margin: 0 0 var(--space-3);
-		font-size: var(--text-sm);
-		font-weight: 600;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--accent);
-	}
-
 	/* Header */
 	.site-header {
 		display: flex;
@@ -457,6 +448,11 @@
 		padding-block: var(--space-6) var(--space-5);
 	}
 
+	/* A hero whose next element already brings its own top margin. */
+	.hero-tight {
+		padding-bottom: 0;
+	}
+
 	.hero h1 {
 		max-width: 22ch;
 	}
@@ -608,6 +604,21 @@
 	}
 
 	/* Placeholder figures: deliberately unfinished looking */
+	/* A real photo keeps its own ratio: a fixed frame would crop a portrait
+	   blind, and the point of this one is that it is not styled. */
+	.portrait {
+		margin: var(--space-4) 0;
+	}
+
+	.portrait img {
+		display: block;
+		width: 100%;
+		max-width: 22rem;
+		height: auto;
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-soft);
+	}
+
 	.placeholder {
 		margin: var(--space-4) 0;
 	}
@@ -1156,6 +1167,22 @@
 		font-size: 10pt;
 		color: #333;
 		margin: 0.35rem 0 0;
+	}
+
+	/* The header is hidden on paper, so the sheet carries the mark itself. */
+	.print-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0 0 0.6rem;
+		font-size: 12pt;
+		font-weight: 600;
+		color: #000;
+	}
+
+	.print-brand img {
+		width: 1.5rem;
+		height: 1.5rem;
 	}
 
 	a {

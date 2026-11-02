@@ -10,10 +10,9 @@ const { lang } = Astro.props;
 
 const copy = {
 	nl: {
-		title: "Hoe het werkt",
+		title: "Over de website",
 		description:
 			"Eén take, hoofdstukken als kookwekker, een printversie en een bakmodus. Gratis, met een fooi als je wilt.",
-		kicker: "Hoe het werkt",
 		h1: "Eén take, en dan heb je het hele proces gezien.",
 		lead: "Zo gebruik je de video's, het recept en de printversie in je eigen keuken.",
 		sections: [
@@ -44,10 +43,9 @@ const copy = {
 		],
 	},
 	en: {
-		title: "How it works",
+		title: "About the website",
 		description:
 			"One take, chapters as a kitchen timer, a print version and a bake mode. Free, with a tip if you like.",
-		kicker: "How it works",
 		h1: "One take, and you have seen the whole process.",
 		lead: "This is how you use the videos, the recipe and the print version in your own kitchen.",
 		sections: [
@@ -82,7 +80,6 @@ const copy = {
 
 <Layout title={copy.title} description={copy.description} lang={lang}>
 	<section class="hero">
-		<p class="kicker">{copy.kicker}</p>
 		<h1>{copy.h1}</h1>
 		<p class="lead">{copy.lead}</p>
 	</section>

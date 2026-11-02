@@ -6,7 +6,6 @@ import RecipeSection from "../components/RecipeSection.astro";
 import {
 	DIFFICULTY_SCALE,
 	allRecipes,
-	categoryLabel,
 	formatDate,
 	formatMinutes,
 	localize,
@@ -29,7 +28,6 @@ const { slug, lang } = Astro.props;
 
 const copy = {
 	nl: {
-		draftKicker: "Concept · nog niet geverifieerd",
 		notVerified: "Nog niet geverifieerd.",
 		conceptChip: "Concept",
 		videoAria: (title: string) => `Placeholder: video van ${title} in één take`,
@@ -100,7 +98,6 @@ const copy = {
 		newsletterHeading: "Nieuwsbrief",
 	},
 	en: {
-		draftKicker: "Draft · not verified yet",
 		notVerified: "Not verified yet.",
 		conceptChip: "Draft",
 		videoAria: (title: string) => `Placeholder: video of ${title} in one take`,
@@ -204,7 +201,6 @@ const factorLabel = (factor: number) => {
 	const rounded = String(Math.round(factor * 100) / 100);
 	return lang === "en" ? ` ×${rounded}` : ` ×${rounded.replace(".", ",")}`;
 };
-const resultLine = recipe.verified ? categoryLabel(recipe.category, lang) : copy.draftKicker;
 const published = recipe.published ? formatDate(recipe.published, lang) : "";
 const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.temperature) : null;
 ---
@@ -215,8 +211,11 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 	lang={lang}
 >
 	<article>
+		<p class="print-only print-brand">
+			<img src="/logo-bakmark.png" alt="" width="160" height="160" aria-hidden="true" />
+			<span>Bakmark</span>
+		</p>
 		<section class="hero">
-			<p class="kicker no-print">{resultLine}</p>
 			<h1>{recipe.title}</h1>
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">

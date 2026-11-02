@@ -275,9 +275,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					)
 				}
 			</ul>
-			<p class="recipe-summary">
-				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
-			</p>
 			<p class="print-only">
 				{copy.printLine(formatMinutes(timing.active, lang), recipe.difficulty, published, ovenTemperature)}
 			</p>
@@ -358,6 +355,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		}
 
 		<RecipeSection title={copy.ingredients}>
+			{/* What the batch is good for. It used to sit under the chips, where it
+			   repeated the yield chip and pushed the list down. */}
+			{recipe.result.note ? <p class="section-lede">{recipe.result.note}</p> : null}
 			{
 				groups
 					.filter((group) => group.ingredients.length > 0)

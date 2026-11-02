@@ -963,11 +963,6 @@
 
 /* Recipe content rendered from recipes/<slug>.json. */
 @layer components {
-	.recipe-summary {
-		max-width: var(--measure);
-		color: var(--muted);
-	}
-
 	.verified-note {
 		max-width: var(--measure);
 		margin-block: var(--space-4);
@@ -1237,12 +1232,6 @@
 	.recipe-result {
 		font-size: 11pt;
 		margin: 0 0 0.2rem;
-	}
-
-	.recipe-summary {
-		font-size: 10pt;
-		color: #333;
-		margin: 0;
 	}
 
 	.print-only {

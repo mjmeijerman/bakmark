@@ -273,7 +273,11 @@ export function localizeGroup(group: ResolvedGroup, lang: Lang = DEFAULT_LANG): 
 				name: text?.name ?? ingredient.name,
 				note: text?.note ?? ingredient.note,
 				unit,
-				amount_display,
+				// Amounts are written the Dutch way in the recipe files ("1,5 g");
+				// the English page says "1.5 g".
+				amount_display: lang === "en" && amount_display
+					? amount_display.replace(/(\d),(\d)/g, "$1.$2")
+					: amount_display,
 			};
 		}),
 	};

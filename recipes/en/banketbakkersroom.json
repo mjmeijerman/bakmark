@@ -26,14 +26,14 @@
 			"amount_display": "1 pod",
 			"unit": "pod",
 			"name": "vanilla pod",
-			"note": "Or 2 tsp vanilla extract, added with the yolks."
+			"note": "Or 8 g vanilla extract, added with the yolks."
 		},
 		"suiker": {
 			"name": "sugar",
 			"note": "Stirred into the yolks, not into the milk."
 		},
 		"dooiers": {
-			"amount_display": "4 yolks",
+			"amount_display": "80 g (≈ 4 yolks)",
 			"unit": "yolks",
 			"name": "egg yolks",
 			"note": "At room temperature; cold yolks combine poorly."

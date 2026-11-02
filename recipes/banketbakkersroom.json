@@ -34,9 +34,8 @@
 		{
 			"id": "melk",
 			"name": "volle melk",
-			"amount": 500,
-			"unit": "ml",
-			"grams": 515,
+			"amount": 515,
+			"unit": "g",
 			"scale": true,
 			"note": "Volle melk; halfvol geeft een dunnere room."
 		},
@@ -47,7 +46,7 @@
 			"unit": "stuk",
 			"amount_display": "1 stokje",
 			"scale": false,
-			"note": "Of 2 tl vanille-extract, dan mee met de dooiers."
+			"note": "Of 8 g vanille-extract, dan mee met de dooiers."
 		},
 		{
 			"id": "suiker",
@@ -62,7 +61,7 @@
 			"name": "eierdooiers",
 			"amount": 80,
 			"unit": "g",
-			"amount_display": "4 dooiers",
+			"amount_display": "80 g (≈ 4 dooiers)",
 			"scale": true,
 			"scale_by": "weight",
 			"note": "Op kamertemperatuur; koude dooiers mengen slechter."

@@ -25,29 +25,26 @@
 		},
 		"water": {
 			"name": "water",
-			"note": "In the water variant this is the only liquid: 200 ml, no milk."
+			"note": "In the water variant this is the only liquid: 200 g, no milk."
 		},
 		"boter": {
 			"name": "unsalted butter",
 			"note": "In cubes, so it melts before the liquid boils."
 		},
 		"zout": {
-			"amount_display": "1/4 tsp",
 			"name": "salt",
-			"note": "Do not scale this; keep to 1/4 tsp per 100 g flour."
+			"note": "Do not scale this; keep to about 1.5 g per 100 g flour."
 		},
 		"bloem": {
 			"name": "strong white flour or T65",
 			"note": "High in protein and fine, 10-11% protein. Strong white flour gives more margin than T65. No self-raising flour, cake flour or soft flour."
 		},
 		"ei": {
-			"amount_display": "3-4 medium eggs",
-			"unit": "eggs",
+			"amount_display": "200 g (3-4 medium eggs)",
 			"name": "egg",
 			"note": "At room temperature. Start with 3 eggs (150 g); add the 4th only if the batter is still too thick. 200 g is the maximum, not the goal."
 		},
 		"suiker": {
-			"amount_display": "1 tsp",
 			"name": "sugar (optional)",
 			"note": "Only for extra colour."
 		}
@@ -187,11 +184,11 @@
 	"variants": {
 		"klassiek": {
 			"label": "milk + water",
-			"note": "The default: 100 ml milk and 100 ml water. Softer structure and better colour."
+			"note": "The default: 103 g milk and 100 g water. Softer structure and better colour."
 		},
 		"water": {
 			"label": "water only",
-			"note": "200 ml water and no milk. Firmer dough that colours less: for large buns, Bossche bollen, a croquembouche or a choux ring."
+			"note": "200 g water and no milk. Firmer dough that colours less: for large buns, Bossche bollen, a croquembouche or a choux ring."
 		}
 	}
 }

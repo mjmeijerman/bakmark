@@ -38,9 +38,8 @@
 		{
 			"id": "melk",
 			"name": "volle melk",
-			"amount": 100,
-			"unit": "ml",
-			"grams": 103,
+			"amount": 103,
+			"unit": "g",
 			"scale": true,
 			"scale_by": "volume",
 			"note": "Zachtere structuur en mooiere kleuring. Vervang door water voor steviger soezen."
@@ -49,11 +48,10 @@
 			"id": "water",
 			"name": "water",
 			"amount": 100,
-			"unit": "ml",
-			"grams": 100,
+			"unit": "g",
 			"scale": true,
 			"scale_by": "volume",
-			"note": "In de watervariant is dit het enige vocht: 200 ml, geen melk."
+			"note": "In de watervariant is dit het enige vocht: 200 g, geen melk."
 		},
 		{
 			"id": "boter",
@@ -69,9 +67,8 @@
 			"name": "zout",
 			"amount": 1.5,
 			"unit": "g",
-			"amount_display": "1/4 tl",
 			"scale": false,
-			"note": "Niet mee opschalen; 1/4 tl per 100 g bloem aanhouden."
+			"note": "Niet mee opschalen; ongeveer 1,5 g per 100 g bloem aanhouden."
 		},
 		{
 			"id": "bloem",
@@ -87,7 +84,7 @@
 			"name": "ei",
 			"amount": 200,
 			"unit": "g",
-			"amount_display": "3-4 medium eieren",
+			"amount_display": "200 g (3-4 medium eieren)",
 			"scale": true,
 			"scale_by": "weight",
 			"round": "half-ei",
@@ -98,7 +95,6 @@
 			"name": "suiker (optioneel)",
 			"amount": 4,
 			"unit": "g",
-			"amount_display": "1 tl",
 			"scale": true,
 			"scale_by": "weight",
 			"optional": true,
@@ -284,15 +280,15 @@
 	"variants": {
 		"klassiek": {
 			"label": "melk + water",
-			"note": "De standaard: 100 ml melk en 100 ml water. Zachtere structuur en mooiere kleur.",
+			"note": "De standaard: 103 g melk en 100 g water. Zachtere structuur en mooiere kleur.",
 			"ingredients": {
-				"melk": 100,
+				"melk": 103,
 				"water": 100
 			}
 		},
 		"water": {
 			"label": "alleen water",
-			"note": "200 ml water en geen melk. Steviger deeg dat minder kleurt: voor grote soezen, Bossche bollen, een croquembouche of een soezenkrans.",
+			"note": "200 g water en geen melk. Steviger deeg dat minder kleurt: voor grote soezen, Bossche bollen, een croquembouche of een soezenkrans.",
 			"ingredients": {
 				"melk": 0,
 				"water": 200

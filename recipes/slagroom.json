@@ -34,7 +34,7 @@
 			"id": "room",
 			"name": "slagroom",
 			"amount": 300,
-			"unit": "ml",
+			"unit": "g",
 			"scale": true,
 			"note": "Minstens 35% vet. Halfroom of kookroom wordt niet stijf."
 		},
@@ -51,7 +51,6 @@
 			"name": "vanille-extract (optioneel)",
 			"amount": 3,
 			"unit": "g",
-			"amount_display": "1/2 tl",
 			"scale": false,
 			"optional": true,
 			"note": "Mee met de suiker."

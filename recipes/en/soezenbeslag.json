@@ -165,19 +165,9 @@
 			"fix": "cook for 2-3 minutes until the dough forms a ball and leaves a film"
 		},
 		"1": {
-			"symptoom": "collapsed after baking",
-			"oorzaak": "too pale out of the oven, or the door opened too early",
-			"fix": "bake until golden brown, then dry out for 10 min with the door ajar"
-		},
-		"2": {
 			"symptoom": "greasy, crumbly dough",
 			"oorzaak": "cooked too long or too hot, the butter separates",
 			"fix": "medium heat, stop as soon as it forms a ball and hisses softly"
-		},
-		"3": {
-			"symptoom": "cracked top",
-			"oorzaak": "batter too thick, or the peaks were not flattened",
-			"fix": "bring the batter to a V consistency, flatten the peaks with a wet finger"
 		}
 	},
 	"variants": {

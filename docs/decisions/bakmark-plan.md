@@ -54,7 +54,7 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 Two exceptions, both because weighing is absurd:
 
 - **A vanilla pod** keeps its own unit ("1 stokje"). Nobody weighs a pod, and its amount does not scale anyway (`scale: false`).
-- **Eggs** are written as grams *with the count in brackets*: "200 g (3-4 medium eieren)", "80 g (≈ 4 dooiers)". The count is a convenience, the weight is the recipe. Used up: the brackets belong to the 1× display, so a scaled amount shows plain grams rather than a wrong number of eggs.
+- **Eggs** are written as grams, and the count goes in the ingredient's note, not in the amount: "200 g", with "dat is vier medium eieren; begin met drie en voeg de vierde toe als het beslag nog te dik is" behind the i. The weight is the recipe; the count is a convenience, and a bracketed count in the amount column goes stale the moment the recipe scales.
 
 Everything else — including things usually given in spoons — is grams with a note where the reason matters ("niet mee opschalen; ongeveer 1,5 g per 100 g bloem").
 

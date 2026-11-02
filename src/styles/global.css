@@ -117,7 +117,11 @@
 
 	body {
 		margin: 0;
+		/* Column, so a short page still puts the footer on the bottom edge. */
+		display: flex;
+		flex-direction: column;
 		min-height: 100vh;
+		min-height: 100dvh;
 		background-color: var(--bg);
 		background-image:
 			radial-gradient(60rem 40rem at 85% -10%, var(--wash-a), transparent 70%),
@@ -221,6 +225,12 @@
 	.wrap {
 		width: min(100% - 2 * var(--space-5), var(--measure-wide));
 		margin-inline: auto;
+	}
+
+	/* Takes the leftover height on a short page, so the footer lands at the
+	   bottom of the view instead of halfway up it. */
+	main {
+		flex: 1 0 auto;
 	}
 
 	.skip-link {

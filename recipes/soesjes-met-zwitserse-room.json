@@ -11,8 +11,7 @@
 	},
 	"result": {
 		"value": 50,
-		"unit": "gevulde soesjes",
-		"note": "Ongeveer 15 g room per soesje. Meer room per soesje? Verhoog de hoeveelheid Zwitserse room, niet de soesjes."
+		"unit": "gevulde soesjes"
 	},
 	"category": "gebak",
 	"tags": [

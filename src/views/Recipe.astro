@@ -418,7 +418,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 								/>
 								<div>
 									<span>{tool.name}</span>
-									{tool.note ? <span class="form-note">{tool.note}</span> : null}
+									{tool.note ? <span class="form-note"> — {tool.note}</span> : null}
 								</div>
 							</li>
 						))}

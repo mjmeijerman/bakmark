@@ -5,8 +5,9 @@
  * (`data/subscribers.sqlite`, override with SUBSCRIBERS_DB). No external
  * service sees the address; sending stays on the VPS too.
  *
- * Double opt-in is not wired yet: `confirmed_at` stays NULL until the
- * confirmation mail exists. Nothing sends from this endpoint today.
+ * Double opt-in is NOT built yet — `confirmed_at` stays NULL until it is.
+ * Every row here is an unverified string, and no mail may go to one. The
+ * work is tracked in issue #295 and is blocked on the mail server.
  */
 import { chmodSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";

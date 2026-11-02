@@ -12,7 +12,7 @@
 	"result": {
 		"value": 600,
 		"unit": "g",
-		"note": "Genoeg voor 30 soesjes of één tompoesbodem van 24 cm."
+		"note": "Genoeg voor 40 soesjes of één tompoesbodem van 24 cm."
 	},
 	"category": "room-vulling",
 	"tags": [
@@ -61,10 +61,9 @@
 			"name": "eierdooiers",
 			"amount": 80,
 			"unit": "g",
-			"amount_display": "80 g (≈ 4 dooiers)",
 			"scale": true,
 			"scale_by": "weight",
-			"note": "Op kamertemperatuur; koude dooiers mengen slechter."
+			"note": "Op kamertemperatuur; koude dooiers mengen slechter. 80 g is ongeveer 4 medium dooiers."
 		},
 		{
 			"id": "maizena",

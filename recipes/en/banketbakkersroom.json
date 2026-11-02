@@ -4,7 +4,7 @@
 	"verified_note": "Not timed by the maker himself yet. The times are starting values.",
 	"result": {
 		"unit": "g",
-		"note": "Enough for 30 choux buns or one 24 cm mille-feuille base."
+		"note": "Enough for 40 choux buns or one 24 cm mille-feuille base."
 	},
 	"time": {
 		"note": "15 min active, then 45 min cooling in the fridge."
@@ -33,10 +33,8 @@
 			"note": "Stirred into the yolks, not into the milk."
 		},
 		"dooiers": {
-			"amount_display": "80 g (≈ 4 yolks)",
-			"unit": "yolks",
 			"name": "egg yolks",
-			"note": "At room temperature; cold yolks combine poorly."
+			"note": "At room temperature; cold yolks combine poorly. 80 g is about 4 medium yolks."
 		},
 		"maizena": {
 			"name": "cornflour",

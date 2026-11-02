@@ -4,7 +4,7 @@
 	"verified_note": "Not made by the maker himself yet. The amounts follow from the base recipes; the filling step has not been tested.",
 	"result": {
 		"unit": "filled choux buns",
-		"note": "About 20 g of cream per bun. Want more cream per bun? Increase the Swiss cream, not the buns."
+		"note": "About 15 g of cream per bun. Want more cream per bun? Increase the Swiss cream, not the buns."
 	},
 	"time": {
 		"note": "About 2.5 hours from empty worktop to filled choux buns, most of it waiting and baking."
@@ -51,7 +51,7 @@
 			"text": "Put the Swiss cream in a piping bag with a star nozzle and fill each bun from below until you feel resistance and no more cream goes in. Or spoon the cream into the cut buns.",
 			"why": "Until you feel resistance: a half-filled bun tastes of air. Push too far and the wall bursts.",
 			"tips": [
-				"About 20 g per bun; for 30 buns that is exactly 600 g of cream."
+				"About 15 g per bun; for 50 buns that is exactly 750 g of cream."
 			]
 		},
 		"stap-3": {
@@ -66,7 +66,7 @@
 	"faq": {
 		"0": {
 			"q": "How much cream goes into one bun?",
-			"a": "About 20 grams. For 30 buns that is 600 grams of Swiss cream, exactly one batch of that base recipe."
+			"a": "About 15 grams. For 50 buns that is 750 grams of Swiss cream."
 		},
 		"1": {
 			"q": "Can I fill the buns in advance?",

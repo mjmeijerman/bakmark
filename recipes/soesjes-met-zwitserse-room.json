@@ -10,9 +10,9 @@
 		"youtube_id": null
 	},
 	"result": {
-		"value": 30,
+		"value": 50,
 		"unit": "gevulde soesjes",
-		"note": "Ongeveer 20 g room per soesje. Meer room per soesje? Verhoog de hoeveelheid Zwitserse room, niet de soesjes."
+		"note": "Ongeveer 15 g room per soesje. Meer room per soesje? Verhoog de hoeveelheid Zwitserse room, niet de soesjes."
 	},
 	"category": "gebak",
 	"tags": [
@@ -34,13 +34,13 @@
 	"components": [
 		{
 			"ref": "soesjes",
-			"amount": 30,
+			"amount": 50,
 			"unit": "soesjes",
 			"note": "Afgekoeld, niet gevuld."
 		},
 		{
 			"ref": "zwitserse-room",
-			"amount": 600,
+			"amount": 750,
 			"unit": "g",
 			"note": "Direct uit de koelkast verwerken."
 		}
@@ -81,7 +81,7 @@
 			"text": "Doe de Zwitserse room in een spuitzak met kartelmondje en spuit elk soesje van onderen vol, tot je weerstand voelt en de room er niet meer in gaat. Of lepel de room in de doorgesneden soesjes.",
 			"why": "Tot je weerstand voelt: een half gevuld soesje smaakt naar lucht. Te ver doorduwen barst de wand.",
 			"tips": [
-				"Ongeveer 20 g per soesje; bij 30 soesjes is dat precies 600 g room."
+				"Ongeveer 15 g per soesje; bij 50 soesjes is dat precies 750 g room."
 			]
 		},
 		{
@@ -100,7 +100,7 @@
 	"faq": [
 		{
 			"q": "Hoeveel room gaat er in één soesje?",
-			"a": "Ongeveer 20 gram. Bij 30 soesjes is dat 600 gram Zwitserse room, precies één batch van dat basisrecept."
+			"a": "Ongeveer 15 gram. Bij 50 soesjes is dat 750 gram Zwitserse room."
 		},
 		{
 			"q": "Kan ik de soesjes van tevoren vullen?",

@@ -86,12 +86,14 @@ Order of work:
 
 *Revised 2026-10-26: Brevo is out. Its default envelope (`brevosend.com`) puts SPF on Brevo's shared domain, its tracking runs on `brevolinks.com`, and the Free plan stamps a Brevo logo on every email. The founder wants SPF and DKIM properly ours, and at five sends a year the volume does not justify an ESP. DKIM was never the shared part — those keys are per sending domain; the shared part is the envelope, and the free plan's footer on every mail.*
 
+*Revised 2026-11-02: Listmonk is out too. It is a second runtime plus a Postgres instance to keep alive, install, upgrade and monitor — for a list of zero. The signup endpoint already writes the address to SQLite in ~40 lines, and everything Listmonk would have done for us (double opt-in token, unsubscribe token, CSV export) is a few columns and two small endpoints. No list manager, no relay, nothing outside the VPS.*
+
 **The stack**
 
 | Piece | Choice | Why |
 |---|---|---|
-| List + forms + unsubscribe | **Listmonk** (single binary) | Double opt-in, token unsubscribe, bounce handling, CSV export. Our list, our database. |
-| Database | **Postgres 16**, on the VPS | Listmonk requires it. It arrives now instead of "above 1,000 contacts" — so the app-side DB work does not. |
+| List + form + double opt-in + unsubscribe | **Our own code**: the Astro signup endpoint + a SQLite file | One store, readable with `sqlite3`, exported with one query. No second runtime to install, upgrade and monitor. |
+| Database | **SQLite**, `data/subscribers.sqlite` | One file: backup is a copy, restore is a copy, and it needs no server process. Postgres arrives only when two writers need it. |
 | Sending | **Postfix + OpenDKIM** | Our IP, our DKIM key, our SPF. No shared envelope, no third party in the path. |
 | Sending domain | `news.<domein>`, DKIM `d=news.<domein>` | Reputation damage stays off the domain that serves the site. |
 | Reverse DNS | `mail.<domein>` | Most providers let you set it; a missing PTR is a spam signal. |
@@ -103,17 +105,21 @@ Order of work:
 - **Outbound port 25: verified open** (2026-10-26). A TCP connection from the box to `gmail-smtp-in.l.google.com:25` completes, so LeaseWeb does not filter outbound SMTP and Postfix can deliver directly. No unblock ticket needed.
 - **IP reputation: check it, do not assume.** The IP already has history from whatever ran on it: `https://multirbl.valli.org/lookup/<ip>`. A listed IP is a different problem from a cold one, and worth knowing before the double opt-in mail is the first thing it sends.
 
-With port 25 open, the relay is no longer a connectivity fallback — it is purely a reputation fallback, used only if deliverability disappoints.
+With port 25 open, nothing in the connection path needs working around.
 
 **The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly.
 
 **The test, before the form goes live:** send to a **mail-tester.com** address and require **≥9/10** (SPF, DKIM and DMARC all pass, no blocklist hits, no HTML/spam traps), then send to a real Gmail and a real Outlook address and check the folder it lands in. Both, every time the MTA config changes — a signature that passes in mail-tester but lands in Gmail's spam is still a broken funnel.
 
-**Escape hatch, one config line:** Listmonk sends through whatever SMTP it is configured with. If deliverability disappoints, point it at a European relay (Scaleway TEM FR, Mailjet FR) and keep everything else — list, forms, double opt-in, unsubscribe, CSV. The relay is the fallback, not the architecture.
+**No relay, by decision.** There is no SMTP-relay escape hatch. If deliverability disappoints, the fixes are the signals we own: PTR, SPF, DKIM key and selector, DMARC alignment, content, and a slow volume ramp. A relay would be a new decision with its own note, not a config line flipped in a bad week.
+
+**Bots hit a public form. The form defends itself, without an external service:** a hidden honeypot field a human cannot see or tab into, a minimum fill time (a submitted form younger than ~1.5 s is not a human), a same-origin check, and a per-IP rate limit held in memory. Filled honeypot, too-fast submit or rate-limited IP all get the same quiet "done" response, so a bot learns nothing. No CAPTCHA: it is a third party in the path, a privacy statement line, and an accessibility problem, for a threat a rate limit already covers.
+
+**Not built yet, and it blocks the first send:** double opt-in. The signup endpoint stores the address with `confirmed_at` NULL and no mail goes to an unconfirmed row. Token, confirmation mail, confirm and unsubscribe endpoints, 7-day expiry and the bounce mailbox are tracked in issue #295 — they ship with the mail server, not before.
 
 **Consequence for the compliance gate:** holding the list means being the data controller from day one — retention rule, breach procedure, a privacy statement that names the mail server. That is now Gate A work, not a >1,000-contact concern.
 
-**Rejected:** Brevo (shared envelope SPF, logo on the free plan); any ESP at launch (the same shared-envelope trade for less control); a full mail suite like Mailu or Postal (more surface than a list of zero needs — Postfix + OpenDKIM is the smallest thing that signs properly); Proton + manual sends (no double opt-in trail, no unsubscribe token); no relay fallback ever (one bad week becomes a broken funnel with no way out).
+**Rejected:** Brevo (shared envelope SPF, logo on the free plan); any ESP at launch (the same shared-envelope trade for less control); a full mail suite like Mailu or Postal (more surface than a list of zero needs — Postfix + OpenDKIM is the smallest thing that signs properly); Proton + manual sends (no double opt-in trail, no unsubscribe token); **Listmonk** (a second runtime and a Postgres instance for a list of zero — the rows it would hold are four columns); a relay fallback (a third party in the path for the one thing the decision was about keeping in-house); a CAPTCHA service (external, privacy line, accessibility cost).
 
 ### D7 — Payment: site first, provider second, KvK in parallel
 
@@ -151,11 +157,11 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 | Item | Cost |
 |---|---|
 | Hardware: floor tripod + overhead arm + ring light, DSP lavalier | €85–110 |
-| Domain + VPS, year 1 (2 GB is the floor now: Postgres + Listmonk + Postfix) | €60–85 |
+| Domain + VPS, year 1 (1 GB is enough: Astro server + SQLite + Postfix) | €60–85 |
 | Ingredients, 5 videos incl. failures and test bakes | €150–250 |
 | Props: marble board, backdrop, diffuser | €60–90 |
 | KvK registration (verify the fee on kvk.nl — €52 or €75, do not guess) | €52–75 |
-| Brevo / Umami / Astro / ffmpeg / print-CSS | €0 |
+| Umami / Astro / ffmpeg / print-CSS | €0 |
 | **Year 1 total** | **€405–615**, ≈ €3–5/month recurring |
 
 Build to video 1: **~32–40h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
@@ -264,7 +270,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 8. ffmpeg step-frame extractor. *(1h)*
 9. **Deploy**: domain + VPS + Caddy + TLS, publish the build that already works locally. *(3h)*
 10. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-11. Postgres + Listmonk + Postfix/OpenDKIM on the VPS: double opt-in form, token unsubscribe, bounce mailbox, weekly CSV export. Verify with mail-tester.com (≥9/10) plus a real Gmail and Outlook send. *(6–8h)*
+11. Postfix + OpenDKIM on the VPS, and the signup we already run: double opt-in mail with a token, token unsubscribe, bounce mailbox, CSV export from SQLite. Verify with mail-tester.com (≥9/10) plus a real Gmail and Outlook send. *(8–10h)*
 12. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
 13. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
 14. Record videos 1 and 2, publish video 1.
@@ -281,7 +287,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 ### Gate C — gated on evidence, no dates
 | Build | Gate to pass first |
 |---|---|
-| Own unsubscribe tokens + app-side subscriber DB | >1,000 contacts (Postgres already runs for Listmonk; this replaces Listmonk, not adds a database) |
+| List admin UI (search, manual remove, resend) | >1,000 contacts — the tokens, the table and the export already exist; this is only a screen |
 | i18n route prefix | 5 videos live (locale file from day 1, zero English content) |
 | €9 PDF e-book to the warm list | ≥500 subs; <30 sales → stop, no cookbook |
 | POD pre-order page (no shop integration, no stock) | ≥1,500 subs + e-book validated + written Pumbo quote |
@@ -309,7 +315,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 | Full brand/design system before launch | Comfortable procrastination; 5 recipe pages do not need it |
 | Flour-anchored baker's-percentage calculator | The meeting's misreading of the founder's calculator: computes a percentage of nothing on four of five recipes |
 | Interactive rescaler in Gate A | Right feature, wrong gate: Gate A exists to publish video 1, and the rescaler is 1–2 days |
-| Own email database + custom unsubscribe at launch | 12h to build a compliance surface for a list of zero; Brevo hosted + CSV export gives the same exit plan for 1h |
+| Listmonk + Postgres for the list | A second runtime, a database server and upgrade duty for a list of zero; our own endpoint writes the same rows, and the export is one query |
 | Resend / Amazon SES | US-owned; the requirement was that the service runs in Europe |
 | Mollie as a week-0 blocker | Requires KvK, and providers review a live site; Stripe covers the gap, KvK runs in parallel |
 | AdSense in year 1 | €20–50/year against the brand's core promise; gated at 50k views/video |
@@ -345,7 +351,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 3. **Day 3–4 (6h):** local Astro project, then `recipes/soezendeeg.json`. VPS and domain come later, once there is a page worth deploying.
 4. **Day 5–7 (8h):** recipe page template, static scale table, print view, bake mode — all on `localhost`.
 5. **Day 8 (3h):** Umami, chapter generator, ffmpeg frame extractor.
-6. **Day 9 (2h):** Brevo form, donate block, legal pages.
+6. **Day 9 (2h):** signup form with double opt-in, donate block, legal pages.
 7. **Day 10:** shoot take 1 of soezendeeg. Second take if the first one fails — that is normal, not a setback.
 
 The **Day** numbers are sequence, not calendar dates — a slow week moves the sequence, it does not put the plan behind.

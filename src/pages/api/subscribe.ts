@@ -47,12 +47,38 @@ const openDb = (): DatabaseSync => {
 	return db;
 };
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
 const normalise = (value: unknown): string =>
 	typeof value === "string" ? value.trim().toLowerCase() : "";
 
-const isEmail = (value: string): boolean => value.length <= 254 && EMAIL.test(value);
+/*
+ * One @, a sensible local part, real DNS labels, an alphabetic TLD.
+ * Deliberately strict: "a@b..com", "a.@b.com" and "a@-b.com" are not
+ * addresses, and a list full of them is worse than a rejected signup.
+ * IDN addresses are not accepted; nobody needs one to hear about recipes.
+ */
+const LOCAL = /^[a-z0-9!#$%&'*+/=?^`{|}~.-]+$/i;
+const LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
+const TLD = /^[a-z]{2,63}$/i;
+
+const isEmail = (value: string): boolean => {
+	if (value.length < 6 || value.length > 254) return false;
+
+	const at = value.lastIndexOf("@");
+	if (at < 1 || at !== value.indexOf("@")) return false;
+
+	const local = value.slice(0, at);
+	const domain = value.slice(at + 1);
+
+	if (local.length > 64) return false;
+	if (!LOCAL.test(local)) return false;
+	if (local.startsWith(".") || local.endsWith(".") || local.includes("..")) return false;
+
+	const labels = domain.split(".");
+	if (labels.length < 2) return false;
+	if (!labels.every((label) => LABEL.test(label))) return false;
+
+	return TLD.test(labels.at(-1) ?? "");
+};
 
 const isLang = (value: unknown): "nl" | "en" => (value === "en" ? "en" : "nl");
 

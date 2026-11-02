@@ -472,13 +472,11 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		}
 
 		<section class="section">
+			{/* Every part starts open; folded shut only if the reader closes it. */}
 			<h2>{copy.steps}</h2>
 			{
 				groups.map((group) => (
-					<details
-						class="step-group collapsible"
-						open={!composed || group.recipe.slug === slug}
-					>
+					<details class="step-group collapsible" open>
 						{composed && (
 							<summary>
 								<h3>

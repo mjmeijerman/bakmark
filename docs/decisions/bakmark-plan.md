@@ -74,7 +74,22 @@ What the feature actually is:
 4. **Rounding is a rule, not a guess.** Every scaled amount is formatted per ingredient: grams to sensible precision, eggs in halves then wholes, sachets in wholes. No false precision, no "1.333 eggs".
 5. **Scaling down has a floor, and the recipe says so.** Below roughly half of the written batch the arithmetic still works and the result does not: half an egg in a pastry cream, 2 g of gelatine in a mousse, 12 g of butter in a roux, 40 g of cream under a whisk — the thing either cannot be measured, cannot be mixed, or does not set. So the rescaler warns instead of quietly producing a number nobody should cook from.
 
-**The downscaling warning, concretely.** Every recipe carries the smallest batch it still works at — one number, `scale_min` (as a factor of the written recipe; default ½, and set higher per recipe where the technique needs it: a meringue below 2 whites, a caramel below 100 g of sugar). Below that factor:
+**Where the floor comes from.** Never a guess, and never one number for the site. The floor is the smallest factor at which every *written amount* is still something a kitchen can measure and a tool can work:
+
+| Constraint | Minimum that still works |
+|---|---|
+| A weighed ingredient | 5 g (10 g for a coarse scale) |
+| A liquid | 50 ml |
+| An egg, a yolk, a white | 1 whole |
+| Cream to whip | 100 ml |
+| Sugar for caramel | 100 g |
+| Gelatine leaves | 1 |
+
+So `scale_min` = the largest of (minimum ÷ written amount) over the ingredients, rounded up to the next ⅓, ½ or ⅔. Leave the field out when the answer is ½ — that is the default, and a value that only repeats the default is noise. Fill it in only when a recipe differs, and only after testing that batch: ⅔ for a meringue on 3 whites, ½ for a caramel on 200 g of sugar, ⅓ for a recipe whose binding constraint is a 100 ml liquid.
+
+For the six launch recipes the answer is ½ across the board (their tightest written amount is 25 g of butter in the pastry cream, 8 g at ⅓), so none of them needed a value. The field exists for the recipes that do.
+
+**Below that factor:**
 
 - The rescaler still calculates. Blocking a cook who wants a third of a batch is not the job; warning them is.
 - A warning sits next to the rescaler, not in a footnote: *"Dit is minder dan de helft van het recept. Onder ongeveer de helft worden de hoeveelheden te klein om goed af te meten en te kloppen; de room kan schiften of niet opstijven. Reken liever het hele recept en bewaar of weeg wat je overhoudt."* Same wording on the static table when ½× is under the floor.

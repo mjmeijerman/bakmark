@@ -11,6 +11,7 @@ import {
 	difficultyWord,
 	publishedValue,
 	recipeChips,
+	recipeTiming,
 	roleLabel,
 	searchText,
 	sortOptions,
@@ -87,7 +88,7 @@ const sorts = sortOptions(lang);
 const buckets = timeBuckets(lang);
 const locale = lang === "en" ? "en" : "nl";
 
-const minutes = (recipe: Recipe) => Math.round(recipe.time.total / 60);
+const minutes = (recipe: Recipe) => Math.round(recipeTiming(recipe.slug).total / 60);
 
 /** Count per facet value; values with one recipe stay visible but disabled (D20). */
 const count = (predicate: (recipe: Recipe) => boolean) => recipes.filter(predicate).length;
@@ -116,7 +117,10 @@ const difficultyOptions = Array.from({ length: DIFFICULTY_SCALE }, (_, index) =>
 const timeOptions = buckets.map((bucket) => ({
 	id: bucket.id,
 	label: bucket.label,
-	total: count((recipe) => recipe.time.total >= bucket.min && recipe.time.total < bucket.max),
+	total: count((recipe) => {
+		const seconds = recipeTiming(recipe.slug).total;
+		return seconds >= bucket.min && seconds < bucket.max;
+	}),
 }));
 
 const fill = (template: string, values: Record<string, string | number>) =>

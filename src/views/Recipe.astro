@@ -12,8 +12,8 @@ import {
 	localizeGroup,
 	loadRecipe,
 	recipeChips,
+	recipeTiming,
 	resolveRecipe,
-	totalTime,
 	usedIn,
 	type Recipe,
 } from "../lib/recipes";
@@ -156,7 +156,7 @@ const resolved = resolveRecipe(loadRecipe(slug));
 const groups = resolved.groups.map((group) => localizeGroup(group, lang));
 const composed = groups.length > 1;
 const chips = recipeChips(recipe, lang);
-const activeTime = totalTime({ root: loadRecipe(slug), groups: resolved.groups });
+const timing = recipeTiming(slug);
 const bakeGroups = groups.filter((group) => group.recipe.bake);
 const direct = groups.filter((group) => group.depth === 1);
 /*
@@ -207,13 +207,8 @@ const usedBy = usedIn(slug).map((entry) => ({
 }));
 const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
 
-// The three numbers a baker plans around, summed over every part. Oven and
-// wait are only shown when something actually fills them in.
-const ovenTime = groups.reduce((sum, group) => sum + (group.recipe.time.oven ?? 0), 0);
-const waitTime = groups.reduce(
-	(sum, group) => sum + (group.recipe.time.wait || group.recipe.time.afterbake || 0),
-	0,
-);
+// Oven and wait only show when a part fills them in; the total is derived, so
+// the four numbers under the title always add up.
 
 const tools = Array.from(
 	groups
@@ -239,13 +234,13 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<h1>{recipe.title}</h1>
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">
-				<li><span class="chip">{copy.timeTotal} {formatMinutes(recipe.time.total, lang)}</span></li>
-				<li><span class="chip">{copy.timeActive} {formatMinutes(activeTime, lang)}</span></li>
-				{ovenTime > 0 && (
-					<li><span class="chip">{copy.timeOven} {formatMinutes(ovenTime, lang)}</span></li>
+				<li><span class="chip">{copy.timeTotal} {formatMinutes(timing.total, lang)}</span></li>
+				<li><span class="chip">{copy.timeActive} {formatMinutes(timing.active, lang)}</span></li>
+				{timing.oven > 0 && (
+					<li><span class="chip">{copy.timeOven} {formatMinutes(timing.oven, lang)}</span></li>
 				)}
-				{waitTime > 0 && (
-					<li><span class="chip">{copy.timeWait} {formatMinutes(waitTime, lang)}</span></li>
+				{timing.wait > 0 && (
+					<li><span class="chip">{copy.timeWait} {formatMinutes(timing.wait, lang)}</span></li>
 				)}
 				{/* recipeChips starts with the total time, which is a labelled chip above. */}
 				{chips.slice(1).map((chip) => <li><span class="chip">{chip}</span></li>)}
@@ -262,7 +257,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				<strong>{recipe.result.value} {recipe.result.unit}</strong>{recipe.result.note ? ` — ${recipe.result.note}` : ""}
 			</p>
 			<p class="print-only">
-				{copy.printLine(formatMinutes(activeTime, lang), recipe.difficulty, published, ovenTemperature)}
+				{copy.printLine(formatMinutes(timing.active, lang), recipe.difficulty, published, ovenTemperature)}
 			</p>
 		</section>
 

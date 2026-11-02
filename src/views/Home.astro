@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
-import { allRecipes, formatMinutes, roleLabel } from "../lib/recipes";
+import { allRecipes, formatMinutes, recipeTiming, roleLabel } from "../lib/recipes";
 import { path, t, type Lang } from "../lib/i18n";
 
 interface Props {
@@ -37,7 +37,7 @@ const newest = allRecipes(lang)
 					<li>
 						<a href={path(lang, "recipe", recipe.slug)}>{recipe.title}</a>
 						<span class="newest-meta">
-							{formatMinutes(recipe.time.total, lang)} · {roleLabel(recipe.role, lang)}
+							{formatMinutes(recipeTiming(recipe.slug).total, lang)} · {roleLabel(recipe.role, lang)}
 						</span>
 					</li>
 				))

@@ -565,8 +565,37 @@ export const formatMinutes = (seconds: number, lang: Lang = DEFAULT_LANG) => {
 };
 
 /** Chips as used by RecipeCard and the recipe hero. */
+export interface RecipeTiming {
+	active: number;
+	oven: number;
+	wait: number;
+	total: number;
+}
+
+/**
+ * The times of a recipe and of every part, each counted once.
+ *
+ * Totaal is the sum of the other three, on purpose: a page that shows parts
+ * which do not add up to its total is a page nobody trusts. A hand-written
+ * total on a composed recipe used to disagree with its own parts (the cooling
+ * of one part overlapping the work on another), so the total is derived now.
+ */
+export function recipeTiming(slug: string): RecipeTiming {
+	// Resolved from disk, not from a localised copy: the overlay translates
+	// units, and a unit that no longer matches the part trips the graph check.
+	const { groups } = resolveRecipe(loadRecipe(slug));
+	const sum = (pick: (item: Recipe) => number) =>
+		groups.reduce((total, group) => total + pick(group.recipe), 0);
+
+	const active = sum((item) => item.time.active);
+	const oven = sum((item) => item.time.oven ?? 0);
+	const wait = sum((item) => item.time.wait || item.time.afterbake || 0);
+
+	return { active, oven, wait, total: active + oven + wait };
+}
+
 export const recipeChips = (r: Recipe, lang: Lang = DEFAULT_LANG) => [
-	formatMinutes(r.time.total, lang),
+	formatMinutes(recipeTiming(r.slug).total, lang),
 	`${r.result.value} ${r.result.unit}`,
 	categoryLabel(r.category, lang),
 	roleLabel(r.role, lang),
@@ -602,6 +631,4 @@ export function usedIn(slug: string): { recipe: Recipe; via: string | null }[] {
 	return found;
 }
 
-/** Total time of the whole tree, so a composite does not under-promise. */
-export const totalTime = (resolved: ResolvedRecipe) =>
-	resolved.groups.reduce((sum, group) => sum + group.recipe.time.active, 0);
+

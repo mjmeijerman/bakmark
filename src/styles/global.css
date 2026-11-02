@@ -790,13 +790,17 @@
 
 	/* Each part's steps fold away: a composed recipe is five step lists, and
 	   only the assembly is this page's own work. */
+	/* Dashed, not solid: inside the steps these separate parts of one section,
+	   they do not end a block the way the section rules do. */
 	.step-group.collapsible {
-		border-top: 1px solid var(--border);
+		border-top: 1px dashed var(--border);
 	}
 
 	.step-group.collapsible > summary {
-		display: flex;
-		flex-wrap: wrap;
+		/* Grid, not wrapping flex: the +/− belongs on the title line, and the
+		   times take the row under it without pushing the marker down. */
+		display: grid;
+		grid-template-columns: 1fr auto;
 		align-items: baseline;
 		gap: 0 var(--space-2);
 		padding-block: var(--space-3);
@@ -815,7 +819,8 @@
 
 	.step-group.collapsible > summary::after {
 		content: "+";
-		margin-left: auto;
+		grid-column: 2;
+		grid-row: 1;
 		font-size: 1.4rem;
 		line-height: 1;
 		color: var(--accent);
@@ -1350,8 +1355,9 @@
 	}
 
 	.step-group.collapsible > summary .group-times {
+		grid-column: 1 / -1;
+		grid-row: 2;
 		margin: 0;
-		flex-basis: 100%;
 	}
 
 	.ingredient-group h3,

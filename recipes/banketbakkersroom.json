@@ -34,7 +34,7 @@
 		{
 			"id": "melk",
 			"name": "volle melk",
-			"amount": 515,
+			"amount": 500,
 			"unit": "g",
 			"scale": true,
 			"note": "Volle melk; halfvol geeft een dunnere room."

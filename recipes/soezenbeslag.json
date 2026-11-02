@@ -38,7 +38,7 @@
 		{
 			"id": "melk",
 			"name": "volle melk",
-			"amount": 103,
+			"amount": 100,
 			"unit": "g",
 			"scale": true,
 			"scale_by": "volume",
@@ -84,16 +84,16 @@
 			"name": "ei",
 			"amount": 200,
 			"unit": "g",
-			"amount_display": "200 g (3-4 medium eieren)",
+			"amount_display": "200 g (4 medium eieren)",
 			"scale": true,
 			"scale_by": "weight",
 			"round": "half-ei",
-			"note": "Op kamertemperatuur. Begin met 3 eieren (150 g); het 4e ei er alleen bij als het beslag nog te dik is. 200 g is het maximum, niet het doel."
+			"note": "Op kamertemperatuur. 200 g is vier medium eieren; begin met drie (150 g) en voeg de vierde toe als het beslag nog te dik is."
 		},
 		{
 			"id": "suiker",
 			"name": "suiker (optioneel)",
-			"amount": 4,
+			"amount": 5,
 			"unit": "g",
 			"scale": true,
 			"scale_by": "weight",
@@ -280,7 +280,7 @@
 	"variants": {
 		"klassiek": {
 			"label": "melk + water",
-			"note": "De standaard: 103 g melk en 100 g water. Zachtere structuur en mooiere kleur.",
+			"note": "De standaard: 100 g melk en 100 g water. Zachtere structuur en mooiere kleur.",
 			"ingredients": {
 				"melk": 103,
 				"water": 100

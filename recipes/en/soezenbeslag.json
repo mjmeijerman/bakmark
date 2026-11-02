@@ -40,9 +40,9 @@
 			"note": "High in protein and fine, 10-11% protein. Strong white flour gives more margin than T65. No self-raising flour, cake flour or soft flour."
 		},
 		"ei": {
-			"amount_display": "200 g (3-4 medium eggs)",
+			"amount_display": "200 g (4 medium eggs)",
 			"name": "egg",
-			"note": "At room temperature. Start with 3 eggs (150 g); add the 4th only if the batter is still too thick. 200 g is the maximum, not the goal."
+			"note": "At room temperature. 200 g is four medium eggs; start with three (150 g) and add the fourth if the batter is still too thick."
 		},
 		"suiker": {
 			"name": "sugar (optional)",
@@ -184,7 +184,7 @@
 	"variants": {
 		"klassiek": {
 			"label": "milk + water",
-			"note": "The default: 103 g milk and 100 g water. Softer structure and better colour."
+			"note": "The default: 100 g milk and 100 g water. Softer structure and better colour."
 		},
 		"water": {
 			"label": "water only",

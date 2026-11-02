@@ -58,6 +58,8 @@ const copy = {
 		ready: (name: string) => `${name} klaargezet`,
 		affiliate:
 			"Soms staat er bij gereedschap een affiliate-link. Die is gemarkeerd en kost jou niets extra.",
+		affiliateIngredient:
+			"Soms staat er bij een ingrediënt een affiliate-link. Die is gemarkeerd en kost jou niets extra.",
 		baking: "Bakken",
 		bakeMode: "Ovenstand",
 		bakeTemp: "Temperatuur",
@@ -119,6 +121,8 @@ const copy = {
 		ready: (name: string) => `${name} ready`,
 		affiliate:
 			"Sometimes a tool carries an affiliate link. It is marked and costs you nothing extra.",
+		affiliateIngredient:
+			"Sometimes an ingredient carries an affiliate link. It is marked and costs you nothing extra.",
 		baking: "Baking",
 		bakeMode: "Oven setting",
 		bakeTemp: "Temperature",
@@ -397,7 +401,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 						</div>
 					))
 			}
-			<p class="form-note no-print">{copy.affiliate}</p>
+			<p class="form-note no-print">{copy.affiliateIngredient}</p>
 		</RecipeSection>
 
 		{

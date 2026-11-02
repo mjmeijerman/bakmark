@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
 import DifficultyBadge from "../components/DifficultyBadge.astro";
 import RecipeSection from "../components/RecipeSection.astro";
+import RecipeSteps from "../components/RecipeSteps.astro";
 import {
 	DIFFICULTY_SCALE,
 	allRecipes,
@@ -480,9 +481,24 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			{/* Every part starts open; folded shut only if the reader closes it. */}
 			<h2>{copy.steps}</h2>
 			{
-				groups.map((group) => (
-					<details class="step-group collapsible" open>
-						{composed && (
+				/* Folded only when there are parts to fold: a single-part recipe is one
+				   list, and a disclosure triangle over one list is furniture. */
+				groups.map((group) => {
+					const list = (
+						<RecipeSteps
+							slug={group.recipe.slug}
+							steps={group.steps}
+							whyTips={copy.whyTips}
+							whyLabel={copy.whyLabel}
+						/>
+					);
+
+					if (!composed) {
+						return <div class="step-group">{list}</div>;
+					}
+
+					return (
+						<details class="step-group collapsible" open>
 							<summary>
 								<h3>
 									{group.recipe.title}
@@ -492,39 +508,10 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 									<span class="group-times">{partTiming(group.recipe.slug)}</span>
 								)}
 							</summary>
-						)}
-						<ol class="steps">
-							{group.steps.map((step, index) => (
-								<li id={`${group.recipe.slug}-${step.id}`}>
-									<span class="step-num" aria-hidden="true">
-										{index + 1}
-									</span>
-									<p>
-										<strong>{step.title}</strong>
-									</p>
-									<p>{step.text}</p>
-									{step.why || step.tips?.length ? (
-										<details class="step-extra">
-											<summary>{copy.whyTips}</summary>
-											{step.why && (
-												<p class="step-why">
-													<strong>{copy.whyLabel}</strong> {step.why}
-												</p>
-											)}
-											{step.tips?.length ? (
-												<ul class="step-tips">
-													{step.tips.map((tip) => (
-														<li>{tip}</li>
-													))}
-												</ul>
-											) : null}
-										</details>
-									) : null}
-								</li>
-							))}
-						</ol>
-					</details>
-				))
+							{list}
+						</details>
+					);
+				})
 			}
 			<p class="form-note no-print">{copy.stepsNote}</p>
 		</section>

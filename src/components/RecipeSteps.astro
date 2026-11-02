@@ -1,0 +1,52 @@
+---
+import type { Lang } from "../lib/i18n";
+
+interface Props {
+	slug: string;
+	steps: {
+		id: string;
+		title: string;
+		text: string;
+		why?: string;
+		tips?: string[];
+	}[];
+	/** The two labels this list needs; passed in so the component holds no copy. */
+	whyTips: string;
+	whyLabel: string;
+}
+
+const { slug, steps, whyTips, whyLabel } = Astro.props;
+---
+
+<ol class="steps">
+	{
+		steps.map((step, index) => (
+			<li id={`${slug}-${step.id}`}>
+				<span class="step-num" aria-hidden="true">
+					{index + 1}
+				</span>
+				<p>
+					<strong>{step.title}</strong>
+				</p>
+				<p>{step.text}</p>
+				{step.why || step.tips?.length ? (
+					<details class="step-extra">
+						<summary>{whyTips}</summary>
+						{step.why && (
+							<p class="step-why">
+								<strong>{whyLabel}</strong> {step.why}
+							</p>
+						)}
+						{step.tips?.length ? (
+							<ul class="step-tips">
+								{step.tips.map((tip) => (
+									<li>{tip}</li>
+								))}
+							</ul>
+						) : null}
+					</details>
+				) : null}
+			</li>
+		))
+	}
+</ol>

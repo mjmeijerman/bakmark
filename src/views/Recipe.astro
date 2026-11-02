@@ -173,6 +173,31 @@ const chips = recipeChips(recipe, lang);
 const activeTime = totalTime({ root: loadRecipe(slug), groups: resolved.groups });
 const bakeGroups = groups.filter((group) => group.recipe.bake);
 const direct = groups.filter((group) => group.depth === 1);
+/*
+ * Parts, once each, direct ones first. A soesje fails in the oven, not in the
+ * recipe that fills it, so "Als het mislukt" and the FAQ carry the parts too.
+ */
+const parts = groups
+	.filter((group) => group.recipe.slug !== slug)
+	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index)
+	.sort((a, b) => a.depth - b.depth);
+
+const failures = [
+	...(recipe.mislukt ?? []).map((item) => ({ item, part: null as string | null })),
+	...parts.flatMap((group) =>
+		(group.recipe.mislukt ?? []).map((item) => ({ item, part: group.recipe.title })),
+	),
+];
+const hasFailureParts = failures.some((row) => row.part);
+
+const questions = [
+	...(recipe.faq ?? []).map((item) => ({ item, part: null as string | null })),
+	...parts.flatMap((group) =>
+		(group.recipe.faq ?? []).map((item) => ({ item, part: group.recipe.title })),
+	),
+];
+const hasQuestionParts = questions.some((row) => row.part);
+
 const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
@@ -549,23 +574,25 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		</section>
 
 		{
-			recipe.mislukt?.length ? (
+			failures.length ? (
 				<section class="section no-print">
 					<h2>{copy.failed}</h2>
 					<table class="mislukt">
 						<thead>
 							<tr>
+								{hasFailureParts && <th scope="col">{copy.colPart}</th>}
 								<th>{copy.symptom}</th>
 								<th>{copy.cause}</th>
 								<th>{copy.fix}</th>
 							</tr>
 						</thead>
 						<tbody>
-							{recipe.mislukt.map((item) => (
+							{failures.map((row) => (
 								<tr>
-									<td>{item.symptoom}</td>
-									<td>{item.oorzaak}</td>
-									<td>{item.fix}</td>
+									{hasFailureParts && <td class="muted">{row.part ?? recipe.title}</td>}
+									<td>{row.item.symptoom}</td>
+									<td>{row.item.oorzaak}</td>
+									<td>{row.item.fix}</td>
 								</tr>
 							))}
 						</tbody>
@@ -575,14 +602,17 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		}
 
 		{
-			recipe.faq?.length ? (
+			questions.length ? (
 				<section class="section no-print">
 					<h2>{copy.faq}</h2>
 					<div class="faq">
-						{recipe.faq.map((item) => (
+						{questions.map((row) => (
 							<details>
-								<summary>{item.q}</summary>
-								<p>{item.a}</p>
+								<summary>
+									{row.part ? <span class="muted">{row.part} — </span> : null}
+									{row.item.q}
+								</summary>
+								<p>{row.item.a}</p>
 							</details>
 						))}
 					</div>

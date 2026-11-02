@@ -35,6 +35,7 @@ const copy = {
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
 		timeTotal: "Totaal",
+		timeActive: "Bereidingstijd",
 		timeOven: "Oven",
 		timeWait: "Wacht",
 		variants: "Varianten",
@@ -95,6 +96,7 @@ const copy = {
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
 		timeTotal: "Total",
+		timeActive: "Hands-on",
 		timeOven: "Oven",
 		timeWait: "Wait",
 		variants: "Variants",
@@ -238,6 +240,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">
 				<li><span class="chip">{copy.timeTotal} {formatMinutes(recipe.time.total, lang)}</span></li>
+				<li><span class="chip">{copy.timeActive} {formatMinutes(activeTime, lang)}</span></li>
 				{ovenTime > 0 && (
 					<li><span class="chip">{copy.timeOven} {formatMinutes(ovenTime, lang)}</span></li>
 				)}

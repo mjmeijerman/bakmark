@@ -9,7 +9,7 @@
  * Every row here is an unverified string, and no mail may go to one. The
  * work is tracked in issue #295 and is blocked on the mail server.
  */
-import { chmodSync, mkdirSync } from "node:fs";
+import { chmodSync, mkdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { APIRoute } from "astro";
@@ -20,31 +20,72 @@ const DB_PATH =
 	process.env.SUBSCRIBERS_DB ?? join(process.cwd(), "data", "subscribers.sqlite");
 
 let db: DatabaseSync | undefined;
+/** Identity of the file the open handle points at. */
+let dbInode: number | undefined;
+
+/*
+ * SQLite keeps writing to a file that has been deleted or replaced, and every
+ * write then lands in an unlinked inode: the signup is answered 201 and is
+ * gone. Comparing the inode catches a replaced file, and the restart after a
+ * backup restore does not silently swallow rows.
+ */
+const fileChanged = (): boolean => {
+	try {
+		const stats = statSync(DB_PATH);
+		return dbInode === undefined || stats.ino !== dbInode;
+	} catch {
+		// Gone: reopen, which recreates the folder and the table.
+		return true;
+	}
+};
+
+const closeDb = () => {
+	try {
+		db?.close();
+	} catch {
+		/* already gone */
+	}
+	db = undefined;
+	dbInode = undefined;
+};
 
 const openDb = (): DatabaseSync => {
-	if (db) return db;
-	mkdirSync(dirname(DB_PATH), { recursive: true, mode: 0o700 });
-	db = new DatabaseSync(DB_PATH);
+	if (db && !fileChanged()) return db;
+	if (db) closeDb();
 
-	// The list is nobody else's business: 0600 on the file, 0700 on the folder.
+	// A list that cannot be opened is a dead form, so the failure names the path
+	// instead of surfacing as a generic 500 on someone else's signup.
 	try {
-		chmodSync(DB_PATH, 0o600);
-	} catch {
-		/* a read-only file system fails later and louder */
+		mkdirSync(dirname(DB_PATH), { recursive: true, mode: 0o700 });
+		db = new DatabaseSync(DB_PATH);
+		dbInode = statSync(DB_PATH).ino;
+
+		// The list is nobody else's business: 0600 on the file, 0700 on the folder.
+		try {
+			chmodSync(DB_PATH, 0o600);
+		} catch {
+			/* a read-only file system fails later and louder */
+		}
+
+		db.exec(`
+			PRAGMA journal_mode = WAL;
+			PRAGMA synchronous = NORMAL;
+			CREATE TABLE IF NOT EXISTS subscribers (
+				email TEXT PRIMARY KEY,
+				lang TEXT NOT NULL,
+				source TEXT,
+				created_at TEXT NOT NULL,
+				confirmed_at TEXT
+			);
+			CREATE INDEX IF NOT EXISTS subscribers_created_at ON subscribers (created_at);
+		`);
+	} catch (error) {
+		closeDb();
+		throw new Error(
+			`[subscribe] the list at ${DB_PATH} cannot be opened: ${(error as Error).message}`,
+		);
 	}
 
-	db.exec(`
-		PRAGMA journal_mode = WAL;
-		PRAGMA synchronous = NORMAL;
-		CREATE TABLE IF NOT EXISTS subscribers (
-			email TEXT PRIMARY KEY,
-			lang TEXT NOT NULL,
-			source TEXT,
-			created_at TEXT NOT NULL,
-			confirmed_at TEXT
-		);
-		CREATE INDEX IF NOT EXISTS subscribers_created_at ON subscribers (created_at);
-	`);
 	return db;
 };
 
@@ -96,7 +137,7 @@ const store = (email: string, lang: string, source: string | null): boolean => {
 	try {
 		return insert().changes > 0;
 	} catch {
-		db = undefined;
+		closeDb();
 		return insert().changes > 0;
 	}
 };

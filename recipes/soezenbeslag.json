@@ -84,7 +84,6 @@
 			"name": "ei",
 			"amount": 200,
 			"unit": "g",
-			"amount_display": "200 g (4 medium eieren)",
 			"scale": true,
 			"scale_by": "weight",
 			"round": "half-ei",

@@ -1322,15 +1322,26 @@
 		page-break-inside: avoid;
 	}
 
-	.ingredient-group + .ingredient-group {
-		margin-top: 0.4rem;
+	/* A rule under each group, so two columns still say what belongs to what,
+	   and a group never splits across a column or a page. */
+	.ingredient-group {
 		break-inside: avoid;
 		page-break-inside: avoid;
+		padding-bottom: 1.5mm;
+		border-bottom: 1px solid #999;
+	}
+
+	.ingredient-group + .ingredient-group {
+		margin-top: 1.5mm;
+	}
+
+	.ingredient-group:last-child {
+		border-bottom: 0;
 	}
 
 	.ingredient-group h3 {
 		font-size: 10pt;
-		margin: 0.3rem 0 0.1rem;
+		margin: 0 0 0.1rem;
 	}
 
 	.tools {
@@ -1395,6 +1406,18 @@
 		break-inside: avoid;
 		page-break-inside: avoid;
 		margin-bottom: 0.7rem;
+	}
+
+	/* A part heading on one page and its steps on the next is a wasted step:
+	   keep the block together, and only split it when it cannot fit at all. */
+	.step-group {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.step-group.collapsible > summary {
+		break-after: avoid;
+		page-break-after: avoid;
 	}
 
 	.steps .step-num {

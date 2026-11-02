@@ -384,6 +384,29 @@ The pages that argue *why this site exists* are the ones a non-Dutch reader has 
 
 **Rejected:** two separate sites (two sources of truth, and the six recipes drift apart immediately); translating the JSON wholesale into a second file (every number duplicated, `factorFor` comparing Dutch units against English ones, and a fix landing on one language only); a client-side language switch (nothing for a crawler, and a flash of the wrong language); machine translation at build time (unverified baking instructions in a language no one checked — the failure mode of this site is a recipe that does not work); English URLs with Dutch recipe slugs changed to English ones (deep links would break, and the slug is an id).
 
+### D23 — Every pull request runs the full check set, and a red check blocks the merge
+
+*Added 2026-11-02. Nothing runs yet: this is the decision, the pipeline is built next.*
+
+**Why this is not optional here.** The site is six JSON recipes rendered by arithmetic: scaling factors, component units, nested yields, a print view that must match the screen. Every class of bug found by hand this week was that class — totals that did not add up because one number was typed and the others were summed, the same failure listed under two parts, `ml` and `tl` left in a data file, a form that answered "saved" and stored nothing. A person reading a diff does not catch those. A test does, every time, for free.
+
+**What the pipeline runs on every pull request** (GitHub Actions, required status checks on `trunk`):
+
+| Check | What it proves |
+|---|---|
+| `npm ci && npm run build` | The site still builds; the Node adapter compiles. |
+| Unit: recipe graph | Every `components[].ref` resolves, no cycles, every recipe and both language overlays satisfy the schema, no duplicate ingredient ids, every `variant` a link asks for exists. |
+| Unit: quantities | `Totaal = bereidingstijd + oven + wacht` for every recipe; eggs, yolks and whites in grams with a count in the note that matches the 50 g / 17,5 g / 32,5 g standard; no `ml`, `tl`, `tsp` or `cup` anywhere in `recipes/`; the vanilla pod is the only non-gram unit. |
+| Unit: prose consistency | No duplicate FAQ question or `mislukt` row across parts of one composed recipe; every yield note agrees with the numbers it quotes ("enough for 40 soesjes" must be true). |
+| Endpoint: `/api/subscribe` | Valid address → 201 and one row; duplicate → 201 and still one row; invalid → 400; honeypot, sub-1.5 s submit and cross-origin → "saved" with no row; 5 per window per IP then silent drop; body over 64 KiB rejected; the handle reopens after the SQLite file is deleted underneath it. |
+| Accessibility | axe-core, WCAG 2.1 AA, **zero violations**, on every route in both languages, light and dark. |
+| Navigation | Every internal link and every `hreflang` alternate resolves; no Dutch route without its `/en` twin and the reverse; no orphan page. |
+| Print | A PDF of one composed and one single-part recipe builds; no interactive controls on it; ingredient groups stay whole; the page count stays within the agreed budget. |
+
+**Rules that make it worth having.** The pipeline runs the same commands locally (`npm test` does everything the pipeline does), so "it passes on my machine" and "it passes in CI" cannot diverge. A failing check is fixed, never skipped or `--force`d through: the branch protection requires the checks on `trunk`, and deleting a test to unblock a merge is the one change that always gets a second pair of eyes.
+
+**Rejected:** running only the build (it catches syntax, not a wrong number); coverage targets as a goal (a number that says nothing about whether the recipe maths is right); visual snapshot tests of every page (they fail on every font hinting change and get rubber-stamped); testing by hand before deploy (that is what produced the bugs listed above); a paid CI plan (public repo, the free tier runs all of this).
+
 ## 3. Roadmap
 
 ### Gate 0 — first ~4h, €0

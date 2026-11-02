@@ -49,6 +49,15 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 `recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result {value, unit}` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story), `tin` (shape + dimensions), `bake` (time, temperature).
 
+**Units are grams, always.** Not millilitres, not teaspoons, not cups: a scale is the only measuring tool every kitchen has and the only one that scales linearly. Milk is weighed (500 ml = 515 g), cream is weighed (300 ml = 300 g), salt is weighed (1,5 g). Grams make the ½×/2× table and the interactive rescaler honest — "1/4 tl" doubled is a guess, "1,5 g" doubled is 3 g.
+
+Two exceptions, both because weighing is absurd:
+
+- **A vanilla pod** keeps its own unit ("1 stokje"). Nobody weighs a pod, and its amount does not scale anyway (`scale: false`).
+- **Eggs** are written as grams *with the count in brackets*: "200 g (3-4 medium eieren)", "80 g (≈ 4 dooiers)". The count is a convenience, the weight is the recipe. Used up: the brackets belong to the 1× display, so a scaled amount shows plain grams rather than a wrong number of eggs.
+
+Everything else — including things usually given in spoons — is grams with a note where the reason matters ("niet mee opschalen; ongeveer 1,5 g per 100 g bloem").
+
 Rendered from that one file:
 1. recipe page — result in the headline, context block, taxonomy as tags, bake mode toggle,
 2. YouTube description + chapters (generator script),

@@ -63,7 +63,7 @@
 			"unit": "g",
 			"scale": true,
 			"scale_by": "weight",
-			"note": "Op kamertemperatuur; koude dooiers mengen slechter. 80 g is ongeveer 4 medium dooiers."
+			"note": "Op kamertemperatuur; koude dooiers mengen slechter. Een medium ei weegt 50 g: 17,5 g dooier en 32,5 g eiwit, dus 80 g is ongeveer 4,5 dooier."
 		},
 		{
 			"id": "maizena",

@@ -34,7 +34,9 @@ const copy = {
 		videoLabel: (title: string) => `Video: ${title} in één take`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
-		why: "Waarom dit werkt",
+		timeTotal: "Totaal",
+		timeOven: "Oven",
+		timeWait: "Wacht",
 		variants: "Varianten",
 		variantsLede:
 			"Dezelfde stappen, een andere samenstelling. Een recept dat dit basisrecept gebruikt, kiest de variant; pas je de stappen aan, dan verandert dat in alle varianten mee.",
@@ -46,17 +48,7 @@ const copy = {
 		usedInLede:
 			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
 		via: (title: string) => `, via ${title}`,
-		timing: "Tijdsindeling",
-		timingLede:
-			"Waar de tijd naartoe gaat, per onderdeel. Actief is met je handen in het beslag; oven en wacht lopen vanzelf door.",
 		colPart: "Onderdeel",
-		colActive: "Actief",
-		colOven: "Oven",
-		colWait: "Wacht",
-		colTotal: "Totaal",
-		together: "Samen",
-		timingNote:
-			"De totale tijd is de wandklok van leeg aanrecht tot eindresultaat. Actief optellen mag, maar delen overlappen: de banketbakkersroom kan koelen terwijl je het beslag maakt.",
 		ingredients: "Ingrediënten",
 		onTop: "Bovenop de basisrecepten hierboven, plus:",
 		gathered: (name: string) => `${name} verzameld`,
@@ -102,7 +94,9 @@ const copy = {
 		videoLabel: (title: string) => `Video: ${title} in one take`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
-		why: "Why this works",
+		timeTotal: "Total",
+		timeOven: "Oven",
+		timeWait: "Wait",
 		variants: "Variants",
 		variantsLede:
 			"The same steps, a different composition. A recipe that uses this base recipe picks the variant; change the steps and every variant changes with it.",
@@ -114,17 +108,7 @@ const copy = {
 		usedInLede:
 			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
 		via: (title: string) => `, via ${title}`,
-		timing: "Timing",
-		timingLede:
-			"Where the time goes, per part. Active is hands in the batter; oven and wait run on their own.",
 		colPart: "Part",
-		colActive: "Active",
-		colOven: "Oven",
-		colWait: "Wait",
-		colTotal: "Total",
-		together: "Together",
-		timingNote:
-			"Total time is the wall clock from empty worktop to finished result. Adding up the active times is allowed, but the parts overlap: the pastry cream can cool while you make the dough.",
 		ingredients: "Ingredients",
 		onTop: "On top of the base recipes above, plus:",
 		gathered: (name: string) => `${name} gathered`,
@@ -221,11 +205,12 @@ const usedBy = usedIn(slug).map((entry) => ({
 }));
 const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
 
-// Everything you need besides ingredients, deduped across the components.
-// A column nobody fills in is noise: drop it instead of printing dashes.
-const hasOven = groups.some((group) => (group.recipe.time.oven || 0) > 0);
-const hasWait = groups.some(
-	(group) => (group.recipe.time.wait || group.recipe.time.afterbake || 0) > 0,
+// The three numbers a baker plans around, summed over every part. Oven and
+// wait are only shown when something actually fills them in.
+const ovenTime = groups.reduce((sum, group) => sum + (group.recipe.time.oven ?? 0), 0);
+const waitTime = groups.reduce(
+	(sum, group) => sum + (group.recipe.time.wait || group.recipe.time.afterbake || 0),
+	0,
 );
 
 const tools = Array.from(
@@ -252,7 +237,15 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<h1>{recipe.title}</h1>
 			<p class="recipe-result">{recipe.subtitle}</p>
 			<ul class="chips recipe-meta no-print">
-				{chips.map((chip) => <li><span class="chip">{chip}</span></li>)}
+				<li><span class="chip">{copy.timeTotal} {formatMinutes(recipe.time.total, lang)}</span></li>
+				{ovenTime > 0 && (
+					<li><span class="chip">{copy.timeOven} {formatMinutes(ovenTime, lang)}</span></li>
+				)}
+				{waitTime > 0 && (
+					<li><span class="chip">{copy.timeWait} {formatMinutes(waitTime, lang)}</span></li>
+				)}
+				{/* recipeChips starts with the total time, which is a labelled chip above. */}
+				{chips.slice(1).map((chip) => <li><span class="chip">{chip}</span></li>)}
 				<li><DifficultyBadge level={recipe.difficulty} lang={lang} /></li>
 				{
 					!recipe.verified && (
@@ -287,13 +280,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<span aria-hidden="true">Placeholder</span>
 			<strong aria-hidden="true">{copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}</strong>
 		</div>
-
-		<RecipeSection title={copy.why} noPrint>
-			<p>{recipe.context}</p>
-			<ul class="chips">
-				{recipe.tags.map((tag) => <li><span class="chip">{tag}</span></li>)}
-			</ul>
-		</RecipeSection>
 
 		{
 			recipe.variants && Object.keys(recipe.variants).length ? (
@@ -350,80 +336,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				</RecipeSection>
 			) : null
 		}
-
-		<RecipeSection title={copy.timing} noPrint>
-			<p class="section-lede">{copy.timingLede}</p>
-			<table class="time-table">
-				<thead>
-					<tr>
-						<th scope="col">{copy.colPart}</th>
-						<th scope="col">{copy.colActive}</th>
-						{hasOven && <th scope="col">{copy.colOven}</th>}
-						{hasWait && <th scope="col">{copy.colWait}</th>}
-						<th scope="col">{copy.colTotal}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{
-						groups.map((group) => (
-							<tr>
-								<th scope="row">
-									{group.recipe.title}
-									{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
-								</th>
-								<td>{formatMinutes(group.recipe.time.active, lang)}</td>
-								{hasOven && (
-									<td>
-										{group.recipe.time.oven ? formatMinutes(group.recipe.time.oven, lang) : null}
-									</td>
-								)}
-								{hasWait && (
-									<td>
-										{group.recipe.time.wait
-											? formatMinutes(group.recipe.time.wait, lang)
-											: group.recipe.time.afterbake
-												? formatMinutes(group.recipe.time.afterbake, lang)
-												: null}
-									</td>
-								)}
-								<td>{formatMinutes(group.recipe.time.total, lang)}</td>
-							</tr>
-						))
-					}
-				</tbody>
-				{
-					composed && (
-						<tfoot>
-							<tr>
-								<th scope="row">{copy.together}</th>
-								<td>{formatMinutes(activeTime, lang)}</td>
-								{hasOven && (
-									<td>
-										{formatMinutes(
-											resolved.groups.reduce((sum, g) => sum + (g.recipe.time.oven || 0), 0),
-											lang,
-										)}
-									</td>
-								)}
-								{hasWait && (
-									<td>
-										{formatMinutes(
-											resolved.groups.reduce(
-												(sum, g) => sum + (g.recipe.time.wait || g.recipe.time.afterbake || 0),
-												0,
-											),
-											lang,
-										)}
-									</td>
-								)}
-								<td>{formatMinutes(recipe.time.total, lang)}</td>
-							</tr>
-						</tfoot>
-					)
-				}
-			</table>
-			{composed && <p class="form-note no-print">{copy.timingNote}</p>}
-		</RecipeSection>
 
 		<RecipeSection title={copy.ingredients}>
 			{

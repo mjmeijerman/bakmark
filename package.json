@@ -10,7 +10,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "test:data": "node --test tests/recipes.test.mjs",
+    "test:api": "npm run build && node --test tests/subscribe.test.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.9",

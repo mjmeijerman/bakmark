@@ -261,19 +261,9 @@
 			"fix": "2-3 minuten garen tot het deeg een bal vormt en een filmpje achterlaat"
 		},
 		{
-			"symptoom": "ingezakt na het bakken",
-			"oorzaak": "te bleek uit de oven, of deur te vroeg open",
-			"fix": "bakken tot goudbruin, daarna 10 min nadrogen met de deur op een kier"
-		},
-		{
 			"symptoom": "vettig, kruimelig deeg",
 			"oorzaak": "te lang of te heet gegaard, boter scheidt uit",
 			"fix": "middelhoog vuur, stoppen zodra de bal vormt en zacht sist"
-		},
-		{
-			"symptoom": "opengebarsten bovenkant",
-			"oorzaak": "beslag te dik, of puntjes niet platgedrukt",
-			"fix": "beslag tot V-consistentie brengen, puntjes platdrukken met een natte vinger"
 		}
 	],
 	"variants": {

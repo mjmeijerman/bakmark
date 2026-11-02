@@ -74,6 +74,9 @@ const nl: Dict = {
 	"newsletter.button": "Inschrijven",
 	"newsletter.note":
 		"Schrijf je in voor de nieuwsbrief en je krijgt een mailtje als er nieuwe recepten geplaatst zijn.",
+	"newsletter.success": "Gelukt, je e-mailadres staat in de lijst.",
+	"newsletter.invalid": "Dat e-mailadres lijkt niet te kloppen.",
+	"newsletter.error": "Opslaan lukte niet. Probeer het nog een keer.",
 };
 
 const en: Dict = {
@@ -100,6 +103,9 @@ const en: Dict = {
 	"newsletter.button": "Subscribe",
 	"newsletter.note":
 		"Subscribe to the newsletter and you will get an email when new recipes are published.",
+	"newsletter.success": "Done, your email address is on the list.",
+	"newsletter.invalid": "That email address does not look right.",
+	"newsletter.error": "Could not save it. Try again.",
 };
 
 const DICTS: Record<Lang, Dict> = { nl, en };

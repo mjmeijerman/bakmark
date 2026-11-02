@@ -492,6 +492,7 @@ export function searchText(recipe: Recipe, lang: Lang = DEFAULT_LANG): string {
 		roleLabel(recipe.role, lang),
 		categoryLabel(recipe.category, lang),
 		...(recipe.tags ?? []),
+		...(recipe.aliases ?? []),
 		...recipe.ingredients.map((ingredient) => ingredient.name),
 		...(recipe.components ?? []).map((link) => link.ref.replace(/-/g, " ")),
 		...recipe.steps.flatMap((step) => [step.title, step.text]),

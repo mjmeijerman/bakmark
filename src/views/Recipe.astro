@@ -182,20 +182,37 @@ const parts = groups
 	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index)
 	.sort((a, b) => a.depth - b.depth);
 
-const failures = [
-	...(recipe.mislukt ?? []).map((item) => ({ item, part: null as string | null })),
-	...parts.flatMap((group) =>
-		(group.recipe.mislukt ?? []).map((item) => ({ item, part: group.recipe.title })),
-	),
-];
+/** Same advice twice under two parts reads as a mistake, so each row appears once. */
+function onceBy<T>(rows: { item: T; part: string | null }[], key: (item: T) => string) {
+	const seen = new Set<string>();
+	return rows.filter((row) => {
+		const value = key(row.item).trim().toLowerCase();
+		if (seen.has(value)) return false;
+		seen.add(value);
+		return true;
+	});
+}
+
+const failures = onceBy(
+	[
+		...(recipe.mislukt ?? []).map((item) => ({ item, part: null as string | null })),
+		...parts.flatMap((group) =>
+			(group.recipe.mislukt ?? []).map((item) => ({ item, part: group.recipe.title })),
+		),
+	],
+	(item) => `${item.symptoom}|${item.oorzaak}|${item.fix}`,
+);
 const hasFailureParts = failures.some((row) => row.part);
 
-const questions = [
-	...(recipe.faq ?? []).map((item) => ({ item, part: null as string | null })),
-	...parts.flatMap((group) =>
-		(group.recipe.faq ?? []).map((item) => ({ item, part: group.recipe.title })),
-	),
-];
+const questions = onceBy(
+	[
+		...(recipe.faq ?? []).map((item) => ({ item, part: null as string | null })),
+		...parts.flatMap((group) =>
+			(group.recipe.faq ?? []).map((item) => ({ item, part: group.recipe.title })),
+		),
+	],
+	(item) => `${item.q}|${item.a}`,
+);
 const hasQuestionParts = questions.some((row) => row.part);
 
 const usedBy = usedIn(slug).map((entry) => ({
@@ -575,8 +592,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 		{
 			failures.length ? (
-				<section class="section no-print">
-					<h2>{copy.failed}</h2>
+				<RecipeSection title={copy.failed} noPrint>
 					<table class="mislukt">
 						<thead>
 							<tr>
@@ -597,14 +613,13 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 							))}
 						</tbody>
 					</table>
-				</section>
+				</RecipeSection>
 			) : null
 		}
 
 		{
 			questions.length ? (
-				<section class="section no-print">
-					<h2>{copy.faq}</h2>
+				<RecipeSection title={copy.faq} noPrint>
 					<div class="faq">
 						{questions.map((row) => (
 							<details>
@@ -616,7 +631,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 							</details>
 						))}
 					</div>
-				</section>
+				</RecipeSection>
 			) : null
 		}
 

@@ -201,6 +201,24 @@ const questions = onceBy(
 );
 const hasQuestionParts = questions.some((row) => row.part);
 
+/**
+ * A part's own times, in the same words as the chips under the title.
+ * Its children have their own heading and their own line, so counting them
+ * here as well would add the same minutes twice on one screen.
+ */
+const partTiming = (partSlug: string) => {
+	const { time } = loadRecipe(partSlug);
+	const active = time.active;
+	const oven = time.oven ?? 0;
+	const wait = time.wait || time.afterbake || 0;
+
+	const facts = [`${copy.timeActive} ${formatMinutes(active, lang)}`];
+	if (oven) facts.push(`${copy.timeOven} ${formatMinutes(oven, lang)}`);
+	if (wait) facts.push(`${copy.timeWait} ${formatMinutes(wait, lang)}`);
+	facts.push(`${copy.timeTotal} ${formatMinutes(active + oven + wait, lang)}`);
+	return facts.join(" · ");
+};
+
 const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
@@ -463,6 +481,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 								{group.recipe.title}
 								{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
 							</h3>
+						)}
+						{composed && group.recipe.slug !== slug && (
+							<p class="group-times">{partTiming(group.recipe.slug)}</p>
 						)}
 						<ol class="steps">
 							{group.steps.map((step, index) => (

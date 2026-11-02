@@ -475,15 +475,20 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<h2>{copy.steps}</h2>
 			{
 				groups.map((group) => (
-					<div class="step-group">
+					<details
+						class="step-group collapsible"
+						open={!composed || group.recipe.slug === slug}
+					>
 						{composed && (
-							<h3>
-								{group.recipe.title}
-								{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
-							</h3>
-						)}
-						{composed && group.recipe.slug !== slug && (
-							<p class="group-times">{partTiming(group.recipe.slug)}</p>
+							<summary>
+								<h3>
+									{group.recipe.title}
+									{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
+								</h3>
+								{group.recipe.slug !== slug && (
+									<span class="group-times">{partTiming(group.recipe.slug)}</span>
+								)}
+							</summary>
 						)}
 						<ol class="steps">
 							{group.steps.map((step, index) => (
@@ -515,7 +520,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 								</li>
 							))}
 						</ol>
-					</div>
+					</details>
 				))
 			}
 			<p class="form-note no-print">{copy.stepsNote}</p>

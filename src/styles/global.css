@@ -782,6 +782,43 @@
 		border-color: var(--border);
 	}
 
+	/* Each part's steps fold away: a composed recipe is five step lists, and
+	   only the assembly is this page's own work. */
+	.step-group.collapsible {
+		border-top: 1px solid var(--border);
+	}
+
+	.step-group.collapsible > summary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 var(--space-2);
+		padding-block: var(--space-3);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.step-group.collapsible > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.step-group.collapsible > summary h3 {
+		margin: 0;
+		font-size: var(--text-h3);
+	}
+
+	.step-group.collapsible > summary::after {
+		content: "+";
+		margin-left: auto;
+		font-size: 1.4rem;
+		line-height: 1;
+		color: var(--accent);
+	}
+
+	.step-group.collapsible[open] > summary::after {
+		content: "−";
+	}
+
 	/* A part's times, right under its steps heading. */
 	.group-times {
 		margin: calc(-1 * var(--space-2)) 0 var(--space-3);
@@ -1315,6 +1352,11 @@
 	.ingredient-group + .ingredient-group,
 	.step-group + .step-group {
 		margin-top: var(--space-5);
+	}
+
+	.step-group.collapsible > summary .group-times {
+		margin: 0;
+		flex-basis: 100%;
 	}
 
 	.ingredient-group h3,

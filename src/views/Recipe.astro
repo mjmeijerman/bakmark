@@ -431,7 +431,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 		{
 			bakeGroups.map((group) => (
-				<section class="section section-ruled">
+				<section class="section section-ruled bake-block">
 					<h2>
 						{copy.baking}
 						{composed ? ` — ${group.recipe.title.toLocaleLowerCase(lang)}` : ""}

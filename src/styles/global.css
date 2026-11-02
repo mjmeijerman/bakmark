@@ -1231,13 +1231,13 @@
 
 	h2 {
 		font-size: 13pt;
-		margin: 1.2rem 0 0.4rem;
+		margin: 0.75rem 0 0.25rem;
 		break-after: avoid;
 		page-break-after: avoid;
 	}
 
 	.hero {
-		padding: 0 0 0.75rem;
+		padding: 0 0 0.4rem;
 	}
 
 	.recipe-result {
@@ -1274,15 +1274,84 @@
 
 	.ingredients,
 	.bake,
-	.steps {
+	.steps,
+	.tools {
 		max-width: none;
-		margin-block: 0.4rem 0.8rem;
+		margin-block: 0.2rem 0.25rem;
+	}
+
+	/* The tick boxes are for gathering at the worktop, not for paper: they took
+	   a column and pushed every row apart. Hiding the input lets the list
+	   marker back in, so the lists lose that too. */
+	.gather-check {
+		display: none !important;
+	}
+
+	ul.ingredients,
+	ul.tools {
+		list-style: none;
+		padding-left: 0;
+	}
+
+	/* Paper cannot be clicked, so a disclosure triangle is furniture. */
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary {
+		list-style: none;
+	}
+
+	/* Ingredients and tools are reference lists, not prose: two columns at 9pt
+	   fits a batch on half the sheet it used to take. */
+	.ingredients {
+		columns: 2;
+		column-gap: 12mm;
+		column-rule: 1px solid #ddd;
+		font-size: 9pt;
+		line-height: 1.3;
 	}
 
 	.ingredients li {
-		gap: 1rem;
-		padding-block: 2pt;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		padding-block: 0.4pt;
 		border-bottom: 1px solid #ddd;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.ingredient-group + .ingredient-group {
+		margin-top: 0.4rem;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.ingredient-group h3 {
+		font-size: 10pt;
+		margin: 0.3rem 0 0.1rem;
+	}
+
+	.tools {
+		columns: 2;
+		column-gap: 10mm;
+		column-rule: 1px solid #ddd;
+		font-size: 9pt;
+		line-height: 1.2;
+		margin-block: 0.2rem 0.3rem;
+	}
+
+	.tools li {
+		grid-template-columns: 1fr;
+		gap: 0;
+		padding-block: 0.4pt;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	.tools .form-note {
+		font-size: 8.5pt;
 	}
 
 	.ingredients li:first-child {
@@ -1294,6 +1363,12 @@
 		padding-block: 1pt;
 	}
 
+	/* A bake table under a heading on the previous page is a lost page. */
+	.bake-block {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
 	/* The disclosure markers belong to the screen: paper cannot be clicked. */
 	details.collapsible > summary::after,
 	.step-extra::before {
@@ -1301,7 +1376,11 @@
 	}
 
 	details.collapsible > summary {
-		padding-block: 0.2rem;
+		padding-block: 0;
+	}
+
+	details.collapsible {
+		border-top: 1px solid #ddd;
 	}
 
 	/* On paper the number comes from the <ol> itself. The screen badge is a

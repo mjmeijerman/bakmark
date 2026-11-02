@@ -85,9 +85,9 @@ What the feature actually is:
 | Sugar for caramel | 100 g |
 | Gelatine leaves | 1 |
 
-So `scale_min` = the largest of (minimum ÷ written amount) over the ingredients, rounded up to the next ⅓, ½ or ⅔. Leave the field out when the answer is ½ — that is the default, and a value that only repeats the default is noise. Fill it in only when a recipe differs, and only after testing that batch: ⅔ for a meringue on 3 whites, ½ for a caramel on 200 g of sugar, ⅓ for a recipe whose binding constraint is a 100 ml liquid.
+The floor is the largest of (minimum ÷ written amount) over the ingredients, rounded up to the next ⅓, ½ or ⅔ — e.g. ⅔ for a meringue on 3 whites, ½ for a caramel on 200 g of sugar, ⅓ for a recipe whose binding constraint is a 100 ml liquid.
 
-For the six launch recipes the answer is ½ across the board (their tightest written amount is 25 g of butter in the pastry cream, 8 g at ⅓), so none of them needed a value. The field exists for the recipes that do.
+**No `scale_min` field in the schema yet.** All six launch recipes land on the default ½ (the tightest written amount is 25 g of butter in the pastry cream; at ⅓ that becomes 8 g), so the field would hold nothing but the default. It is added in the same commit as the interactive rescaler and the warning that reads it, weeks 4–6 — not in the Gate A schema, where it would be a field with no consumer and a reason for a data migration later.
 
 **Below that factor:**
 

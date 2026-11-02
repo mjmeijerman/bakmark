@@ -49,7 +49,7 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 `recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result {value, unit}` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story), `tin` (shape + dimensions), `bake` (time, temperature).
 
-**Units are grams, always.** Not millilitres, not teaspoons, not cups: a scale is the only measuring tool every kitchen has and the only one that scales linearly. Milk is weighed (500 ml = 515 g), cream is weighed (300 ml = 300 g), salt is weighed (1,5 g). Grams make the ½×/2× table and the interactive rescaler honest — "1/4 tl" doubled is a guess, "1,5 g" doubled is 3 g.
+**Units are grams, always.** Not millilitres, not teaspoons, not cups: a scale is the only measuring tool every kitchen has and the only one that scales linearly. Milk is weighed as if it were water (500 ml = 500 g, not the density-corrected 515 g — the difference is noise in a home recipe and "500 g" is what a scale shows), cream is weighed (300 ml = 300 g), salt is weighed (1,5 g). Grams make the ½×/2× table and the interactive rescaler honest — "1/4 tl" doubled is a guess, "1,5 g" doubled is 3 g.
 
 Two exceptions, both because weighing is absurd:
 

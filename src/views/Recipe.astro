@@ -58,7 +58,6 @@ const copy = {
 		timingNote:
 			"De totale tijd is de wandklok van leeg aanrecht tot eindresultaat. Actief optellen mag, maar delen overlappen: de banketbakkersroom kan koelen terwijl je het beslag maakt.",
 		ingredients: "Ingrediënten",
-		baseRecipeLink: "basisrecept",
 		onTop: "Bovenop de basisrecepten hierboven, plus:",
 		gathered: (name: string) => `${name} verzameld`,
 		moreAbout: (name: string) => `Meer over ${name}`,
@@ -76,7 +75,6 @@ const copy = {
 		bakeAfter: "Nadrogen",
 		bakeAfterValue: (duration: string) => `${duration}, deur op een kier`,
 		steps: "Stappen",
-		ownPage: "eigen pagina",
 		stepsNote:
 			"Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit de opname, met de echte tijden en de volgorde van de video.",
 		whyTips: "Waarom en tips",
@@ -128,7 +126,6 @@ const copy = {
 		timingNote:
 			"Total time is the wall clock from empty worktop to finished result. Adding up the active times is allowed, but the parts overlap: the pastry cream can cool while you make the dough.",
 		ingredients: "Ingredients",
-		baseRecipeLink: "base recipe",
 		onTop: "On top of the base recipes above, plus:",
 		gathered: (name: string) => `${name} gathered`,
 		moreAbout: (name: string) => `More about ${name}`,
@@ -146,7 +143,6 @@ const copy = {
 		bakeAfter: "Drying out",
 		bakeAfterValue: (duration: string) => `${duration}, door ajar`,
 		steps: "Steps",
-		ownPage: "own page",
 		stepsNote:
 			"Times and temperatures are starting values. The final version comes from the recording, with the real times and the order of the video.",
 		whyTips: "Why and tips",
@@ -196,11 +192,6 @@ const tools = Array.from(
 		.reduce((map, tool) => map.set(tool.name, tool), new Map<string, { name: string; note?: string }>())
 		.values(),
 );
-const factorLabel = (factor: number) => {
-	if (factor === 1) return "";
-	const rounded = String(Math.round(factor * 100) / 100);
-	return lang === "en" ? ` ×${rounded}` : ` ×${rounded.replace(".", ",")}`;
-};
 const published = recipe.published ? formatDate(recipe.published, lang) : "";
 const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.temperature) : null;
 ---
@@ -288,10 +279,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					<ul class="parts">
 						{direct.map((group) => (
 							<li>
-								<a href={path(lang, "recipe", group.recipe.slug)}>{group.recipe.title}</a>
+								{group.recipe.title}
 								<span class="muted">
 									{group.recipe.result.value} {group.recipe.result.unit}
-									{factorLabel(group.factor)}
 								</span>
 							</li>
 						))}
@@ -336,15 +326,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 						groups.map((group) => (
 							<tr>
 								<th scope="row">
-									{composed ? (
-										<a class="no-print" href={path(lang, "recipe", group.recipe.slug)}>
-											{group.recipe.title}
-										</a>
-									) : (
-										group.recipe.title
-									)}
+									{group.recipe.title}
 									{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
-									{group.factor !== 1 ? <span class="muted">{factorLabel(group.factor)}</span> : null}
 								</th>
 								<td>{formatMinutes(group.recipe.time.active, lang)}</td>
 								{hasOven && (
@@ -404,20 +387,12 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			{
 				groups
 					.filter((group) => group.ingredients.length > 0)
-					.map((group, groupIndex) => (
+					.map((group) => (
 						<div class="ingredient-group">
 							{composed && (
 								<h3>
 									{group.recipe.title}
-									<span class="muted">
-										{group.variantLabel ? `${group.variantLabel} ` : ""}
-										{factorLabel(group.factor)}
-									</span>
-									{groupIndex > 0 || group.recipe.slug !== slug ? (
-										<a class="group-link no-print" href={path(lang, "recipe", group.recipe.slug)}>
-											{copy.baseRecipeLink}
-										</a>
-									) : null}
+									{group.variantLabel ? <span class="muted">{group.variantLabel}</span> : null}
 								</h3>
 							)}
 							{group.recipe.components?.length ? (
@@ -535,9 +510,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 							<h3>
 								{group.recipe.title}
 								{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
-								<a class="group-link no-print" href={path(lang, "recipe", group.recipe.slug)}>
-									{copy.ownPage}
-								</a>
 							</h3>
 						)}
 						<ol class="steps">

@@ -1316,11 +1316,6 @@
 		margin-bottom: var(--space-2);
 	}
 
-	.group-link {
-		margin-left: var(--space-2);
-		font-size: var(--text-sm);
-		font-weight: 400;
-	}
 }
 
 /* Named variants of a basisrecept: same steps, different composition. */

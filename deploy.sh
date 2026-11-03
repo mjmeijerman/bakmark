@@ -235,6 +235,42 @@ if command -v ssh >/dev/null 2>&1 && [ -n "${BAKMARK_TARGET_HOST:-}" ]; then
 	esac
 fi
 
+# Unsubscribe has to work in the real environment, not only in a unit test. The
+# token is in the database the app already wrote, so the deploy follows the same
+# path a reader takes: read the token, open the link, confirm the row is gone.
+unsub_token="$(docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+const row = db.prepare('SELECT unsubscribe_token FROM subscribers WHERE email = ?').get('$SMOKE_EMAIL');
+db.close();
+process.stdout.write(row?.unsubscribe_token ?? '');
+" 2>/dev/null || true)"
+
+if [ -z "$unsub_token" ]; then
+	echo "error: no unsubscribe token for $SMOKE_EMAIL; the signup did not store one" >&2
+	exit 1
+fi
+
+unsub_code="$(http_code --max-time 15 "$SITE_URL/nieuwsbrief/afmelden?token=$unsub_token")"
+if [ "$unsub_code" != "200" ]; then
+	echo "error: the unsubscribe link returned $unsub_code" >&2
+	exit 1
+fi
+
+gone="$(docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+const row = db.prepare('SELECT 1 AS x FROM subscribers WHERE email = ?').get('$SMOKE_EMAIL');
+db.close();
+process.stdout.write(row ? 'still-there' : 'gone');
+" 2>/dev/null || echo unknown)"
+
+if [ "$gone" != "gone" ]; then
+	echo "error: unsubscribing did not remove $SMOKE_EMAIL ($gone)" >&2
+	exit 1
+fi
+echo "    unsubscribe $SMOKE_EMAIL: row removed"
+
 # Staging starts clean. Every deploy empties the list, so a test signup from
 # three deploys ago is never mistaken for a real one, and the retention job has
 # nothing stale to hide.

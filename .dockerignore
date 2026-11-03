@@ -1,0 +1,10 @@
+.git
+.agent-office
+.astro
+dist
+node_modules
+data
+docs
+*.log
+.env
+.env.*

@@ -87,3 +87,44 @@ the Dutch JSON so scaling and `factorFor` keep working in one language, and
 
 Overlays are cached in a production build and read fresh in `npm run dev`, so a new
 translation shows up on the next request without restarting the server.
+
+## Docker
+
+The site runs from one image; the subscriber list is a bind mount on the host,
+never a container layer. Removing or rebuilding the container does not touch it.
+
+Local:
+
+```sh
+./start.sh    # http://localhost:8085
+```
+
+Same thing via npm: `npm start`. The script creates `./data` with the right
+owner, builds, and starts the container in the background.
+
+`docker compose down -v` leaves `./data` alone. It only removes the container
+and its network.
+
+On the VPS, keep the data outside the checkout and let the host's Caddy stay
+the public door:
+
+```sh
+sudo install -d -o 1000 -g 1000 -m 700 /var/lib/bakmark
+BAKMARK_DATA_DIR=/var/lib/bakmark ./start.sh
+```
+
+Caddy site block (the container publishes on loopback only, so it cannot
+collide with the other projects on the box):
+
+```caddyfile
+bakmark.nl {
+	reverse_proxy 127.0.0.1:8085
+}
+```
+
+The container runs as uid 1000, so `BAKMARK_DATA_DIR` must be owned by
+`1000:1000`. If it is not writable, signups fail with a `[subscribe]` error in
+`docker compose logs bakmark`.
+
+Backup: stop the container, then copy every `subscribers.sqlite*` file — the
+`-wal` file holds committed rows that are not in the main file yet.

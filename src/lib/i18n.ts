@@ -79,7 +79,6 @@ const nl: Dict = {
 	"newsletter.success": "Bijna klaar: check je mailbox en klik op de link.",
 	"newsletter.invalid": "Dat e-mailadres lijkt niet te kloppen.",
 	"newsletter.error": "Versturen lukte niet. Probeer het nog een keer.",
-	"newsletter.domain": "Dit is de testomgeving. Alleen adressen van markmeijerman.eu of mail-tester.com kunnen zich hier aanmelden.",
 	"confirm.title": "Inschrijving bevestigd",
 	"confirm.body":
 		"Bedankt. Je inschrijving is bevestigd. Je hoort van me als er nieuwe recepten staan.",
@@ -114,7 +113,6 @@ const en: Dict = {
 	"newsletter.success": "Almost done: check your inbox and click the link.",
 	"newsletter.invalid": "That email address does not look right.",
 	"newsletter.error": "Could not send it. Try again.",
-	"newsletter.domain": "This is the test environment. Only addresses at markmeijerman.eu or mail-tester.com can sign up here.",
 	"confirm.title": "Subscription confirmed",
 	"confirm.body":
 		"Thank you. Your subscription is confirmed. You will hear from me when new recipes are published.",

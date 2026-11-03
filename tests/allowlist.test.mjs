@@ -47,10 +47,23 @@ test("a refused domain is rejected, stored nowhere and not mailed", async () => 
 		for (const email of ["someone@gmail.com", "x@example.nl", "y@notmarkmeijerman.eu"]) {
 			const response = await post(base, { email, elapsed: 5000 });
 			assert.equal(response.status, 400, `${email} should be refused`);
-			assert.deepEqual(await response.json(), { ok: false, error: "domain_not_allowed" }, email);
+			// Indistinguishable from a malformed address: the response must not
+			// reveal that an allowlist exists or which domains are on it.
+			assert.deepEqual(await response.json(), { ok: false, error: "invalid_email" }, email);
 		}
 		assert.deepEqual(list(dbPath), [], "nothing may be stored");
 		assert.equal(smtp.messages.length, 0, "nothing may be mailed");
+	}, allowOnly);
+});
+
+test("a refused domain is indistinguishable from a malformed address", async () => {
+	await withServer(async ({ base }) => {
+		const refused = await post(base, { email: "someone@gmail.com", elapsed: 5000 });
+		const malformed = await post(base, { email: "not-an-address", elapsed: 5000 });
+
+		assert.equal(refused.status, malformed.status, "same status");
+		assert.deepEqual(await refused.json(), await malformed.json(), "same body");
+		assert.equal(refused.headers.get("content-type"), malformed.headers.get("content-type"));
 	}, allowOnly);
 });
 

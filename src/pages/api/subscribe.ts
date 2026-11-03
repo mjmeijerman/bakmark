@@ -11,7 +11,7 @@
  * `src/lib/mail.ts`.
  */
 import type { APIRoute } from "astro";
-import { isAllowed, isRestricted } from "../../lib/allowlist";
+import { isAllowed } from "../../lib/allowlist";
 import { newToken, sendConfirmation } from "../../lib/newsletter";
 import {
 	deleteByConfirmToken,
@@ -193,11 +193,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	if (!isEmail(email)) return answer(400, false, "invalid_email");
 
 	// Staging only accepts a known set of domains. Refused before the bot checks
-	// so a wrong address gets a real answer instead of a fake success: the whole
-	// point of the allowlist is that whoever tests it sees it worked.
-	if (!isAllowed(email)) {
-		return answer(400, false, isRestricted() ? "domain_not_allowed" : "invalid_email");
-	}
+	// so whoever tests it gets a real answer instead of the fake success bots
+	// see. The response is deliberately identical to a malformed address: the
+	// error code is a response body a stranger can read, and "this domain is not
+	// allowed" would tell them which domains are.
+	if (!isAllowed(email)) return answer(400, false, "invalid_email");
 
 	const ip =
 		clientAddress ||

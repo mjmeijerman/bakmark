@@ -111,10 +111,11 @@ reach the real mail path. Set an allowlist and only those domains may sign up:
 SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./start.sh
 ```
 
-An address outside the list gets a 400 `domain_not_allowed`, is not stored and
-is not mailed. An allowed address that is malformed is still refused as
-`invalid_email`. Unset or empty means no restriction, which is what development
-and production use.
+An address outside the list is refused, not stored and not mailed. The response
+is byte-for-byte the same as for a malformed address, so the visitor learns
+nothing about the allowlist and a stranger cannot probe which domains it
+contains. Unset or empty means no restriction, which is what development and
+production use.
 
 Subdomains of a listed domain are accepted (`a@staging.markmeijerman.eu`), and
 look-alikes are not (`a@evilmarkmeijerman.eu`).

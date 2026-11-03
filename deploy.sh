@@ -122,7 +122,7 @@ docker compose build
 PREVIOUS="$(docker compose ps -q bakmark 2>/dev/null || true)"
 PREVIOUS_IMAGE=""
 if [ -n "$PREVIOUS" ]; then
-	PREVIOUS_IMAGE="bakmark-$TARGET:previous"
+	PREVIOUS_IMAGE="bakmark:$TARGET-previous"
 	docker tag "$(docker inspect --format '{{.Image}}' "$PREVIOUS")" "$PREVIOUS_IMAGE" 2>/dev/null || true
 fi
 
@@ -144,7 +144,7 @@ if [ -z "$healthy" ]; then
 
 	if [ -n "$PREVIOUS_IMAGE" ]; then
 		echo "==> rolling back" >&2
-		docker tag "$PREVIOUS_IMAGE" "bakmark-$TARGET:current"
+		docker tag "$PREVIOUS_IMAGE" "bakmark:$TARGET"
 		docker compose up -d --no-build bakmark
 	fi
 	exit 1

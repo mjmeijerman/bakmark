@@ -34,7 +34,9 @@ services:
 
   bakmark:
     build: .
-    image: bakmark:local
+    # Per environment: a staging build must not overwrite the image a
+    # production rollback would fall back to.
+    image: bakmark:${BAKMARK_ENV:-local}
     restart: unless-stopped
     init: true
     ports:

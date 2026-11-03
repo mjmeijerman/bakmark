@@ -53,5 +53,17 @@ jobs:
           BAKMARK_ENV: ${{ github.event.inputs.environment || 'staging' }}
           BAKMARK_HOST: ${{ secrets.STAGING_HOST }}
           BAKMARK_USER: ${{ secrets.STAGING_USER }}
-          GIT_SSH_COMMAND: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes
-        run: ./deploy.sh
+        run: |
+          # deploy.sh shells out to plain `ssh`, which does not read
+          # GIT_SSH_COMMAND: that variable only affects git. Without an
+          # IdentityFile in an ssh config, ssh offers its default keys, finds
+          # none, and the server answers "Permission denied (publickey)".
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          cat > ~/.ssh/config <<EOF
+          Host $BAKMARK_HOST
+            IdentityFile ~/.ssh/deploy
+            IdentitiesOnly yes
+          EOF
+          chmod 600 ~/.ssh/config
+          ./deploy.sh

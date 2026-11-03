@@ -9,6 +9,13 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# A second, production-only tree. The build needs vite and astro; the server
+# does not, and shipping them puts 178 packages and 151 MB into an image that
+# only has to answer HTTP. `--prefix` needs the manifest and lockfile beside it,
+# so they are copied there first.
+COPY package.json package-lock.json /prod/
+RUN cd /prod && npm ci --omit=dev
+
 COPY . .
 RUN npm run build
 
@@ -20,13 +27,12 @@ ENV NODE_ENV=production \
 	PORT=4321 \
 	SUBSCRIBERS_DB=/data/subscribers.sqlite
 
-# Astro's node adapter leaves its runtime dependencies external, so the
-# production node_modules comes along. The recipe JSON stays on disk because
-# src/lib/recipes.ts reads it relative to the working directory.
-COPY --from=build /app/node_modules ./node_modules
+# Only production dependencies. Astro leaves its runtime deps external, so this
+# copy is required; /prod holds exactly those and nothing else.
+COPY --from=build /prod/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/recipes ./recipes
-# The retention job runs in this image too: `docker compose run --rm bakmark purge`.
+# The retention job runs in this image too, and needs exactly two source files.
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/src/lib/config.ts /app/src/lib/list.ts ./src/lib/
 

@@ -1,10 +1,15 @@
 # The subscriber list lives outside the container, on purpose.
 #
-# `./data` is a bind mount: `docker compose down -v` cannot delete it, and
-# rebuilding the image never touches it. On the VPS point BAKMARK_DATA_DIR at
-# a directory outside this checkout, e.g. /var/lib/bakmark:
+# The data directory is a bind mount: `docker compose down -v` cannot delete it,
+# and rebuilding the image never touches it. Each environment gets its own:
 #
-#   BAKMARK_DATA_DIR=/var/lib/bakmark docker compose up -d
+#   production  BAKMARK_DATA_DIR=/var/lib/bakmark
+#   staging     BAKMARK_DATA_DIR=/var/lib/bakmark-staging
+#   local       ./data
+#
+# There is no default. A staging container that fell back to ./data would be
+# writing into the production list, which is the one mistake this file exists
+# to make impossible.
 #
 # The container runs as uid 1000, so that directory must be owned by 1000:1000
 # and mode 0700 (see README).
@@ -38,8 +43,15 @@ services:
       # server, otherwise confirmation mail is caught and never delivered.
       SMTP_URL: ${SMTP_URL:-smtp://mailpit:1025}
       SITE_URL: ${SITE_URL:-http://localhost:8085}
+      # Staging: a comma-separated allowlist, e.g.
+      #   SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com
+      # Empty means no restriction (development and production).
+      SIGNUP_ALLOWED_DOMAINS: ${SIGNUP_ALLOWED_DOMAINS:-}
     volumes:
-      - ${BAKMARK_DATA_DIR:-./data}:/data
+      # BAKMARK_DATA_DIR must be set: a staging container that silently falls
+      # back to ./data would write into the production list. start.sh sets a
+      # per-environment default, so this only bites a bare `docker compose up`.
+      - ${BAKMARK_DATA_DIR:?set BAKMARK_DATA_DIR (start.sh does this for you)}:/data
     read_only: true
     tmpfs:
       - /tmp

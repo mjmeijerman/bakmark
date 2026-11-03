@@ -96,11 +96,53 @@ never a container layer. Removing or rebuilding the container does not touch it.
 Local:
 
 ```sh
-./start.sh    # http://localhost:8085
+cp env.dist .env   # every variable, documented
+./start.sh         # http://localhost:8085
 ```
 
 Same thing via npm: `npm start`. The script creates `./data` with the right
 owner, builds, and starts the container in the background.
+
+### Staging
+
+Staging runs the real form against the real code, so it gets **its own list**
+and its own port. One variable does both:
+
+```sh
+BAKMARK_ENV=staging SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./start.sh
+# http://localhost:8086, data in ./data-staging
+```
+
+| | data | port |
+|---|---|---|
+| local | `./data` | 8085 |
+| staging | `./data-staging` | 8086 |
+| production (VPS) | `BAKMARK_DATA_DIR=/var/lib/bakmark` | its own host |
+
+All three read the same variables through the same code; only the values
+differ. `local` and `staging` come with a default path and port because a
+throwaway run should not need configuration. `production` has none, because the
+values that serve real subscribers belong in its own environment, not in a
+script default.
+
+A directory is claimed by the first environment that uses it and records the
+name; pointing another environment at it is refused rather than silently mixing
+two lists:
+
+`compose.yaml` has no default for `BAKMARK_DATA_DIR`; a bare `docker compose up`
+fails rather than guess. `start.sh` also refuses to run with `BAKMARK_ENV=staging`
+when the path resolves to a production list (`*/data`, `/var/lib/bakmark`).
+
+Only allowlisted domains may sign up on staging:
+
+An address outside the list is refused, not stored and not mailed. The response
+is byte-for-byte the same as for a malformed address, so the visitor learns
+nothing about the allowlist and a stranger cannot probe which domains it
+contains. Unset or empty means no restriction, which is what development and
+production use.
+
+Subdomains of a listed domain are accepted (`a@staging.markmeijerman.eu`), and
+look-alikes are not (`a@evilmarkmeijerman.eu`).
 
 ### Mail in development
 

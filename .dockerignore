@@ -1,10 +1,27 @@
+# Build context only. What lands in the runtime image is decided by the
+# Dockerfile's explicit COPY lines; this file keeps the context small and makes
+# sure nothing unwanted is even available to copy.
+
 .git
+.github
 .agent-office
 .astro
 dist
 node_modules
 data
+data-staging
+
+# Not needed to build or run the site.
 docs
+tests
+*.md
+!README.md
 *.log
 .env
 .env.*
+.env.example
+
+# Editor and OS noise
+.DS_Store
+.idea
+.vscode

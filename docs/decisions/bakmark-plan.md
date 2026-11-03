@@ -49,6 +49,17 @@ Decision record of the 4-round Agent Office meeting (Chair, Pragmatist, Skeptic)
 
 `recipes/<slug>.json` holds everything: ingredients (`amount`, `unit`, `scale_by`, `scale: true|false`), steps (`id`, `duration`, `t=` timestamp, photo frame), tools (+ affiliate links), FAQ, `result {value, unit}` (what it makes), `yield`, `category`, `tags[]`, `difficulty`, `time`, `context` (the product story), `tin` (shape + dimensions), `bake` (time, temperature).
 
+**Units are grams, always.** Not millilitres, not teaspoons, not cups: a scale is the only measuring tool every kitchen has and the only one that scales linearly. Milk is weighed as if it were water (500 ml = 500 g, not the density-corrected 515 g — the difference is noise in a home recipe and "500 g" is what a scale shows), cream is weighed (300 ml = 300 g), salt is weighed (1,5 g). Grams make the ½×/2× table and the interactive rescaler honest — "1/4 tl" doubled is a guess, "1,5 g" doubled is 3 g.
+
+Two exceptions, both because weighing is absurd:
+
+- **A vanilla pod** keeps its own unit ("1 stokje"). Nobody weighs a pod, and its amount does not scale anyway (`scale: false`).
+- **Eggs, yolks and whites** are written as grams, and the count goes in the ingredient's note, not in the amount: "200 g", with "dat is vier medium eieren" behind the i. Same rule for "80 g" yolks ("ongeveer 4 medium dooiers") and for whites when a recipe uses them. The weight is the recipe; the count is a convenience, and a bracketed count in the amount column goes stale the moment the recipe scales.
+
+The conversion that makes this possible: **a medium egg is 50 g — 17,5 g yolk and 32,5 g white.** Four eggs is 200 g; 80 g of yolk is about 4,5 yolks. Every count-to-gram change uses those numbers, never a guess from a different egg size.
+
+Everything else — including things usually given in spoons — is grams with a note where the reason matters ("niet mee opschalen; ongeveer 1,5 g per 100 g bloem").
+
 Rendered from that one file:
 1. recipe page — result in the headline, context block, taxonomy as tags, bake mode toggle,
 2. YouTube description + chapters (generator script),
@@ -74,6 +85,22 @@ What the feature actually is:
 4. **Rounding is a rule, not a guess.** Every scaled amount is formatted per ingredient: grams to sensible precision, eggs in halves then wholes, sachets in wholes. No false precision, no "1.333 eggs".
 5. **Scaling down has a floor, and the recipe says so.** Below roughly half of the written batch the arithmetic still works and the result does not: half an egg in a pastry cream, 2 g of gelatine in a mousse, 12 g of butter in a roux, 40 g of cream under a whisk — the thing either cannot be measured, cannot be mixed, or does not set. So the rescaler warns instead of quietly producing a number nobody should cook from.
 
+**Where the floor comes from.** Never a guess, and never one number for the site. The floor is the smallest factor at which every *written amount* is still something a kitchen can measure and a tool can work:
+
+| Constraint | Minimum that still works |
+|---|---|
+| A weighed ingredient | 5 g (10 g for a coarse scale) |
+| A liquid | 50 ml |
+| An egg, a yolk, a white | 1 whole |
+| Cream to whip | 100 ml |
+| Sugar for caramel | 100 g |
+| Gelatine leaves | 1 |
+
+The floor is the largest of (minimum ÷ written amount) over the ingredients, rounded up to the next ⅓, ½ or ⅔ — e.g. ⅔ for a meringue on 3 whites, ½ for a caramel on 200 g of sugar, ⅓ for a recipe whose binding constraint is a 100 ml liquid.
+
+**No `scale_min` field in the schema yet.** All six launch recipes land on the default ½ (the tightest written amount is 25 g of butter in the pastry cream; at ⅓ that becomes 8 g), so the field would hold nothing but the default. It is added in the same commit as the interactive rescaler and the warning that reads it, weeks 4–6 — not in the Gate A schema, where it would be a field with no consumer and a reason for a data migration later.
+
+**Below that factor:**
 **The downscaling warning, concretely.** Every recipe carries the smallest batch it still works at — one number, `scale_min` (as a factor of the written recipe; default ½, and set higher per recipe where the technique needs it: a meringue below 2 whites, a caramel below 100 g of sugar). Below that factor:
 
 - The rescaler still calculates. Blocking a cook who wants a third of a batch is not the job; warning them is.

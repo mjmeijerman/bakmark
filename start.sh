@@ -82,6 +82,10 @@ fi
 # port silently falls back to 8085, i.e. staging and production on one port.
 export BAKMARK_DATA_DIR="$DATA_DIR"
 export BAKMARK_PORT="$PORT"
+# One compose project per environment. Without this every checkout on this
+# machine shares the name "bakmark", so `docker compose down` in a throwaway
+# test directory stops the instance someone is actually using.
+export COMPOSE_PROJECT_NAME="bakmark-$BAKMARK_ENV"
 MAIL_UI="${MAILPIT_UI_PORT:-8025}"
 
 # Links in confirmation mail must point at the URL a visitor uses.

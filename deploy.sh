@@ -185,18 +185,30 @@ if [ "$home_code" != "200" ]; then
 fi
 echo "    home page: 200"
 
-# A refused address must be refused: this is the check that the allowlist is
-# actually wired up, and it must not depend on the mail path working.
-refused_code="$(http_code --max-time 15 \
+# The allowlist must hold. A gmail address is the check that matters: if this
+# one is ever accepted, staging is mailing a real stranger under our DKIM
+# signature, so the deployment is taken down rather than left running.
+BLOCKED_EMAIL="${BAKMARK_BLOCKED_EMAIL:-markmeijerman@gmail.com}"
+
+blocked_code="$(http_code --max-time 15 \
 	-X POST "$SITE_URL/api/subscribe" \
 	-H 'content-type: application/json' \
 	-H "origin: $SITE_URL" \
-	--data '{"email":"someone@gmail.com","lang":"nl","elapsed":5000}')"
-if [ "$refused_code" != "400" ]; then
-	echo "error: a gmail address was not refused (got $refused_code)" >&2
+	--data "{\"email\":\"$BLOCKED_EMAIL\",\"lang\":\"nl\",\"elapsed\":5000}")"
+
+if [ "$blocked_code" = "201" ] || [ "$blocked_code" = "200" ]; then
+	echo "FATAL: $BLOCKED_EMAIL was accepted on staging." >&2
+	echo "       The allowlist is broken; takedown is the only safe answer." >&2
+	docker compose down || true
+	echo "       staging stopped: docker compose down" >&2
 	exit 1
 fi
-echo "    refused domain: 400"
+
+if [ "$blocked_code" != "400" ]; then
+	echo "error: $BLOCKED_EMAIL returned $blocked_code, expected a refusal" >&2
+	exit 1
+fi
+echo "    blocked domain ($BLOCKED_EMAIL): 400"
 
 # The real signup: stores the address and sends the confirmation through the
 # host's Postfix. A 500 here is the failure this test exists for.
@@ -223,14 +235,64 @@ if command -v ssh >/dev/null 2>&1 && [ -n "${BAKMARK_TARGET_HOST:-}" ]; then
 	esac
 fi
 
-# Remove what the test created. The list belongs to the deployment, and a smoke
-# test that leaves addresses behind turns a staging list into noise.
-echo "    clearing the test row"
-docker compose exec -T bakmark node --input-type=module -e "
+# Unsubscribe has to work in the real environment, not only in a unit test. The
+# token is in the database the app already wrote, so the deploy follows the same
+# path a reader takes: read the token, open the link, confirm the row is gone.
+unsub_token="$(docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+const row = db.prepare('SELECT unsubscribe_token FROM subscribers WHERE email = ?').get('$SMOKE_EMAIL');
+db.close();
+process.stdout.write(row?.unsubscribe_token ?? '');
+" 2>/dev/null || true)"
+
+if [ -z "$unsub_token" ]; then
+	echo "error: no unsubscribe token for $SMOKE_EMAIL; the signup did not store one" >&2
+	exit 1
+fi
+
+unsub_code="$(http_code --max-time 15 "$SITE_URL/nieuwsbrief/afmelden?token=$unsub_token")"
+if [ "$unsub_code" != "200" ]; then
+	echo "error: the unsubscribe link returned $unsub_code" >&2
+	exit 1
+fi
+
+gone="$(docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+const row = db.prepare('SELECT 1 AS x FROM subscribers WHERE email = ?').get('$SMOKE_EMAIL');
+db.close();
+process.stdout.write(row ? 'still-there' : 'gone');
+" 2>/dev/null || echo unknown)"
+
+if [ "$gone" != "gone" ]; then
+	echo "error: unsubscribing did not remove $SMOKE_EMAIL ($gone)" >&2
+	exit 1
+fi
+echo "    unsubscribe $SMOKE_EMAIL: row removed"
+
+# Staging starts clean. Every deploy empties the list, so a test signup from
+# three deploys ago is never mistaken for a real one, and the retention job has
+# nothing stale to hide.
+if [ "${BAKMARK_ENV:-staging}" = "staging" ]; then
+	echo "    clearing the staging list"
+	docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+const before = db.prepare('SELECT COUNT(*) AS n FROM subscribers').get().n;
+db.exec('DELETE FROM subscribers');
+db.close();
+console.log('removed ' + before + ' row(s)');
+" || { echo "error: could not clear the staging list" >&2; exit 1; }
+else
+	# Production keeps its subscribers; only the test row goes.
+	echo "    removing the test row"
+	docker compose exec -T bakmark node --input-type=module -e "
 import { DatabaseSync } from 'node:sqlite';
 const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
 db.prepare('DELETE FROM subscribers WHERE email = ?').run('$SMOKE_EMAIL');
 db.close();
-" || { echo "error: could not clear the smoke-test row" >&2; exit 1; }
+" || { echo "error: could not remove the test row" >&2; exit 1; }
+fi
 
 echo "==> smoke test passed"

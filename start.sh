@@ -86,8 +86,16 @@ MAIL_UI="${MAILPIT_UI_PORT:-8025}"
 
 # Links in confirmation mail must point at the URL a visitor uses.
 export SITE_URL="${SITE_URL:-http://localhost:$PORT}"
-# Set on staging only, e.g. markmeijerman.eu,mail-tester.com
-: "${SIGNUP_ALLOWED_DOMAINS:=}"
+# Staging is allowlisted by default, not only when someone remembers the
+# variable. `BAKMARK_ENV=staging` used to start an unrestricted form unless
+# SIGNUP_ALLOWED_DOMAINS was set by hand, which is the one mistake this file
+# exists to prevent: a real address subscribed, was mailed, and the run said
+# nothing about it. Local development stays unrestricted.
+if [ "$BAKMARK_ENV" = "staging" ]; then
+	: "${SIGNUP_ALLOWED_DOMAINS:=markmeijerman.eu,mail-tester.com}"
+else
+	: "${SIGNUP_ALLOWED_DOMAINS:=}"
+fi
 export SIGNUP_ALLOWED_DOMAINS
 
 mkdir -p "$DATA_DIR"

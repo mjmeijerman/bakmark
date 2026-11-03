@@ -66,7 +66,10 @@ const sender = (): Transporter => {
 
 export const sendMail = async (mail: Mail): Promise<void> => {
 	await sender().sendMail({
-		from: process.env.MAIL_FROM?.trim() || "Bakmark <noreply@bakmark.nl>",
+		// news.bakmark.nl, not bakmark.nl: that is the domain OpenDKIM signs for
+		// (SigningTable), and D6 keeps newsletter reputation off the domain that
+		// serves the site. A From at bakmark.nl would go out unsigned.
+		from: process.env.MAIL_FROM?.trim() || "Bakmark <noreply@news.bakmark.nl>",
 		...mail,
 	});
 };

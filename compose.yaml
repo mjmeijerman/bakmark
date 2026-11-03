@@ -41,6 +41,9 @@ services:
       args:
         SITE_URL: ${SITE_URL:-http://localhost:8085}
         SITE_INDEXABLE: ${SITE_INDEXABLE:-}
+      # Must be at a domain OpenDKIM signs. Empty falls back to the code
+      # default, which is news.bakmark.nl for the same reason.
+      MAIL_FROM: ${MAIL_FROM:-}
     # Per environment: a staging build must not overwrite the image a
     # production rollback would fall back to.
     image: bakmark:${BAKMARK_ENV:-local}
@@ -59,6 +62,9 @@ services:
       # 1 = indexable. Unset means noindex, which is the safe failure: a site
       # nobody finds is recoverable, a staging copy in Google is not.
       SITE_INDEXABLE: ${SITE_INDEXABLE:-}
+      # Must be at a domain OpenDKIM signs. Empty falls back to the code
+      # default, which is news.bakmark.nl for the same reason.
+      MAIL_FROM: ${MAIL_FROM:-}
       # Staging: a comma-separated allowlist, e.g.
       #   SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com
       # Empty means no restriction (development and production).

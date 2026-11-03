@@ -58,6 +58,10 @@ esac
 # to compose.yaml as a host-gateway alias. 127.0.0.1 here would be the container
 # itself: the connection is refused and every signup 500s.
 SMTP_URL="${SMTP_URL:-smtp://host.docker.internal:25}"
+# news.bakmark.nl is what OpenDKIM's SigningTable covers. A From on any other
+# domain leaves the message unsigned, which mail-tester reports as
+# "your message is not signed with DKIM".
+MAIL_FROM="${MAIL_FROM:-Bakmark <noreply@news.bakmark.nl>}"
 HEALTH_URL="${BAKMARK_HEALTH_URL:-http://127.0.0.1:$PORT/}"
 HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
@@ -83,6 +87,7 @@ if [ "${1:-}" != "--local" ]; then
 	ssh "$USER_@$HOST" \
 		"BAKMARK_ENV='$TARGET' APP_DIR='$APP_DIR' DATA_DIR='$DATA_DIR' \
 		PORT='$PORT' SITE_URL='$SITE_URL' SITE_INDEXABLE='$SITE_INDEXABLE' \
+		MAIL_FROM='$MAIL_FROM' \
 		SIGNUP_ALLOWED_DOMAINS='$SIGNUP_ALLOWED_DOMAINS' \
 		SMTP_URL='$SMTP_URL' HEALTH_URL='$HEALTH_URL' BRANCH='$BRANCH' \
 		'$APP_DIR/deploy.sh' --local"
@@ -125,6 +130,7 @@ CONFIG_FILE=".env"
 	echo "SITE_INDEXABLE=$SITE_INDEXABLE"
 	echo "SIGNUP_ALLOWED_DOMAINS=$SIGNUP_ALLOWED_DOMAINS"
 	echo "SMTP_URL=$SMTP_URL"
+	echo "MAIL_FROM=$MAIL_FROM"
 } > "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"
 

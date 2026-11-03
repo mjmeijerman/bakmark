@@ -189,3 +189,16 @@ export const storedSince = (iso: string): number => {
 	) as { n: number } | undefined;
 	return row?.n ?? 0;
 };
+
+/**
+ * Deletes unconfirmed rows older than the cutoff. Returns how many went.
+ *
+ * An address that was never confirmed is a string someone typed, not a
+ * subscriber; keeping it forever is exactly what the mail promises not to do.
+ */
+export const purgeUnconfirmed = (cutoffIso: string): number =>
+	retry(() =>
+		openList()
+			.prepare("DELETE FROM subscribers WHERE confirmed_at IS NULL AND created_at < ?")
+			.run(cutoffIso),
+	).changes;

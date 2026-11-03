@@ -26,7 +26,7 @@ const freePort = () =>
 		});
 	});
 
-export const withServer = async (run, { env = {} } = {}) => {
+export const withServer = async (run, { env = {}, keep = false } = {}) => {
 	assert.ok(
 		existsSync(ENTRY),
 		"dist/server/entry.mjs is missing — run `npm run build` before the API tests",
@@ -68,7 +68,8 @@ export const withServer = async (run, { env = {} } = {}) => {
 	} finally {
 		server.kill();
 		await smtp.close();
-		rmSync(dir, { recursive: true, force: true });
+		// Tests that re-run a script against this database ask to keep it.
+		if (!keep) rmSync(dir, { recursive: true, force: true });
 	}
 };
 

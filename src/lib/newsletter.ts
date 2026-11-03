@@ -6,6 +6,7 @@
  * twice.
  */
 import { randomBytes } from "node:crypto";
+import { UNCONFIRMED_TTL_LABEL } from "./config";
 import { path, type Lang } from "./i18n";
 import { sendMail } from "./mail";
 
@@ -22,7 +23,9 @@ const copy = {
 		intro: "Je (of iemand anders) gaf dit adres op voor de nieuwsbrief van Bakmark.",
 		action: "Bevestig je e-mailadres",
 		ignore:
-			"Klopt dit niet? Doe dan niets. Zonder bevestiging sturen we je niets, en het adres verdwijnt vanzelf.",
+			"Klopt dit niet? Doe dan niets. Zonder bevestiging sturen we je niets, en verwijderen we je e-mailadres na " +
+			UNCONFIRMED_TTL_LABEL.nl +
+			".",
 		unsubscribe: "Uitschrijven",
 		why: "Je krijgt deze mail omdat dit adres is opgegeven op bakmark.nl.",
 	},
@@ -32,7 +35,9 @@ const copy = {
 		intro: "You (or someone else) entered this address for the Bakmark newsletter.",
 		action: "Confirm your email address",
 		ignore:
-			"Not you? Do nothing. Without a confirmation we send you nothing, and the address disappears on its own.",
+			"Not you? Do nothing. Without a confirmation we send you nothing, and we delete your email address after " +
+			UNCONFIRMED_TTL_LABEL.en +
+			".",
 		unsubscribe: "Unsubscribe",
 		why: "You get this mail because this address was entered on bakmark.nl.",
 	},
@@ -44,6 +49,12 @@ const escapeHtml = (value: string): string =>
 		.replaceAll("<", "&lt;")
 		.replaceAll(">", "&gt;")
 		.replaceAll('"', "&quot;");
+
+/** The site logo, served from the same origin the mail links to. */
+const logoUrl = (): string => `${siteUrl()}/logo-bakmark.png`;
+
+/** Text alternative if the image is blocked; some clients hide images by default. */
+const LOGO_ALT = { nl: "Bakmark, naar de homepage", en: "Bakmark, to the homepage" } as const;
 
 const link = (lang: Lang, route: "confirm" | "unsubscribe", token: string): string =>
 	`${siteUrl()}${path(lang, route)}?token=${encodeURIComponent(token)}`;
@@ -83,6 +94,9 @@ export const sendConfirmation = async ({
 <html lang="${lang}">
 	<body style="margin:0;padding:24px;background:#f6f1e7;color:#2a211a;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5">
 		<div style="max-width:520px;margin:0 auto;background:#fffdf8;border:1px solid #e4d9c8;border-radius:12px;padding:24px">
+			<p style="margin:0 0 20px">
+				<a href="${escapeHtml(siteUrl())}"><img src="${escapeHtml(logoUrl())}" alt="${escapeHtml(LOGO_ALT[lang])}" width="160" style="display:block;width:160px;max-width:100%;height:auto;border:0" /></a>
+			</p>
 			<h1 style="margin:0 0 12px;font-size:22px">${escapeHtml(text.heading)}</h1>
 			<p style="margin:0 0 20px">${escapeHtml(text.intro)}</p>
 			<p style="margin:0 0 20px">

@@ -96,10 +96,11 @@ never a container layer. Removing or rebuilding the container does not touch it.
 Local:
 
 ```sh
-mkdir -p data && chmod 700 data
-docker compose up --build -d
-# http://localhost:8085
+./start.sh    # http://localhost:8085
 ```
+
+Same thing via npm: `npm start`. The script creates `./data` with the right
+owner, builds, and starts the container in the background.
 
 `docker compose down -v` leaves `./data` alone. It only removes the container
 and its network.
@@ -109,7 +110,7 @@ the public door:
 
 ```sh
 sudo install -d -o 1000 -g 1000 -m 700 /var/lib/bakmark
-BAKMARK_DATA_DIR=/var/lib/bakmark docker compose up -d --build
+BAKMARK_DATA_DIR=/var/lib/bakmark ./start.sh
 ```
 
 Caddy site block (the container publishes on loopback only, so it cannot

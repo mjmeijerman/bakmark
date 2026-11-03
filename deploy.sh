@@ -49,7 +49,10 @@ esac
 # Both environments send real mail through the host's Postfix. Staging is kept
 # safe by the domain allowlist, not by a catcher: mail that never arrives cannot
 # tell you whether DMARC, SPF or the content work.
-SMTP_URL="${SMTP_URL:-smtp://127.0.0.1:25}"
+# The container reaches the host's Postfix through host.docker.internal, added
+# to compose.yaml as a host-gateway alias. 127.0.0.1 here would be the container
+# itself: the connection is refused and every signup 500s.
+SMTP_URL="${SMTP_URL:-smtp://host.docker.internal:25}"
 HEALTH_URL="${BAKMARK_HEALTH_URL:-http://127.0.0.1:$PORT/}"
 HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
@@ -154,3 +157,74 @@ if [ -z "$healthy" ]; then
 fi
 
 echo "==> healthy: $SITE_URL"
+
+# ---------------------------------------------------------------------------
+# Smoke test: a healthy container is not a working site.
+#
+# The health check only proves the process answers. It passed a deploy where
+# every signup returned 500 because the container could not reach Postfix, and
+# the container was perfectly healthy the whole time.
+#
+# This runs the two things a visitor does, plus one controlled signup, and then
+# removes what it created so the list is exactly as it was found.
+# ---------------------------------------------------------------------------
+SMOKE_EMAIL="${BAKMARK_SMOKE_EMAIL:-test@markmeijerman.eu}"
+
+echo "==> smoke test"
+
+home_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$SITE_URL/" || echo 000)"
+if [ "$home_code" != "200" ]; then
+	echo "error: $SITE_URL/ returned $home_code" >&2
+	exit 1
+fi
+echo "    home page: 200"
+
+# A refused address must be refused: this is the check that the allowlist is
+# actually wired up, and it must not depend on the mail path working.
+refused_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
+	-X POST "$SITE_URL/api/subscribe" \
+	-H 'content-type: application/json' \
+	-H "origin: $SITE_URL" \
+	--data '{"email":"someone@gmail.com","lang":"nl","elapsed":5000}' || echo 000)"
+if [ "$refused_code" != "400" ]; then
+	echo "error: a gmail address was not refused (got $refused_code)" >&2
+	exit 1
+fi
+echo "    refused domain: 400"
+
+# The real signup: stores the address and sends the confirmation through the
+# host's Postfix. A 500 here is the failure this test exists for.
+signup_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+	-X POST "$SITE_URL/api/subscribe" \
+	-H 'content-type: application/json' \
+	-H "origin: $SITE_URL" \
+	--data "{\"email\":\"$SMOKE_EMAIL\",\"lang\":\"nl\",\"elapsed\":5000}" || echo 000)"
+if [ "$signup_code" != "201" ]; then
+	echo "error: signing up $SMOKE_EMAIL returned $signup_code" >&2
+	echo "       a 500 usually means the container cannot reach SMTP; check SMTP_URL" >&2
+	exit 1
+fi
+echo "    signup $SMOKE_EMAIL: 201"
+
+# 201 means the app handed the message to Postfix. Confirm none of it is stuck
+# in the queue, which is what a wrong host or a refused relay looks like.
+if command -v ssh >/dev/null 2>&1 && [ -n "${BAKMARK_TARGET_HOST:-}" ]; then
+	queued="$(ssh "$BAKMARK_TARGET_HOST" "sudo -n mailq 2>/dev/null | tail -1" 2>/dev/null || echo unknown)"
+	case "$queued" in
+		*"empty"*) echo "    mail queue: empty" ;;
+		unknown) : ;;
+		*) echo "warning: mail queue not empty: $queued" >&2 ;;
+	esac
+fi
+
+# Remove what the test created. The list belongs to the deployment, and a smoke
+# test that leaves addresses behind turns a staging list into noise.
+echo "    clearing the test row"
+docker compose exec -T bakmark node --input-type=module -e "
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(process.env.SUBSCRIBERS_DB ?? '/data/subscribers.sqlite');
+db.prepare('DELETE FROM subscribers WHERE email = ?').run('$SMOKE_EMAIL');
+db.close();
+" || { echo "error: could not clear the smoke-test row" >&2; exit 1; }
+
+echo "==> smoke test passed"

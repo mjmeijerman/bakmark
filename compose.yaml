@@ -58,6 +58,11 @@ services:
       # back to ./data would write into the production list. start.sh sets a
       # per-environment default, so this only bites a bare `docker compose up`.
       - ${BAKMARK_DATA_DIR:?set BAKMARK_DATA_DIR (start.sh does this for you)}:/data
+    # The host's Postfix is not 127.0.0.1 inside the container; that is the
+    # container itself and the connection is refused. host-gateway is the
+    # documented way to name the machine the daemon runs on.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     read_only: true
     tmpfs:
       - /tmp

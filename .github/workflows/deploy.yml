@@ -53,6 +53,9 @@ jobs:
           BAKMARK_ENV: ${{ github.event.inputs.environment || 'staging' }}
           BAKMARK_HOST: ${{ secrets.STAGING_HOST }}
           BAKMARK_USER: ${{ secrets.STAGING_USER }}
+          # Used by deploy.sh's post-deploy check, which asks Postfix whether the
+          # smoke-test message actually left the queue.
+          BAKMARK_TARGET_HOST: ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}
         run: |
           # deploy.sh shells out to plain `ssh`, which does not read
           # GIT_SSH_COMMAND: that variable only affects git. Without an

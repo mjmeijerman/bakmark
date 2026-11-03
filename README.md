@@ -96,7 +96,8 @@ never a container layer. Removing or rebuilding the container does not touch it.
 Local:
 
 ```sh
-./start.sh    # http://localhost:8085
+cp env.dist .env   # every variable, documented
+./start.sh         # http://localhost:8085
 ```
 
 Same thing via npm: `npm start`. The script creates `./data` with the right

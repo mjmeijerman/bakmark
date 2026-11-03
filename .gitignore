@@ -8,6 +8,7 @@ node_modules/
 
 # newsletter list (SQLite, lives on the server)
 data/
+data-staging/
 
 # logs
 npm-debug.log*
@@ -15,18 +16,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
-# environment variables
+# environment variables: env.dist is the committed template, .env is local
 .env
-.env.production
+.env.*
+!.env.example
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# render check output; the baseline png is committed
 tests/snapshots/confirmation.nl.html
 tests/snapshots/confirmation.nl.png
-
-# staging keeps its own list
-data-staging/

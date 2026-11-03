@@ -38,6 +38,10 @@ services:
       # server, otherwise confirmation mail is caught and never delivered.
       SMTP_URL: ${SMTP_URL:-smtp://mailpit:1025}
       SITE_URL: ${SITE_URL:-http://localhost:8085}
+      # Staging: a comma-separated allowlist, e.g.
+      #   SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com
+      # Empty means no restriction (development and production).
+      SIGNUP_ALLOWED_DOMAINS: ${SIGNUP_ALLOWED_DOMAINS:-}
     volumes:
       - ${BAKMARK_DATA_DIR:-./data}:/data
     read_only: true

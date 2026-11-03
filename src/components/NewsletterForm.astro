@@ -13,6 +13,7 @@ const messages = {
 	ok: t(lang, "newsletter.success"),
 	invalid: t(lang, "newsletter.invalid"),
 	error: t(lang, "newsletter.error"),
+	domain: t(lang, "newsletter.domain"),
 };
 ---
 
@@ -26,6 +27,7 @@ const messages = {
 	data-ok={messages.ok}
 	data-invalid={messages.invalid}
 	data-error={messages.error}
+	data-domain={messages.domain}
 >
 	<h2>{heading ?? t(lang, "newsletter.heading")}</h2>
 	<label for={`email-${lang}`}>{t(lang, "newsletter.label")}</label>
@@ -101,7 +103,9 @@ const messages = {
 						form,
 						result?.error === "invalid_email"
 							? form.dataset.invalid ?? ""
-							: form.dataset.error ?? "",
+							: result?.error === "domain_not_allowed"
+								? form.dataset.domain ?? ""
+								: form.dataset.error ?? "",
 						"error",
 					);
 				}

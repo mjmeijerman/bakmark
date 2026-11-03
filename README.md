@@ -102,6 +102,23 @@ Local:
 Same thing via npm: `npm start`. The script creates `./data` with the right
 owner, builds, and starts the container in the background.
 
+### Staging
+
+A staging deployment runs the real form against the real code, so it can also
+reach the real mail path. Set an allowlist and only those domains may sign up:
+
+```sh
+SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./start.sh
+```
+
+An address outside the list gets a 400 `domain_not_allowed`, is not stored and
+is not mailed. An allowed address that is malformed is still refused as
+`invalid_email`. Unset or empty means no restriction, which is what development
+and production use.
+
+Subdomains of a listed domain are accepted (`a@staging.markmeijerman.eu`), and
+look-alikes are not (`a@evilmarkmeijerman.eu`).
+
 ### Mail in development
 
 Nothing leaves the machine. `./start.sh` also starts Mailpit, and every mail

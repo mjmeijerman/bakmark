@@ -16,6 +16,9 @@ MAIL_UI="${MAILPIT_UI_PORT:-8025}"
 
 # Links in confirmation mail must point at the URL a visitor uses.
 export SITE_URL="${SITE_URL:-http://localhost:$PORT}"
+# Set on staging only, e.g. markmeijerman.eu,mail-tester.com
+: "${SIGNUP_ALLOWED_DOMAINS:=}"
+export SIGNUP_ALLOWED_DOMAINS
 
 mkdir -p "$DATA_DIR"
 chmod 700 "$DATA_DIR" 2>/dev/null || true
@@ -29,4 +32,7 @@ fi
 docker compose up --build -d
 
 echo "Bakmark:      http://localhost:$PORT"
+if [ -n "$SIGNUP_ALLOWED_DOMAINS" ]; then
+	echo "Signups only: @$(echo "$SIGNUP_ALLOWED_DOMAINS" | sed 's/,/ @/g')"
+fi
 echo "Mail catcher: http://localhost:$MAIL_UI"

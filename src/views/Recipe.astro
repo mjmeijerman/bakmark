@@ -1,0 +1,720 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import DifficultyBadge from "../components/DifficultyBadge.astro";
+import RecipeSection from "../components/RecipeSection.astro";
+import RecipeSteps from "../components/RecipeSteps.astro";
+import {
+	DIFFICULTY_SCALE,
+	allRecipes,
+	formatDate,
+	formatMinutes,
+	localize,
+	localizeGroup,
+	loadRecipe,
+	recipeChips,
+	recipeTiming,
+	resolveRecipe,
+	usedIn,
+	type Recipe,
+} from "../lib/recipes";
+import { path, type Lang } from "../lib/i18n";
+
+interface Props {
+	slug: string;
+	lang: Lang;
+}
+
+const { slug, lang } = Astro.props;
+
+const copy = {
+	nl: {
+		notVerified: "Nog niet geverifieerd.",
+		conceptChip: "Concept",
+		videoAria: (title: string) => `Placeholder: video van ${title} in één take`,
+		videoLabel: (title: string) => `Video: ${title} in één take`,
+		printLine: (active: string, level: number, published: string, oven: number | null) =>
+			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
+		timeTotal: "Totaal",
+		timeActive: "Bereidingstijd",
+		timeOven: "Oven",
+		timeWait: "Wacht",
+		variants: "Varianten",
+		variantsLede:
+			"Dezelfde stappen, een andere samenstelling. Een recept dat dit basisrecept gebruikt, kiest de variant; pas je de stappen aan, dan verandert dat in alle varianten mee.",
+		defaultVariant: " (standaard)",
+		composition: "Opbouw",
+		compositionLede:
+			"Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen pagina en een eigen video, en wijzigingen daar werken hier direct door.",
+		usedIn: "Gebruikt in",
+		usedInLede:
+			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
+		via: (title: string) => `, via ${title}`,
+		colPart: "Onderdeel",
+		ingredients: "Ingrediënten",
+		onTop: "Bovenop de basisrecepten hierboven, plus:",
+		gathered: (name: string) => `${name} verzameld`,
+		moreAbout: (name: string) => `Meer over ${name}`,
+		equipment: "Benodigdheden",
+		ready: (name: string) => `${name} klaargezet`,
+		affiliate:
+			"Soms staat er bij gereedschap een affiliate-link, en die is gemarkeerd. Bestel je via die link, dan krijg ik een kleine commissie — die helpt om de site te onderhouden, en aan de prijs die jij betaalt verandert niets.",
+		affiliateIngredient:
+			"Soms staat er bij een ingrediënt een affiliate-link, en die is gemarkeerd. Bestel je via die link, dan krijg ik een kleine commissie — die helpt om de site te onderhouden, en aan de prijs die jij betaalt verandert niets.",
+		baking: "Bakken",
+		bakeMode: "Ovenstand",
+		bakeTemp: "Temperatuur",
+		bakeTempValue: (temp: number, fan: number) => `${temp} °C (hetelucht ${fan} °C)`,
+		bakeTime: "Baktijd",
+		bakeDone: "Klaar wanneer",
+		bakeDoor: "Ovendeur",
+		bakeAfter: "Nadrogen",
+		bakeAfterValue: (duration: string) => `${duration}, deur op een kier`,
+		steps: "Stappen",
+		stepsNote:
+			"Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit de opname, met de echte tijden en de volgorde van de video.",
+		whyTips: "Waarom en tips",
+		whyLabel: "Waarom:",
+		failed: "Als het mislukt",
+		symptom: "Symptoom",
+		cause: "Oorzaak",
+		fix: "Oplossing",
+		faq: "Veelgestelde vragen",
+		print: "Print",
+		bakeToggle: "Bakstand",
+		bakeToggleOn: "Bakstand aan",
+		bakeHint: "Houdt het scherm aan terwijl je met je handen in het deeg zit.",
+		bakeUnsupported: "Deze browser kan het scherm niet wakker houden.",
+		tipHeading: "Een fooi?",
+		tipText:
+			"De recepten en video's zijn gratis. Wie er iets aan heeft, kan een fooi achterlaten. Wie dat niet doet, merkt daar niets van.",
+		tipOwn: "Eigen bedrag",
+		tipPlaceholder: "Placeholder: de betaallink komt er bij de eerste video.",
+		newsletterHeading: "Nieuwsbrief",
+	},
+	en: {
+		notVerified: "Not verified yet.",
+		conceptChip: "Draft",
+		videoAria: (title: string) => `Placeholder: video of ${title} in one take`,
+		videoLabel: (title: string) => `Video: ${title} in one take`,
+		printLine: (active: string, level: number, published: string, oven: number | null) =>
+			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
+		timeTotal: "Total",
+		timeActive: "Hands-on",
+		timeOven: "Oven",
+		timeWait: "Wait",
+		variants: "Variants",
+		variantsLede:
+			"The same steps, a different composition. A recipe that uses this base recipe picks the variant; change the steps and every variant changes with it.",
+		defaultVariant: " (default)",
+		composition: "Composition",
+		compositionLede:
+			"This recipe is built from base recipes. Every part has its own page and its own video, and changes there land here immediately.",
+		usedIn: "Used in",
+		usedInLede:
+			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
+		via: (title: string) => `, via ${title}`,
+		colPart: "Part",
+		ingredients: "Ingredients",
+		onTop: "On top of the base recipes above, plus:",
+		gathered: (name: string) => `${name} gathered`,
+		moreAbout: (name: string) => `More about ${name}`,
+		equipment: "Equipment",
+		ready: (name: string) => `${name} ready`,
+		affiliate:
+			"Sometimes a tool carries an affiliate link, and it is marked. Order through it and I get a small commission — it helps keep the site running, and the price you pay stays the same.",
+		affiliateIngredient:
+			"Sometimes an ingredient carries an affiliate link, and it is marked. Order through it and I get a small commission — it helps keep the site running, and the price you pay stays the same.",
+		baking: "Baking",
+		bakeMode: "Oven setting",
+		bakeTemp: "Temperature",
+		bakeTempValue: (temp: number, fan: number) => `${temp} °C (fan ${fan} °C)`,
+		bakeTime: "Baking time",
+		bakeDone: "Done when",
+		bakeDoor: "Oven door",
+		bakeAfter: "Drying out",
+		bakeAfterValue: (duration: string) => `${duration}, door ajar`,
+		steps: "Steps",
+		stepsNote:
+			"Times and temperatures are starting values. The final version comes from the recording, with the real times and the order of the video.",
+		whyTips: "Why and tips",
+		whyLabel: "Why:",
+		failed: "When it goes wrong",
+		symptom: "Symptom",
+		cause: "Cause",
+		fix: "Fix",
+		faq: "Frequently asked questions",
+		print: "Print",
+		bakeToggle: "Bake mode",
+		bakeToggleOn: "Bake mode on",
+		bakeHint: "Keeps the screen awake while both hands are in the dough.",
+		bakeUnsupported: "This browser cannot keep the screen awake.",
+		tipHeading: "A tip?",
+		tipText:
+			"The recipes and videos are free. If they helped you, you can leave a tip. If you don't, you notice nothing of it.",
+		tipOwn: "Own amount",
+		tipPlaceholder: "Placeholder: the payment link arrives with the first video.",
+		newsletterHeading: "Newsletter",
+	},
+}[lang];
+
+const recipe = localize(loadRecipe(slug), lang);
+const resolved = resolveRecipe(loadRecipe(slug));
+const groups = resolved.groups.map((group) => localizeGroup(group, lang));
+const composed = groups.length > 1;
+const chips = recipeChips(recipe, lang);
+const timing = recipeTiming(slug);
+const bakeGroups = groups.filter((group) => group.recipe.bake);
+const direct = groups.filter((group) => group.depth === 1);
+/*
+ * Parts, once each, direct ones first. A soesje fails in the oven, not in the
+ * recipe that fills it, so "Als het mislukt" and the FAQ carry the parts too.
+ */
+const parts = groups
+	.filter((group) => group.recipe.slug !== slug)
+	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index)
+	.sort((a, b) => a.depth - b.depth);
+
+/** Same advice twice under two parts reads as a mistake, so each row appears once. */
+function onceBy<T>(rows: { item: T; part: string | null }[], key: (item: T) => string) {
+	const seen = new Set<string>();
+	return rows.filter((row) => {
+		const value = key(row.item).trim().toLowerCase();
+		if (seen.has(value)) return false;
+		seen.add(value);
+		return true;
+	});
+}
+
+const failures = onceBy(
+	[
+		...(recipe.mislukt ?? []).map((item) => ({ item, part: null as string | null })),
+		...parts.flatMap((group) =>
+			(group.recipe.mislukt ?? []).map((item) => ({ item, part: group.recipe.title })),
+		),
+	],
+	(item) => `${item.symptoom}|${item.oorzaak}|${item.fix}`,
+);
+const hasFailureParts = failures.some((row) => row.part);
+
+const questions = onceBy(
+	[
+		...(recipe.faq ?? []).map((item) => ({ item, part: null as string | null })),
+		...parts.flatMap((group) =>
+			(group.recipe.faq ?? []).map((item) => ({ item, part: group.recipe.title })),
+		),
+	],
+	(item) => `${item.q}|${item.a}`,
+);
+const hasQuestionParts = questions.some((row) => row.part);
+
+/**
+ * A part's own times, in the same words as the chips under the title.
+ * Its children have their own heading and their own line, so counting them
+ * here as well would add the same minutes twice on one screen.
+ */
+const partTiming = (partSlug: string) => {
+	const { time } = loadRecipe(partSlug);
+	const active = time.active;
+	const oven = time.oven ?? 0;
+	const wait = time.wait || time.afterbake || 0;
+
+	const facts = [`${copy.timeActive} ${formatMinutes(active, lang)}`];
+	if (oven) facts.push(`${copy.timeOven} ${formatMinutes(oven, lang)}`);
+	if (wait) facts.push(`${copy.timeWait} ${formatMinutes(wait, lang)}`);
+	facts.push(`${copy.timeTotal} ${formatMinutes(active + oven + wait, lang)}`);
+	return facts.join(" · ");
+};
+
+const usedBy = usedIn(slug).map((entry) => ({
+	...entry,
+	recipe: localize(entry.recipe, lang),
+}));
+const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
+
+// Oven and wait only show when a part fills them in; the total is derived, so
+// the four numbers under the title always add up.
+
+const tools = Array.from(
+	groups
+		.flatMap((group) => group.recipe.tools ?? [])
+		.reduce((map, tool) => map.set(tool.name, tool), new Map<string, { name: string; note?: string }>())
+		.values(),
+);
+const published = recipe.published ? formatDate(recipe.published, lang) : "";
+const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.temperature) : null;
+---
+
+<Layout
+	title={recipe.title}
+	description={`${recipe.title}: ${recipe.result.value} ${recipe.result.unit}. ${recipe.subtitle}`}
+	lang={lang}
+>
+	<article>
+		<p class="print-only print-brand">
+			<img src="/logo-bakmark.png" alt="" width="160" height="160" aria-hidden="true" />
+			<span>Bakmark</span>
+		</p>
+		<section class="hero">
+			<h1>{recipe.title}</h1>
+			<p class="recipe-result">{recipe.subtitle}</p>
+			<ul class="chips recipe-meta no-print">
+				<li><span class="chip">{copy.timeTotal} {formatMinutes(timing.total, lang)}</span></li>
+				<li><span class="chip">{copy.timeActive} {formatMinutes(timing.active, lang)}</span></li>
+				{timing.oven > 0 && (
+					<li><span class="chip">{copy.timeOven} {formatMinutes(timing.oven, lang)}</span></li>
+				)}
+				{timing.wait > 0 && (
+					<li><span class="chip">{copy.timeWait} {formatMinutes(timing.wait, lang)}</span></li>
+				)}
+				{/* recipeChips starts with the total time, which is a labelled chip above. */}
+				{chips.slice(1).map((chip) => <li><span class="chip">{chip}</span></li>)}
+				<li><DifficultyBadge level={recipe.difficulty} lang={lang} /></li>
+				{
+					!recipe.verified && (
+						<li>
+							<span class="chip chip-concept">{copy.conceptChip}</span>
+						</li>
+					)
+				}
+			</ul>
+			<p class="print-only">
+				{copy.printLine(formatMinutes(timing.active, lang), recipe.difficulty, published, ovenTemperature)}
+			</p>
+		</section>
+
+		{
+			!recipe.verified && (
+				<p class="verified-note no-print">
+					<strong>{copy.notVerified}</strong> {recipe.verified_note}
+				</p>
+			)
+		}
+
+		<div
+			class="placeholder-box recipe-video no-print"
+			style="--ratio: 16 / 9"
+			role="img"
+			aria-label={copy.videoAria(recipe.title.toLocaleLowerCase(lang))}
+		>
+			<span aria-hidden="true">Placeholder</span>
+			<strong aria-hidden="true">{copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}</strong>
+		</div>
+
+		{
+			recipe.variants && Object.keys(recipe.variants).length ? (
+				<RecipeSection title={copy.variants} noPrint>
+					<p class="section-lede">{copy.variantsLede}</p>
+					<dl class="variants">
+						{Object.entries(recipe.variants).map(([key, variant]) => (
+							<div>
+								<dt>{variant.label}</dt>
+								<dd>
+									{variant.note}
+									{key === "klassiek" ? copy.defaultVariant : ""}
+								</dd>
+							</div>
+						))}
+					</dl>
+				</RecipeSection>
+			) : null
+		}
+
+		{
+			composed && (
+				<RecipeSection title={copy.composition} noPrint>
+					<p class="section-lede">{copy.compositionLede}</p>
+					<ul class="parts">
+						{direct.map((group) => (
+							<li>
+								{group.recipe.title}
+								<span class="muted">
+									{group.recipe.result.value} {group.recipe.result.unit}
+								</span>
+							</li>
+						))}
+					</ul>
+				</RecipeSection>
+			)
+		}
+
+		{
+			usedBy.length ? (
+				<RecipeSection title={copy.usedIn} noPrint>
+					<p class="section-lede">{copy.usedInLede}</p>
+					<ul class="parts">
+						{usedBy.map(({ recipe: user, via }) => (
+							<li>
+								<a href={path(lang, "recipe", user.slug)}>{user.title}</a>
+								<span class="muted">
+									{user.result.value} {user.result.unit}
+									{via ? copy.via(titles.get(via) ?? via) : ""}
+								</span>
+							</li>
+						))}
+					</ul>
+				</RecipeSection>
+			) : null
+		}
+
+		<RecipeSection title={copy.ingredients}>
+			{/* What the batch is good for. It used to sit under the chips, where it
+			   repeated the yield chip and pushed the list down. */}
+			{recipe.result.note ? <p class="section-lede">{recipe.result.note}</p> : null}
+			{
+				groups
+					.filter((group) => group.ingredients.length > 0)
+					.map((group) => (
+						<div class="ingredient-group">
+							{composed && (
+								<h3>
+									{group.recipe.title}
+									{group.variantLabel ? <span class="muted">{group.variantLabel}</span> : null}
+								</h3>
+							)}
+							{group.recipe.components?.length ? (
+								<p class="form-note">{copy.onTop}</p>
+							) : null}
+							<ul class="ingredients">
+								{group.ingredients.map((ingredient) => (
+									<li data-gather={`${group.recipe.slug}:${ingredient.id}`}>
+										<input
+											type="checkbox"
+											class="gather-check"
+											id={`check-${group.recipe.slug}-${ingredient.id}`}
+											aria-label={copy.gathered(ingredient.name)}
+										/>
+										<div class="ingredient-name">
+											{ingredient.name}
+											{ingredient.note && (
+												<details class="ingredient-info">
+													<summary aria-label={copy.moreAbout(ingredient.name)}>
+														<span aria-hidden="true">i</span>
+													</summary>
+													<div class="ingredient-info-panel">
+														<p>{ingredient.note}</p>
+													</div>
+												</details>
+											)}
+										</div>
+										<span class="amount">{ingredient.amount_display}</span>
+									</li>
+								))}
+							</ul>
+						</div>
+					))
+			}
+			<p class="form-note no-print">{copy.affiliateIngredient}</p>
+		</RecipeSection>
+
+		{
+			tools.length ? (
+				<RecipeSection title={copy.equipment}>
+					<ul class="tools">
+						{tools.map((tool) => (
+							<li data-gather={`tool:${tool.name}`}>
+								<input
+									type="checkbox"
+									class="gather-check"
+									id={`check-tool-${tool.name.replace(/\s+/g, "-").toLowerCase()}`}
+									aria-label={copy.ready(tool.name)}
+								/>
+								<div>
+									<span>{tool.name}</span>
+									{tool.note ? <span class="form-note"> — {tool.note}</span> : null}
+								</div>
+							</li>
+						))}
+					</ul>
+					<p class="form-note no-print">{copy.affiliate}</p>
+				</RecipeSection>
+			) : null
+		}
+
+		{
+			bakeGroups.map((group) => (
+				<section class="section section-ruled bake-block">
+					<h2>
+						{copy.baking}
+						{composed ? ` — ${group.recipe.title.toLocaleLowerCase(lang)}` : ""}
+					</h2>
+					<dl class="bake">
+						<div>
+							<dt>{copy.bakeMode}</dt>
+							<dd>
+								{group.recipe.bake.mode} · {group.recipe.bake.rack}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeTemp}</dt>
+							<dd>
+								{copy.bakeTempValue(
+									group.recipe.bake.temperature,
+									group.recipe.bake.temperature_hetelucht,
+								)}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeTime}</dt>
+							<dd>
+								{formatMinutes(group.recipe.bake.time.min, lang)} –{" "}
+								{formatMinutes(group.recipe.bake.time.max, lang)}
+							</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeDone}</dt>
+							<dd>{group.recipe.bake.done_when}</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeDoor}</dt>
+							<dd>{group.recipe.bake.door}</dd>
+						</div>
+						<div>
+							<dt>{copy.bakeAfter}</dt>
+							<dd>{copy.bakeAfterValue(formatMinutes(group.recipe.bake.afterbake.duration, lang))}</dd>
+						</div>
+					</dl>
+					<p class="form-note no-print">{group.recipe.bake.time_note}</p>
+				</section>
+			))
+		}
+
+		<section class="section section-ruled">
+			{/* The two things you reach for while cooking sit on the heading line:
+			   print, and keeping the screen awake. Every part starts open. */}
+			<div class="section-head no-print">
+				<h2>{copy.steps}</h2>
+				<div class="section-actions">
+					<button
+						class="button button-quiet"
+						type="button"
+						data-bake
+						data-off={copy.bakeToggle}
+						data-on={copy.bakeToggleOn}
+						data-unsupported={copy.bakeUnsupported}
+						title={copy.bakeHint}
+						aria-pressed="false"
+					>
+						{copy.bakeToggle}
+					</button>
+					<button class="button button-quiet" type="button" data-print>{copy.print}</button>
+				</div>
+			</div>
+			<h2 class="print-only">{copy.steps}</h2>
+			{
+				/* Folded only when there are parts to fold: a single-part recipe is one
+				   list, and a disclosure triangle over one list is furniture. */
+				groups.map((group) => {
+					const list = (
+						<RecipeSteps
+							slug={group.recipe.slug}
+							steps={group.steps}
+							whyTips={copy.whyTips}
+							whyLabel={copy.whyLabel}
+						/>
+					);
+
+					if (!composed) {
+						return <div class="step-group">{list}</div>;
+					}
+
+					return (
+						<details class="step-group collapsible" open>
+							<summary>
+								<h3>
+									{group.recipe.title}
+									{group.variantLabel ? <span class="muted"> — {group.variantLabel}</span> : null}
+								</h3>
+								{group.recipe.slug !== slug && (
+									<span class="group-times">{partTiming(group.recipe.slug)}</span>
+								)}
+							</summary>
+							{list}
+						</details>
+					);
+				})
+			}
+			<p class="form-note no-print">{copy.stepsNote}</p>
+		</section>
+
+		{
+			failures.length ? (
+				<RecipeSection title={copy.failed} noPrint>
+					<table class="mislukt">
+						<thead>
+							<tr>
+								{hasFailureParts && <th scope="col">{copy.colPart}</th>}
+								<th>{copy.symptom}</th>
+								<th>{copy.cause}</th>
+								<th>{copy.fix}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{failures.map((row) => (
+								<tr>
+									{hasFailureParts && <td class="muted">{row.part ?? recipe.title}</td>}
+									<td>{row.item.symptoom}</td>
+									<td>{row.item.oorzaak}</td>
+									<td>{row.item.fix}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</RecipeSection>
+			) : null
+		}
+
+		{
+			questions.length ? (
+				<RecipeSection title={copy.faq} noPrint>
+					<div class="faq">
+						{questions.map((row) => (
+							<details>
+								<summary>
+									{row.part ? <span class="muted">{row.part} — </span> : null}
+									{row.item.q}
+								</summary>
+								<p>{row.item.a}</p>
+							</details>
+						))}
+					</div>
+				</RecipeSection>
+			) : null
+		}
+
+		<section class="callout no-print">
+			<h2>{copy.tipHeading}</h2>
+			<p>{copy.tipText}</p>
+			<ul class="tips">
+				<li><span class="tip-amount">€3</span></li>
+				<li><span class="tip-amount">€7</span></li>
+				<li><span class="tip-amount">€15</span></li>
+				<li><span class="tip-amount">€25</span></li>
+				<li><span class="tip-amount">{copy.tipOwn}</span></li>
+			</ul>
+			<p class="form-note">{copy.tipPlaceholder}</p>
+		</section>
+	</article>
+
+	<NewsletterForm lang={lang} heading={copy.newsletterHeading} />
+</Layout>
+
+<script>
+	// One ingredient note open at a time, and a click or Escape anywhere else
+	// closes it. <details> does the toggling itself; this only adds dismissal,
+	// so the notes still work with JavaScript off.
+	const notes = document.querySelectorAll<HTMLDetailsElement>("details.ingredient-info");
+
+	const closeNotes = (keep?: Element) => {
+		notes.forEach((note) => {
+			if (note !== keep) note.open = false;
+		});
+	};
+
+	document.addEventListener("click", (event) => {
+		const target = event.target as Element | null;
+		closeNotes(target?.closest("details.ingredient-info") ?? undefined);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") closeNotes();
+	});
+
+	// Checkboxes for ingredients and tools: what is already on the counter. Kept in
+	// localStorage so a reload mid-recipe does not lose the list; nothing leaves
+	// the browser.
+	const checks = Array.from(document.querySelectorAll<HTMLInputElement>(".gather-check"));
+	if (checks.length) {
+		const key = `bakmark:checks:${window.location.pathname}`;
+		type Store = Record<string, boolean>;
+
+		const read = (): Store => {
+			try {
+				return JSON.parse(window.localStorage.getItem(key) ?? "{}") as Store;
+			} catch {
+				return {};
+			}
+		};
+
+		const saved = read();
+		for (const box of checks) {
+			const id = box.closest<HTMLElement>("[data-gather]")?.dataset.gather ?? box.id;
+			box.checked = Boolean(saved[id]);
+			box.closest("li")?.classList.toggle("is-checked", box.checked);
+			box.addEventListener("change", () => {
+				const store = read();
+				if (box.checked) store[id] = true;
+				else delete store[id];
+				try {
+					window.localStorage.setItem(key, JSON.stringify(store));
+				} catch {
+					// Private mode: ticking still works, it just is not remembered.
+				}
+				box.closest("li")?.classList.toggle("is-checked", box.checked);
+			});
+		}
+	}
+
+	// Collapsed sections would print as headings with nothing under them: a
+	// sheet cannot be clicked. Open them for the print pass and restore after.
+	const collapsibles = Array.from(document.querySelectorAll<HTMLDetailsElement>("details.collapsible"));
+	let reopened: HTMLDetailsElement[] = [];
+	window.addEventListener("beforeprint", () => {
+		reopened = collapsibles.filter((details) => !details.open);
+		for (const details of reopened) details.open = true;
+	});
+	window.addEventListener("afterprint", () => {
+		for (const details of reopened) details.open = false;
+		reopened = [];
+	});
+
+	// Print view is this page with the explanations hidden by @media print.
+	// One button, no second artifact that can drift from the data.
+	document.querySelector("[data-print]")?.addEventListener("click", () => window.print());
+
+	// Bake mode: keep the screen awake while both hands are in the dough. The
+	// lock dies whenever the tab goes to the background, so it is re-requested
+	// on the way back rather than pretending the setting survived.
+	const bake = document.querySelector<HTMLButtonElement>("[data-bake]");
+	if (bake) {
+		let lock: WakeLockSentinel | null = null;
+
+		const paint = (on: boolean) => {
+			bake.setAttribute("aria-pressed", String(on));
+			bake.textContent = (on ? bake.dataset.on : bake.dataset.off) ?? "";
+		};
+
+		const release = async () => {
+			await lock?.release().catch(() => {});
+			lock = null;
+			paint(false);
+		};
+
+		const acquire = async () => {
+			try {
+				lock = await navigator.wakeLock.request("screen");
+				lock.addEventListener("release", () => paint(false));
+				paint(true);
+				return true;
+			} catch {
+				return false;
+			}
+		};
+
+		if (!("wakeLock" in navigator)) {
+			bake.disabled = true;
+			bake.title = bake.dataset.unsupported ?? "";
+		} else {
+			bake.addEventListener("click", () => {
+				if (bake.getAttribute("aria-pressed") === "true") void release();
+				else void acquire();
+			});
+
+			document.addEventListener("visibilitychange", () => {
+				if (document.visibilityState === "visible" && bake.getAttribute("aria-pressed") === "true" && !lock) {
+					void acquire();
+				}
+			});
+		}
+	}
+</script>

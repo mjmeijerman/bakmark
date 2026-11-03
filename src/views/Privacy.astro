@@ -1,0 +1,100 @@
+---
+import Layout from "../layouts/Layout.astro";
+import type { Lang } from "../lib/i18n";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const contactAddress = "hello@bakmark.nl";
+
+const copy = {
+	nl: {
+		title: "Privacy",
+		description:
+			"Deze site werkt zonder inloggen. Wat er bewaard wordt, waar het blijft en wat je rechten zijn.",
+		h1: "Privacy",
+		stored: {
+			h: "Wat er wordt opgeslagen",
+			items: [
+				"Je thema, licht of donker. Dat staat in je eigen browser en blijft dus bij jou. Wis je sitegegevens en het is weg.",
+				"Je e-mailadres, vanaf het moment dat je je aanmeldt voor de nieuwsbrief. Het staat op mijn eigen server, met een afmeldlink in elke mail.",
+			],
+		},
+		kept: {
+			h: "Waar het wordt opgeslagen",
+			p: "Je e-mailadres wordt opgeslagen op mijn eigen server, en wordt alleen gebruikt voor het versturen van de nieuwsbrief.",
+		},
+		affiliate: {
+			h: "Affiliate-links",
+			p: "Sommige recepten bevatten affiliate-links, bijvoorbeeld naar gereedschap of een ingrediënt. Die links zijn gemarkeerd. Bestel je via zo'n link, dan krijg ik een kleine commissie, en die helpt om de site te onderhouden. Aan de prijs die jij betaalt verandert niets.",
+		},
+		rights: {
+			h: "Recht op vergetelheid",
+			before:
+				'Wil je dat je e-mailadres verwijderd wordt? Dat kun je regelen door in de nieuwsbrief op de knop "uitschrijven" te klikken, of een mailtje te sturen naar',
+			after: ".",
+		},
+	},
+	en: {
+		title: "Privacy",
+		description:
+			"This site works without logging in. What is kept, where it stays and what your rights are.",
+		h1: "Privacy",
+		stored: {
+			h: "What is stored",
+			items: [
+				"Your theme, light or dark. That sits in your own browser, so it stays with you. Clear the site data and it is gone.",
+				"Your email address, from the moment you sign up for the newsletter. It sits on my own server, with an unsubscribe link in every mail.",
+			],
+		},
+		kept: {
+			h: "Where it is stored",
+			p: "Your email address is stored on my own server, and is only used to send the newsletter.",
+		},
+		affiliate: {
+			h: "Affiliate links",
+			p: "Some recipes contain affiliate links, for instance to a tool or an ingredient. Those links are marked. Order through one and I get a small commission, which helps keep the site running. The price you pay stays the same.",
+		},
+		rights: {
+			h: "Right to be forgotten",
+			before:
+				'Want your email address deleted? You can arrange that by clicking "unsubscribe" in the newsletter, or by sending a mail to',
+			after: ".",
+		},
+	},
+}[lang];
+---
+
+<Layout title={copy.title} description={copy.description} lang={lang}>
+	<section class="hero">
+		<h1>{copy.h1}</h1>
+	</section>
+
+	<section class="section">
+		<h2>{copy.stored.h}</h2>
+		<ul>
+			{copy.stored.items.map((item) => <li>{item}</li>)}
+		</ul>
+	</section>
+
+	<section class="section">
+		<h2>{copy.kept.h}</h2>
+		<p>{copy.kept.p}</p>
+	</section>
+
+	<section class="section">
+		<h2>{copy.affiliate.h}</h2>
+		<p>{copy.affiliate.p}</p>
+	</section>
+
+	<section class="section">
+		<h2>{copy.rights.h}</h2>
+		<p>
+			{copy.rights.before}{" "}
+			<a href={`mailto:${contactAddress}`}>{contactAddress}</a>{copy.rights.after}
+		</p>
+	</section>
+</Layout>

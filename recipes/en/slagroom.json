@@ -1,0 +1,73 @@
+{
+	"title": "Whipped cream",
+	"subtitle": "Cream whipped stiff, cold and without grain",
+	"verified_note": "Not timed by the maker himself yet.",
+	"result": {
+		"unit": "g",
+		"note": "About 300 g of whipped cream, enough to make 600 g of cream or to fill 40 choux buns."
+	},
+	"time": {
+		"note": "5 minutes, provided the cream and the bowl are cold."
+	},
+	"context": "Whipped cream stiffens not because you beat air into it, but because fat globules set around the air you beat in. That only works when the cream is cold: at 4 °C the fat is hard enough to build the network that holds the air. If the cream is too warm, nothing happens for a long time and then it whips straight on to butter in one go. So: everything cold, and stop the moment the peaks stand.",
+	"tags": [
+		"whipped cream",
+		"cream",
+		"core technique",
+		"base recipe"
+	],
+	"ingredients": {
+		"room": {
+			"name": "double cream",
+			"note": "At least 35% fat. Single cream or cooking cream will not stiffen."
+		},
+		"suiker": {
+			"name": "sugar",
+			"note": "About 8% of the weight. Less for savoury use."
+		},
+		"vanille": {
+			"name": "vanilla extract (optional)",
+			"note": "Goes in with the sugar."
+		}
+	},
+	"tools": {
+		"kom en garde, koud": {
+			"name": "bowl and whisk, cold",
+			"note": "Ten minutes in the freezer is enough."
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Whip it cold",
+			"text": "Put the cream and the sugar in a cold bowl and whisk at medium-high speed. Stop as soon as the cream holds soft, round peaks. For filling choux buns: a little stiffer, until firm peaks, but not grainy.",
+			"why": "Cold cream keeps the fat hard, and only hard fat builds the network that holds the air. Beat too long and the fat globules clump together: then you have butter with buttermilk.",
+			"tips": [
+				"Bowl and whisk in the freezer for ten minutes, cream straight from the fridge.",
+				"Add the sugar before the cream is stiff, otherwise it will not whip smooth again.",
+				"Whipping by hand gives more control than a machine; a machine overshoots."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "Why won't my cream stiffen?",
+			"a": "Usually too warm, or too little fat. Cream under 35% fat will not stiffen, and a warm bowl keeps the fat soft. Put bowl and whisk in the freezer and use cream from the fridge."
+		},
+		"1": {
+			"q": "My cream has gone grainy. Still salvageable?",
+			"a": "That is the start of butter; it does not turn back. Keep whipping until you have butter and use that, or start again with cold cream."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "will not stiffen",
+			"oorzaak": "cream too warm or too little fat",
+			"fix": "cold bowl, cold cream, at least 35% fat"
+		},
+		"1": {
+			"symptoom": "grainy",
+			"oorzaak": "whipped too long",
+			"fix": "stop at firm peaks; there is no way back except starting over"
+		}
+	}
+}

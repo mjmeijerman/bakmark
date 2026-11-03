@@ -1,0 +1,183 @@
+{
+	"title": "Choux pastry",
+	"subtitle": "Cooked dough for choux buns, eclairs and Paris-Brest",
+	"verified_note": "Not timed and baked by the maker himself yet. Times and temperatures are starting values, not measured ones.",
+	"result": {
+		"unit": "g",
+		"note": "One batch of dough, enough for 25-35 choux buns, 8-10 large ones or 10-12 eclairs."
+	},
+	"time": {
+		"note": "25 min active. The baking lives with the Choux buns recipe."
+	},
+	"context": "Choux pastry is a cooked dough: it is first cooked in the pan and then goes into the oven. While it cooks, the starch in the flour sets, which lets the dough take up a lot of liquid — water, milk and egg. That liquid is the whole mechanism: in the oven it becomes steam, steam takes up far more room than water, and that pressure blows the dough hollow from the inside. That is why there are only two moments where it goes wrong: the flour was not cooked long enough (then the dough takes up less egg and the buns stay flat), or the wall is not firm yet when the heat leaves (then they collapse). Everything else is margin. Once you control this dough you also control eclairs, Bossche bollen, Paris-Brest and craquelin buns — it is one technique in different shapes.",
+	"tags": [
+		"choux pastry",
+		"cooked dough",
+		"choux",
+		"buns",
+		"eclairs",
+		"base recipe"
+	],
+	"ingredients": {
+		"melk": {
+			"name": "whole milk",
+			"note": "Softer structure and better colour. Swap for water for firmer buns."
+		},
+		"water": {
+			"name": "water",
+			"note": "In the water variant this is the only liquid: 200 g, no milk."
+		},
+		"boter": {
+			"name": "unsalted butter",
+			"note": "In cubes, so it melts before the liquid boils."
+		},
+		"zout": {
+			"name": "salt",
+			"note": "Do not scale this; keep to about 1.5 g per 100 g flour."
+		},
+		"bloem": {
+			"name": "strong white flour or T65",
+			"note": "High in protein and fine, 10-11% protein. Strong white flour gives more margin than T65. No self-raising flour, cake flour or soft flour."
+		},
+		"ei": {
+			"name": "egg",
+			"note": "At room temperature. 200 g is four medium eggs; start with three (150 g) and add the fourth if the batter is still too thick."
+		},
+		"suiker": {
+			"name": "sugar (optional)",
+			"note": "Only for extra colour."
+		}
+	},
+	"tools": {
+		"pan met dikke bodem": {
+			"name": "heavy-based pan"
+		},
+		"spatel of houten lepel": {
+			"name": "spatula or wooden spoon"
+		},
+		"keukenweegschaal": {
+			"name": "kitchen scale"
+		},
+		"spuitzak met glad spuitmondje 12 mm": {
+			"name": "piping bag with a 12 mm plain nozzle",
+			"note": "Two teaspoons work too, less evenly."
+		},
+		"bakpapier of siliconenmatje": {
+			"name": "baking paper or silicone mat",
+			"note": "Silicone mats with printed circles give even sizes."
+		}
+	},
+	"steps": {
+		"stap-1": {
+			"title": "Bring liquid, butter and salt to the boil",
+			"text": "Put the milk, the water, the butter and the salt in the pan. Bring it slowly to the boil and make sure all the butter has melted before the mixture boils. Then let it boil properly once.",
+			"why": "That liquid has to become steam in the oven later — it is the only mechanism that makes the buns hollow. A heavy base keeps the heat even, so the flour cooks evenly too.",
+			"tips": [
+				"Butter in cubes, not as one lump.",
+				"Do not stir while it boils; swirl the pan.",
+				"Too high a heat burns the base and cooks the flour on the outside but not on the inside."
+			]
+		},
+		"stap-2": {
+			"title": "Flour in, off the heat",
+			"text": "Take the pan off the heat, add the flour in one go and stir firmly straight away until all the flour is absorbed. Put the pan back on medium heat.",
+			"why": "All at once prevents lumps. Off the heat prevents the flour from burning on the hot base before you have stirred.",
+			"tips": [
+				"Stir along the edges, that is where dry flour hides.",
+				"A flat beater in a stand mixer is allowed, but not for long — too much air beats the dough up."
+			]
+		},
+		"stap-3": {
+			"title": "Cooking",
+			"text": "Keep stirring well for 2-3 minutes over medium heat. The dough forms one ball, hisses softly and leaves a thin film on the base. Then straight off the heat.",
+			"why": "The heat sets the starch in the flour, and only then can the dough take up all that liquid and egg. Cooking too briefly gives flat, clayey buns with a taste of raw flour. Cook too long and the butter separates out: the dough turns greasy, dull and crumbly, the first egg no longer blends in evenly and the buns rise less.",
+			"tips": [
+				"The hissing is your sound signal, the film on the base your visual one.",
+				"One extra minute 'just to be sure' is exactly the wrong move.",
+				"If the dough glistens and sweats, the butter is out: stop and accept that this batch will rise less."
+			]
+		},
+		"stap-4": {
+			"title": "Cool briefly",
+			"text": "Tip the dough into a bowl, stir it loose so the steam escapes, and let it cool for a few minutes until lukewarm.",
+			"why": "Too hot and the egg sets into bits at once. Too cold and the butter sets, which makes the batter grainy and the egg no longer gets absorbed.",
+			"tips": [
+				"Lukewarm against your palm is the test.",
+				"A few minutes is enough; do not let it go cold.",
+				"Stir it through a few times while it cools."
+			]
+		},
+		"stap-5": {
+			"title": "Add the egg in stages",
+			"text": "Beat the eggs loose. Add them in stages and stir after each until the egg is fully absorbed. Add the last egg only if the batter is still too thick; half an egg is allowed too. Stop at a smooth, glossy batter that runs off your spatula in a V.",
+			"why": "How much egg the dough takes up is not a fixed number — it depends on how well you cooked the flour and how much liquid was left in the pan. That is why egg is a variable, not a fixed amount.",
+			"tips": [
+				"Too thick can always be saved with egg; too thin cannot be saved with flour. Better a little too thick than too thin.",
+				"If the batter thickens instead of thinning when you add egg, the dough was too warm.",
+				"Stir with a spatula, not a whisk — you do not want to beat air in."
+			]
+		},
+		"stap-6": {
+			"title": "Piping",
+			"text": "Put the batter in a piping bag with a 12 mm plain nozzle. Pipe blobs of 3-4 cm with 3-4 cm between them. Flatten peaks that stay up with a wet finger.",
+			"why": "Even size is not cosmetic: uneven blobs bake unevenly, and then you take the small ones out too early (they collapse) or the large ones too early (same). Space between them is needed so the hot air can pass.",
+			"tips": [
+				"They expand to roughly twice their width; closer than 3 cm gives pale, soft contact sides.",
+				"Draw circles on the baking paper with a glass and a waterproof pen, then turn the paper over.",
+				"Or make marks with a cutter dipped in flour."
+			]
+		}
+	},
+	"faq": {
+		"0": {
+			"q": "Why do choux buns end up hollow?",
+			"a": "Because the liquid in the dough becomes steam in the oven, and steam takes up far more room than water. That pressure pushes the dough out from the inside. The hollow space is not a trick with yeast or baking powder, it is the result of liquid plus heat."
+		},
+		"1": {
+			"q": "Why do my buns collapse?",
+			"a": "Almost always because they came out of the oven too pale, or because the door opened too early. In both cases the wall was not firm when the heat and steam escaped. Solution: bake longer until they are properly golden brown, then dry out for 10 minutes with the door ajar."
+		},
+		"2": {
+			"q": "Why is there milk in it and not just water?",
+			"a": "Milk makes the structure softer and the colour better. If you want firmer buns — for a croquembouche or a choux ring — use only water. They come out a little firmer and stay a little paler."
+		},
+		"3": {
+			"q": "My batter is too thin. Can I add flour?",
+			"a": "No, that does not work: you do not get an even mass and the proportions no longer add up. Too thin usually means the flour was cooked too briefly or there is too much egg. Next time add the last egg in stages and check in between."
+		},
+		"4": {
+			"q": "Why does the butter separate while cooking?",
+			"a": "Then the dough was cooked too long or too hot. The dough turns greasy and crumbly instead of smooth, and takes up less egg afterwards. Stop as soon as the dough forms a ball, hisses softly and leaves a thin film on the base."
+		},
+		"5": {
+			"q": "Can I store the dough or the baked buns?",
+			"a": "Unfilled buns keep for about a week airtight at room temperature and freeze well. Filled, keep them in the fridge for a few days; take them out 15-30 minutes before serving. Freezing them filled is no success. The dough itself freezes briefly as balls on a silicone mat: thaw at room temperature and then bake."
+		},
+		"6": {
+			"q": "Can I halve or double the recipe?",
+			"a": "Halving is fine. Doubling too, but note: it does not fit in one pan or on one tray, and the baking time does not change with it. Bake in batches and keep the batter covered in the fridge."
+		}
+	},
+	"mislukt": {
+		"0": {
+			"symptoom": "flat, clayey buns",
+			"oorzaak": "flour cooked too briefly",
+			"fix": "cook for 2-3 minutes until the dough forms a ball and leaves a film"
+		},
+		"1": {
+			"symptoom": "greasy, crumbly dough",
+			"oorzaak": "cooked too long or too hot, the butter separates",
+			"fix": "medium heat, stop as soon as it forms a ball and hisses softly"
+		}
+	},
+	"variants": {
+		"klassiek": {
+			"label": "milk + water",
+			"note": "The default: 100 g milk and 100 g water. Softer structure and better colour."
+		},
+		"water": {
+			"label": "water only",
+			"note": "200 g water and no milk. Firmer dough that colours less: for large buns, Bossche bollen, a croquembouche or a choux ring."
+		}
+	}
+}

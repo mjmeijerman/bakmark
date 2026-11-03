@@ -1,0 +1,62 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import Logo from "../components/Logo.astro";
+import { alternatePath, DEFAULT_LANG, isLang, path, t, type Lang } from "../lib/i18n";
+
+interface Props {
+	title: string;
+	description: string;
+	lang?: Lang;
+}
+
+const { title, description, lang: rawLang } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+const siteName = "Bakmark";
+const pageTitle = title === siteName ? title : `${title} · ${siteName}`;
+const year = new Date().getFullYear();
+const alternate = alternatePath(Astro.url.pathname, lang);
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="color-scheme" content="light dark" />
+		<link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
+		<link rel="alternate" hreflang="nl" href={alternatePath(Astro.url.pathname, "nl")} />
+		<link rel="alternate" hreflang="en" href={alternatePath(Astro.url.pathname, "en")} />
+		<title>{pageTitle}</title>
+		<script is:inline>
+			// Apply a stored choice before the page paints. No stored choice means
+			// follow prefers-color-scheme, which the CSS does on its own.
+			(function () {
+				try {
+					var theme = localStorage.getItem("theme");
+					if (theme === "light" || theme === "dark") {
+						document.documentElement.dataset.theme = theme;
+					}
+				} catch (error) {}
+			})();
+		</script>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">{t(lang, "skip")}</a>
+		<SiteHeader lang={lang} alternate={alternate} />
+		<main id="main" class="wrap">
+			<slot />
+		</main>
+		<footer class="site-footer">
+			<div class="wrap">
+				<p class="site-footer-line">
+					<Logo class="site-logo" size={24} />
+					<span>© {year} Bakmark</span>
+					<span aria-hidden="true">·</span>
+					<a href={path(lang, "privacy")}>{t(lang, "footer.privacy")}</a>
+				</p>
+			</div>
+		</footer>
+	</body>
+</html>

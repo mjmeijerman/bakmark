@@ -101,6 +101,7 @@ The floor is the largest of (minimum ÷ written amount) over the ingredients, ro
 **No `scale_min` field in the schema yet.** All six launch recipes land on the default ½ (the tightest written amount is 25 g of butter in the pastry cream; at ⅓ that becomes 8 g), so the field would hold nothing but the default. It is added in the same commit as the interactive rescaler and the warning that reads it, weeks 4–6 — not in the Gate A schema, where it would be a field with no consumer and a reason for a data migration later.
 
 **Below that factor:**
+**The downscaling warning, concretely.** Every recipe carries the smallest batch it still works at — one number, `scale_min` (as a factor of the written recipe; default ½, and set higher per recipe where the technique needs it: a meringue below 2 whites, a caramel below 100 g of sugar). Below that factor:
 
 - The rescaler still calculates. Blocking a cook who wants a third of a batch is not the job; warning them is.
 - A warning sits next to the rescaler, not in a footnote: *"Dit is minder dan de helft van het recept. Onder ongeveer de helft worden de hoeveelheden te klein om goed af te meten en te kloppen; de room kan schiften of niet opstijven. Reken liever het hele recept en bewaar of weeg wat je overhoudt."* Same wording on the static table when ½× is under the floor.
@@ -122,12 +123,14 @@ Order of work:
 
 *Revised 2026-10-26: Brevo is out. Its default envelope (`brevosend.com`) puts SPF on Brevo's shared domain, its tracking runs on `brevolinks.com`, and the Free plan stamps a Brevo logo on every email. The founder wants SPF and DKIM properly ours, and at five sends a year the volume does not justify an ESP. DKIM was never the shared part — those keys are per sending domain; the shared part is the envelope, and the free plan's footer on every mail.*
 
+*Revised 2026-11-02: Listmonk is out too. It is a second runtime plus a Postgres instance to keep alive, install, upgrade and monitor — for a list of zero. The signup endpoint already writes the address to SQLite in ~40 lines, and everything Listmonk would have done for us (double opt-in token, unsubscribe token, CSV export) is a few columns and two small endpoints. No list manager, no relay, nothing outside the VPS.*
+
 **The stack**
 
 | Piece | Choice | Why |
 |---|---|---|
-| List + forms + unsubscribe | **Listmonk** (single binary) | Double opt-in, token unsubscribe, bounce handling, CSV export. Our list, our database. |
-| Database | **Postgres 16**, on the VPS | Listmonk requires it. It arrives now instead of "above 1,000 contacts" — so the app-side DB work does not. |
+| List + form + double opt-in + unsubscribe | **Our own code**: the Astro signup endpoint + a SQLite file | One store, readable with `sqlite3`, exported with one query. No second runtime to install, upgrade and monitor. |
+| Database | **SQLite**, `data/subscribers.sqlite` | One file: backup is a copy, restore is a copy, and it needs no server process. Postgres arrives only when two writers need it. |
 | Sending | **Postfix + OpenDKIM** | Our IP, our DKIM key, our SPF. No shared envelope, no third party in the path. |
 | Sending domain | `news.<domein>`, DKIM `d=news.<domein>` | Reputation damage stays off the domain that serves the site. |
 | Reverse DNS | `mail.<domein>` | Most providers let you set it; a missing PTR is a spam signal. |
@@ -136,20 +139,24 @@ Order of work:
 **Pre-flight on the actual box** (2026-10-26: the VPS is a LeaseWeb VPS with a dedicated IP, so provider choice is settled):
 
 - **Reverse DNS: solved.** LeaseWeb lets us set the PTR ourselves in the Customer Portal → IP management; it defaults to `hosted-by.leaseweb.com`. Set it to `mail.<domein>` before the first send.
-- **Outbound port 25: unverified.** Test it on the server before installing Postfix — `nc -vz -w5 gmail-smtp-in.l.google.com 25`. If it is filtered, ask LeaseWeb support for the unblock procedure; if they refuse, the relay option below becomes the plan.
+- **Outbound port 25: verified open** (2026-10-26). A TCP connection from the box to `gmail-smtp-in.l.google.com:25` completes, so LeaseWeb does not filter outbound SMTP and Postfix can deliver directly. No unblock ticket needed.
 - **IP reputation: check it, do not assume.** The IP already has history from whatever ran on it: `https://multirbl.valli.org/lookup/<ip>`. A listed IP is a different problem from a cold one, and worth knowing before the double opt-in mail is the first thing it sends.
 
-If the port-25 test fails, the relay option below becomes the plan.
+With port 25 open, nothing in the connection path needs working around.
 
 **The known risk, stated plainly:** a cold IP with almost no volume is the worst case for reputation, and the *first* email a subscriber ever gets is the double opt-in confirmation — if that lands in spam, the funnel dies quietly.
 
 **The test, before the form goes live:** send to a **mail-tester.com** address and require **≥9/10** (SPF, DKIM and DMARC all pass, no blocklist hits, no HTML/spam traps), then send to a real Gmail and a real Outlook address and check the folder it lands in. Both, every time the MTA config changes — a signature that passes in mail-tester but lands in Gmail's spam is still a broken funnel.
 
-**Escape hatch, one config line:** Listmonk sends through whatever SMTP it is configured with. If deliverability disappoints, point it at a European relay (Scaleway TEM FR, Mailjet FR) and keep everything else — list, forms, double opt-in, unsubscribe, CSV. The relay is the fallback, not the architecture.
+**No relay, by decision.** There is no SMTP-relay escape hatch. If deliverability disappoints, the fixes are the signals we own: PTR, SPF, DKIM key and selector, DMARC alignment, content, and a slow volume ramp. A relay would be a new decision with its own note, not a config line flipped in a bad week.
+
+**Bots hit a public form. The form defends itself, without an external service:** a hidden honeypot field a human cannot see or tab into, a minimum fill time (a submitted form younger than ~1.5 s is not a human), a same-origin check, and a per-IP rate limit held in memory. Filled honeypot, too-fast submit or rate-limited IP all get the same quiet "done" response, so a bot learns nothing. No CAPTCHA: it is a third party in the path, a privacy statement line, and an accessibility problem, for a threat a rate limit already covers.
+
+**Not built yet, and it blocks the first send:** double opt-in. The signup endpoint stores the address with `confirmed_at` NULL and no mail goes to an unconfirmed row. Token, confirmation mail, confirm and unsubscribe endpoints, 7-day expiry and the bounce mailbox are tracked in issue #295 — they ship with the mail server, not before.
 
 **Consequence for the compliance gate:** holding the list means being the data controller from day one — retention rule, breach procedure, a privacy statement that names the mail server. That is now Gate A work, not a >1,000-contact concern.
 
-**Rejected:** Brevo (shared envelope SPF, logo on the free plan); any ESP at launch (the same shared-envelope trade for less control); a full mail suite like Mailu or Postal (more surface than a list of zero needs — Postfix + OpenDKIM is the smallest thing that signs properly); Proton + manual sends (no double opt-in trail, no unsubscribe token); no relay fallback ever (one bad week becomes a broken funnel with no way out).
+**Rejected:** Brevo (shared envelope SPF, logo on the free plan); any ESP at launch (the same shared-envelope trade for less control); a full mail suite like Mailu or Postal (more surface than a list of zero needs — Postfix + OpenDKIM is the smallest thing that signs properly); Proton + manual sends (no double opt-in trail, no unsubscribe token); **Listmonk** (a second runtime and a Postgres instance for a list of zero — the rows it would hold are four columns); a relay fallback (a third party in the path for the one thing the decision was about keeping in-house); a CAPTCHA service (external, privacy line, accessibility cost).
 
 ### D7 — Payment: site first, provider second, KvK in parallel
 
@@ -187,11 +194,11 @@ Sequence, in series not parallel: **500 subscribers → €9 e-book (<30 sales f
 | Item | Cost |
 |---|---|
 | Hardware: floor tripod + overhead arm + ring light, DSP lavalier | €85–110 |
-| Domain + VPS, year 1 (2 GB is the floor now: Postgres + Listmonk + Postfix) | €60–85 |
+| Domain + VPS, year 1 (1 GB is enough: Astro server + SQLite + Postfix) | €60–85 |
 | Ingredients, 5 videos incl. failures and test bakes | €150–250 |
 | Props: marble board, backdrop, diffuser | €60–90 |
 | KvK registration (verify the fee on kvk.nl — €52 or €75, do not guess) | €52–75 |
-| Brevo / Umami / Astro / ffmpeg / print-CSS | €0 |
+| Umami / Astro / ffmpeg / print-CSS | €0 |
 | **Year 1 total** | **€405–615**, ≈ €3–5/month recurring |
 
 Build to video 1: **~32–40h**, plus ~12–18h of content and shooting. Per video after that: 10–12h.
@@ -200,7 +207,7 @@ Build to video 1: **~32–40h**, plus ~12–18h of content and shooting. Per vid
 
 ### D12 — Recipes must be findable: the taxonomy is data from day one, the search UI is not
 
-Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
+Every recipe carries `category`, `tags[]`, `difficulty` (1–5, revised in D20), `time` (active + total) and `result`. They are shown on the recipe page and on the recipe card, not hidden in metadata.
 
 - **In Gate A:** the fields, ~30 minutes while writing `soezendeeg.json`. Retrofitting a taxonomy over five finished recipes is a data migration.
 - **Not in Gate A:** search and filter. Facets (category, difficulty, time, site search) ship at **recipe 4**. With one to three recipes the home page is simply a list; a search box over three items is decoration.
@@ -209,15 +216,123 @@ Every recipe carries `category`, `tags[]`, `difficulty` (1–3), `time` (active 
 
 **Rejected:** search/filter in Gate A (solves a problem the site cannot have yet); free-text tags without a fixed category list (five spellings of "deeg"); search only, no categories (you cannot browse a category you cannot name).
 
-### D13 — No PDF. A print view with a photo choice and a QR code.
+### D13 — No PDF. A print view of the recipe, and nothing else on the sheet.
 
-The PDF is cut. Printing is handled by a print button that builds a print view from the same data, with one choice: **met foto's** / **zonder foto's**. The donate QR code prints on both variants, always.
+*Revised 2026-10-29: the met foto's / zonder foto's choice is dropped. The sheet carries the ingredients and the steps, and nothing else — no photos, no explanations, no FAQ, no navigation.*
 
-**Why:** the PDF only ever existed to be printed. A print view removes a build pipeline (~2h in Gate A plus its maintenance), removes a second artifact per recipe that can go stale, and hands the printer the same sheet. "Zonder foto's" matters because a recipe you are actually cooking from does not want four pages of pictures on the counter.
+The PDF is cut. Printing is handled by a print button that prints the recipe page itself, with `@media print` hiding everything that is not the recipe. Two A4 sides on the counter.
 
-**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event), and the printed sheet replaces the PDF as the place the donate ask lives last.
+**Why:** the PDF only ever existed to be printed, and a print view removes a build pipeline plus a second artifact per recipe that can go stale. The photo choice goes too: a sheet you cook from wants the ingredients and the steps, and a photo of the finished product costs ink and a page without helping. The *why* behind each step stays on screen, where you read it once; on paper it is a second page of text you will not read with dough on your hands.
 
-**Rejected:** build-time PDF per recipe (removed); print button without the photo choice (the printer gets photos whether they help or not); email-gated PDF (never); relying on the plain browser print (no photo choice, no QR code, no page-break control).
+**Consequence for D10:** the conversion metric changes from "PDF download rate ≥10%" to "**print-button click rate ≥10%**" (an Umami event). The donate ask sits directly under the print button on the page; the printed sheet itself carries no QR code yet, because there is no donate link to encode — add it when the Stripe link exists.
+
+**Rejected:** build-time PDF per recipe (removed); a photo yes/no choice (ink and pages for nothing); explanations and FAQ on paper (duplicates the page, lengthens the sheet); email-gated PDF (never); relying on the plain browser print with no print stylesheet (navigation, newsletter and video placeholder end up on the sheet).
+
+### D19 — Recipes reference recipes; a component exists once
+
+*Added 2026-10-29. Extends the D4 schema.*
+
+A recipe is either a **basisrecept** (its own ingredients and steps) or a **gerecht** that lists `components`: links to other recipes by slug. Nothing is copied. Changing `soezenbeslag.json` changes every recipe that uses it, which is the whole point: soesjes, eclairs, Paris-Brest and a filled soesje all share one dough.
+
+**The model:**
+
+| Field | Meaning |
+|---|---|
+| `role` | `basis` or `eindproduct`. The home page shows a short "Nieuwste recepten" list (three, newest first) of *all* recipes; `/recepten` is the full catalogue, basisrecepten marked as such. |
+| `components[]` | `{ ref, factor }` or `{ ref, amount, unit }`. With `amount` the factor is derived from the linked recipe's own `result`, so "300 g banketbakkersroom" stays readable and the 1:1 in Zwitserse room is visible in the data. |
+| `result` | Every recipe states what one batch makes, in a unit. This is what makes `amount` links possible at all. |
+| `aliases[]` | Extra slugs that render the same page. `soezenbeslag` answers to `soezendeeg`, because that is the search query. |
+| `variants{}` | Named presets of one recipe: `{ label, note, ingredients: { id: amount } }`. Same steps, different composition. A link picks one with `variant: "water"`. |
+| `video` | Per recipe, including components: `{status, youtube_id}`. Every basisrecept gets its own uncut video and its own page. |
+
+**Rendering:** a build-time resolver walks the tree depth-first and flattens it, so a component's steps always come before the steps that assemble it. Ingredient amounts are multiplied by the cumulative factor; `scale: false` items (salt, a vanilla pod, a baking sheet) do not scale. Cycles throw at build time instead of hanging. The page shows one ingredient block and one step block per component, each linking to its own page.
+
+**Variants, not forks:** the dough is 100 ml milk plus 100 ml water by default, and 200 ml water for a firmer dough — the difference between a soesje and a Bossche bol. That is not a second recipe: the steps, the timings and the failure modes are identical. So `soezenbeslag` declares a `water` variant that sets milk to 0 and water to 200, and a link asks for it by name. Fork it into `soezenbeslag-water` instead and the day the dough gets fixed, half the site is stale. Same mechanism covers any "same technique, other mix" case.
+
+**What still lives on the derived recipe:** things that are genuinely different, not parameterised — the size of the pipe, the filling, a glaze, the chocolate. Bossche bollen are therefore `ref soesjes (variant groot)` plus `ref slagroom` plus a glaze component, not a variant of `soesjes`.
+
+**Why references and not a shared ingredient file:** the user's actual requirement is that a fix to the dough lands in every recipe. Options were a shared ingredient library (only ingredients shared, steps still duplicated), a preprocessor that pastes files together (a second artifact, like the PDF), or references resolved at build time. References are the only version where the *steps* and the *timings* are shared too, and they cost one field.
+
+**Consequence for D5:** the rescaler operates on the flat resolved list, and rounding happens per component, not per page. Asking for 60 soesjes doubles the dough and both fillings, and the `factor` shown per block explains where the numbers came from.
+
+**Consequence for D1:** five videos instead of one. Soezenbeslag, soesjes, banketbakkersroom, slagroom and Zwitserse room are each a technique with its own payoff, which fits the format better than one 20-minute video that hides four of them.
+
+**Rejected:** copying ingredients into each recipe (drift, and the requirement was explicitly the opposite); only sharing ingredients, not steps (the timing is the part that gets fixed); a template/include system in the build (another artifact that can go stale); one mega-recipe with all five techniques inline (no separate page, no separate video, no reuse).
+
+### D20 — One category per recipe, facets for everything else, difficulty 1–5
+
+*Added 2026-10-29. Extends D12.*
+
+**The category list is closed and short:** `basistechniek`, `deeg-beslag`, `room-vulling`, `gebak`, `brood`, `chocolade`, `hartig`. One value per recipe. It answers "what is this", which is the only question a single list can answer well.
+
+**Everything that is not "what is this" is a facet, not a category:**
+
+| Facet | Source | Why not a category |
+|---|---|---|
+| Rol (basisrecept / eindproduct) | `role` | It is the one split this site is built on; putting it in the category list forces a choice between "basisrecept" and "room & vulling". Renamed twice in D20: "gerecht" reads as a savoury dinner, "afgewerkt" reads as a chore. The finished bake is the eindproduct. |
+| Moeilijkheid 1–5 | `difficulty` | A property, not a kind. Five steps because 1–3 made the two ends meaningless: whipped cream and a croquembouche both landed in "3". Shown as **one chef's hat plus a word** ("gemiddeld", "lastig"), on the recipe page, on every recipe card and in the filter chips. The five-icons-in-a-row idea was tried and abandoned: at chip size a row of silhouettes reads as a row of specks, and the level has to be counted. A word needs no counting, and it survives being 13px. The word list is 1 makkelijk, 2 goed te doen, 3 gemiddeld, 4 lastig, 5 gevorderd. (Chef's hat, outlined whisk, rolling pin, spoon and bowl were each rendered at chip size first; chef's hat read as a mushroom.) The hat that ships now is the one drawn for the logo set: at 24px the outline plus three seams still reads as a hat, a whisk at that size reads as a spoon with a fork in it.
+
+**Ingredient checkboxes.** Each ingredient is a tick box, so a reader can mark what is already on the counter. Ticked rows are struck through and dimmed, and the state is kept in `localStorage` keyed by page path — nothing leaves the browser, and private mode silently keeps working without remembering. On paper the boxes print empty and get a pen.
+
+**Benodigdheden are part of the recipe, not an afterthought.** `tools[]` existed in the schema and rendered nowhere; a recipe that needs a piping bag but never says so is a recipe someone starts and then stops. The list is deduped across components (a composite should not list "pan" three times), carries each tool's note, and has the same tick boxes as the ingredients — you gather both at the same moment. |
+
+**Sorting is a view, not a filter.** `/recepten` sorts on **Nieuwste eerst** (default), **Alfabetisch**, **Makkelijk eerst** and **Snelst klaar**; the choice lives in the same query string (`sorteer=`) as the filters, so a sorted view is linkable and survives the trip to a recipe and back. Sorting is a DOM reorder of the same cards, so it composes with every filter and with the keyword.
+
+**The page opens on the recipe, not on the reasoning.** *Waarom dit werkt*, *Varianten*, *Opbouw*, *Gebruikt in*, *Tijdsindeling*, *Ingrediënten* and *Benodigdheden* are collapsed \`<details>\` sections, and under every step the "Waarom en tips" folds away too. The step list is what someone standing at the counter needs; the reasoning is what they read once, on the couch. Collapsed is not hidden: one click opens it, it stays in the HTML for search engines, and screen readers announce it as a disclosure.
+
+**Print is the exception.** A sheet cannot be clicked, so \`beforeprint\` opens every collapsible, \`afterprint\` restores it, and the per-step extras are dropped from the print stylesheet entirely — on paper they are a second page nobody reads with dough on their hands.
+
+**Time is broken down, not summed.** A composite page shows a *Tijdsindeling* table: one row per component with actief / oven / wacht / totaal, and a footer with the sums plus the wall-clock total. The four buckets are separate because they are not interchangeable — "2,5 uur" for filled soesjes is 1 uur 15 min with your hands in it, 30 min oven and 55 min waiting, and a reader deciding whether to start at 20:00 needs exactly that split. `time.wait` was added for cooling and resting, which \`afterbake\` was standing in for.
+
+**`published` is a schema field now.** Every recipe carries its publication date, shown on the recipe page as "geplaatst 29 oktober 2026". Until launch all six carry their creation date, which is why "nieuwste eerst" currently equals alphabetical — ties fall back to the title. That is the honest state, not a sorting bug.
+| — | — | The facet label for `role` was "Rol", which is a database word, not a baker's word. It is **"Soort recept"** now, with two values: a basisrecept is used by other recipes; an eindproduct is what you serve. A third value only earns its place if a recipe is neither — a pure technique with no product. |
+| Tijd | `time.total` | A property. Buckets: under 30 min, 30–60 min, over an hour. |
+| Ingrediënt | `ingredients[].id` | Derived, so it costs nothing. Covers Laura's manual "recepten per ingrediënt". |
+| Gebruikt in | `components[]`, reverse | Unique to this model. Answers "what can I make with this basisrecept" and turns the component graph into navigation. |
+
+**Why not multiple categories:** a recipe in two categories makes the counts lie (six recipes, eight results), makes "alle gebak" ambiguous, and forces every new category decision twice. A thing is one kind of thing; the occasion (Kerst), the diet (glutenvrij) and the technique (kookdeeg) are properties, and those are tags. Tags never appear as filters until a tag has two recipes.
+
+**Every value is clickable, with a live count.** *Revised twice on 2026-10-29.* The ≥2 rule is dropped: greying out a value with one recipe refused a reader who knew what they wanted. Counts are now **context-aware** — each chip shows how many recipes its value holds under the other facets and the search term, so picking "basistechniek" drops "eindproduct" to 0 and the numbers under category stay honest (2, 3, 1) instead of all collapsing to the current total.
+
+**You cannot filter yourself into an empty list.** Two rules, both needed, because the first one alone was not enough:
+
+1. A chip is disabled unless picking it would still show at least one recipe. That test is the **union** (this facet's current values *plus* the candidate), not the chip's own count: with "basistechniek" and "room & vulling" already selected, a chip whose own value holds recipes still has to prove the combined filter is non-empty.
+2. Every click is a transaction. If the result is somehow empty anyway — deselection can do it, since two facets can each hold recipes while their intersection holds none — the previous selection is restored and a line says the combination was reverted.
+
+A random walk of 400 clicks over the live UI never left the list empty, and the revert fired once, so the second rule is not decoration. Only a hand-edited query string can still land on zero, and there the empty state offers the reset. Zero-value *categories* render nothing at all.
+
+**Two different numbers, on purpose:** a chip counts its own value; the counter under the panel counts the union ("5 van 6"). A chip is not a prediction of the result total, it is a description of the value — and the union is what facets are OR'd into.
+
+Rutger's 32 categories and Laura's 60+ are not the model here; Meesterlijk van Robert's eight are closer to the right size, and this list is seven.
+
+**The URL is the filter state.** Every change writes `?categorie=…&rol=…&moeilijkheid=…&tijd=…&q=…` with `history.replaceState`, and the page reads that query on load: the chips light up, the keyword returns, the panel opens, and the list is already narrowed. That means a filtered view is linkable, a returned-from-recipe view is intact without re-filtering, and page 2 of D21 inherits the same mechanism.
+
+**Filtering is server-rendered and narrowed client-side:** every card is in the HTML, the chips only hide and reveal. With JavaScript off the full list stays and the chips are inert — no blank page, no spinner. OR within a facet, AND across facets, with a live "x van y recepten" counter and a reset.
+
+**The panel is collapsed by default and sticky.** As a wall of chips it pushed the first recipe off a phone screen, so it is a `<details>` that opens to a summary line, with an active-filter count on the closed state. The header and the filter bar stay visible while scrolling; the bar's `top` is measured from the real header height (the nav wraps on narrow screens), not guessed.
+
+**Keyword search covers the whole recipe, not just the title:** the search blob is built at build time from title, subtitle, role, category, tags, ingredient names, component names, every step title and text, and the FAQ questions. A search box without that data would only find titles. Two-character terms match at a word start (`ei` finds eieren, not kleiner); four characters or more match anywhere, because Dutch compounds would otherwise hide `room` inside `banketbakkersroom`.
+
+**Enter keeps the query.** The form submitted and reloaded the page, which wiped the search field. Enter now prevents the submit, closes the panel so the results are visible, and moves focus to the result list. The input keeps its value, and the query stays in the DOM when the panel is closed.
+
+**Known limitation:** matching is literal, so "soes" finds "soesjes" and "soesje" but not a misspelling, and there is no ranking — with six recipes the count is the ranking. Revisit at ~40 recipes, where a real index (Pagefind) is cheaper than hand-rolled scoring.
+
+### D21 — The catalogue gets pagination, not infinite scroll
+
+*Added 2026-10-29. Nothing is built yet; this records the trigger and the shape.*
+
+Today there is nothing to paginate: six recipes, one page, and the filter narrows client-side. The trigger is **more than 24 recipes**, which is one screen of cards per row-count at three columns.
+
+**Shape when it lands:** static routes `/recepten`, `/recepten/2`, `/recepten/3`, generated at build time, carrying the same filters as `?categorie=…&moeilijkheid=…` so a narrowed view is linkable and crawlable.
+
+**Why pagination and not infinite scroll:** a recipe catalogue is browsed by looking for one thing, and it is shared as a link. Pagination gives every recipe a URL a search engine reaches without scrolling, works with the back button, keeps the footer reachable, and prints. Infinite scroll breaks all four and buys nothing here — the list is short by nature, and a reader who reaches the end of page 1 wants page 2, not a spinner. A "meer laden" button is the acceptable middle ground *if* the URL updates; it is not the default.
+
+**Cost note for the filter at that size:** the client-side filter is O(n) over rendered cards — 6 today, ~few ms at 200, since the search blobs average under 1 KB. Beyond roughly 200 cards the cost is rendering, not matching, so pagination is what fixes it, not a bigger index.
+
+**Rejected:** infinite scroll (breaks crawlability, back button, footer); client-side pagination over one giant HTML page (defeats the crawlability argument); a database-backed search before Pagefind is tried (static index, no server).
+
+**Rejected:** multi-value categories (lying counts); occasion and diet as categories (they multiply the list and every recipe collects three of them); a search box as the primary navigation (there are six recipes; facets are faster than typing and they teach the catalogue); a filter UI before recipe 4 (D12 — the data shipped first; the UI arrives when there is something to filter); difficulty 1–3 (no room to distinguish "folding cream" from "tempering custard").
+
 
 ### D14 — The result is the headline: every recipe says what it makes
 
@@ -282,6 +397,43 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 
 ---
 
+### D22 — Two languages, one template: Dutch at the root, English under /en
+
+*Added 2026-11-01. Built and live: 13 Dutch routes, 13 English ones.*
+
+The pages that argue *why this site exists* are the ones a non-Dutch reader has to understand before anything else; six recipes in a language you cannot read are not a portfolio. So: Dutch at the root, English under `/en`, same design, same data.
+
+**Shape.** Each page body lives once, in `src/views/`, and takes a `lang` prop; `src/pages/*` and `src/pages/en/*` are three-line wrappers. Routes come from a route-key table in `src/lib/i18n.ts` (`recipes` → `/recepten` | `/en/recipes`), never from a literal string, so a link cannot fall out of its own language. `<html lang>` and `hreflang` alternates ship with the page, and the header toggle uses `alternatePath()` to land on the same page in the other language.
+
+**Recipe text is an overlay, not a fork.** `recipes/en/<slug>.json` carries words only — title, subtitle, context, ingredient names, steps, tools, FAQ, mistakes, bake fields. Numbers, factors and the component graph stay in the Dutch JSON, because `factorFor` validates component units against `result.unit` and scaling must not depend on which language the reader picked. `localize()` swaps the words at render time; a field with no translation falls back to Dutch, so a half-translated recipe renders, it does not break.
+
+**Query keys follow the language too.** On `/en/recipes` the facets write `?category=…&role=…&difficulty=…&time=…&sort=…`; the Dutch page keeps `categorie`, `rol`, `moeilijkheid`, `tijd`, `sorteer`. One client script serves both: the strings and parameter names travel in `data-strings` on the form, since a bundled client script cannot read frontmatter.
+
+**Rejected:** two separate sites (two sources of truth, and the six recipes drift apart immediately); translating the JSON wholesale into a second file (every number duplicated, `factorFor` comparing Dutch units against English ones, and a fix landing on one language only); a client-side language switch (nothing for a crawler, and a flash of the wrong language); machine translation at build time (unverified baking instructions in a language no one checked — the failure mode of this site is a recipe that does not work); English URLs with Dutch recipe slugs changed to English ones (deep links would break, and the slug is an id).
+
+### D23 — Every pull request runs the full check set, and a red check blocks the merge
+
+*Added 2026-11-02. Nothing runs yet: this is the decision, the pipeline is built next.*
+
+**Why this is not optional here.** The site is six JSON recipes rendered by arithmetic: scaling factors, component units, nested yields, a print view that must match the screen. Every class of bug found by hand this week was that class — totals that did not add up because one number was typed and the others were summed, the same failure listed under two parts, `ml` and `tl` left in a data file, a form that answered "saved" and stored nothing. A person reading a diff does not catch those. A test does, every time, for free.
+
+**What the pipeline runs on every pull request** (GitHub Actions, required status checks on `trunk`):
+
+| Check | What it proves |
+|---|---|
+| `npm ci && npm run build` | The site still builds; the Node adapter compiles. |
+| Unit: recipe graph | Every `components[].ref` resolves, no cycles, every recipe and both language overlays satisfy the schema, no duplicate ingredient ids, every `variant` a link asks for exists. |
+| Unit: quantities | `Totaal = bereidingstijd + oven + wacht` for every recipe; eggs, yolks and whites in grams with a count in the note that matches the 50 g / 17,5 g / 32,5 g standard; no `ml`, `tl`, `tsp` or `cup` anywhere in `recipes/`; the vanilla pod is the only non-gram unit. |
+| Unit: prose consistency | No duplicate FAQ question or `mislukt` row across parts of one composed recipe; every yield note agrees with the numbers it quotes ("enough for 40 soesjes" must be true). |
+| Endpoint: `/api/subscribe` | Valid address → 201 and one row; duplicate → 201 and still one row; invalid → 400; honeypot, sub-1.5 s submit and cross-origin → "saved" with no row; 5 per window per IP then silent drop; body over 64 KiB rejected; the handle reopens after the SQLite file is deleted underneath it. |
+| Accessibility | axe-core, WCAG 2.1 AA, **zero violations**, on every route in both languages, light and dark. |
+| Navigation | Every internal link and every `hreflang` alternate resolves; no Dutch route without its `/en` twin and the reverse; no orphan page. |
+| Print | A PDF of one composed and one single-part recipe builds; no interactive controls on it; ingredient groups stay whole; the page count stays within the agreed budget. |
+
+**Rules that make it worth having.** The pipeline runs the same commands locally (`npm test` does everything the pipeline does), so "it passes on my machine" and "it passes in CI" cannot diverge. A failing check is fixed, never skipped or `--force`d through: the branch protection requires the checks on `trunk`, and deleting a test to unblock a merge is the one change that always gets a second pair of eyes.
+
+**Rejected:** running only the build (it catches syntax, not a wrong number); coverage targets as a goal (a number that says nothing about whether the recipe maths is right); visual snapshot tests of every page (they fail on every font hinting change and get rubber-stamped); testing by hand before deploy (that is what produced the bugs listed above); a paid CI plan (public repo, the free tier runs all of this).
+
 ## 3. Roadmap
 
 ### Gate 0 — first ~4h, €0
@@ -300,7 +452,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 8. ffmpeg step-frame extractor. *(1h)*
 9. **Deploy**: domain + VPS + Caddy + TLS, publish the build that already works locally. *(3h)*
 10. Umami self-hosted, cookieless, no cookie banner. *(2h)*
-11. Postgres + Listmonk + Postfix/OpenDKIM on the VPS: double opt-in form, token unsubscribe, bounce mailbox, weekly CSV export. Verify with mail-tester.com (≥9/10) plus a real Gmail and Outlook send. *(6–8h)*
+11. Postfix + OpenDKIM on the VPS, and the signup we already run: double opt-in mail with a token, token unsubscribe, bounce mailbox, CSV export from SQLite. Verify with mail-tester.com (≥9/10) plus a real Gmail and Outlook send. *(8–10h)*
 12. Donate block under the print button: Stripe payment link, €3/€7/€15/€25 + open field. *(1h)*
 13. Legal minimums: privacy statement, contact page, AVG note on the form. *(1h)*
 14. Record videos 1 and 2, publish video 1.
@@ -317,7 +469,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 ### Gate C — gated on evidence, no dates
 | Build | Gate to pass first |
 |---|---|
-| Own unsubscribe tokens + app-side subscriber DB | >1,000 contacts (Postgres already runs for Listmonk; this replaces Listmonk, not adds a database) |
+| List admin UI (search, manual remove, resend) | >1,000 contacts — the tokens, the table and the export already exist; this is only a screen |
 | i18n route prefix | 5 videos live (locale file from day 1, zero English content) |
 | €9 PDF e-book to the warm list | ≥500 subs; <30 sales → stop, no cookbook |
 | POD pre-order page (no shop integration, no stock) | ≥1,500 subs + e-book validated + written Pumbo quote |
@@ -345,7 +497,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 | Full brand/design system before launch | Comfortable procrastination; 5 recipe pages do not need it |
 | Flour-anchored baker's-percentage calculator | The meeting's misreading of the founder's calculator: computes a percentage of nothing on four of five recipes |
 | Interactive rescaler in Gate A | Right feature, wrong gate: Gate A exists to publish video 1, and the rescaler is 1–2 days |
-| Own email database + custom unsubscribe at launch | 12h to build a compliance surface for a list of zero; Brevo hosted + CSV export gives the same exit plan for 1h |
+| Listmonk + Postgres for the list | A second runtime, a database server and upgrade duty for a list of zero; our own endpoint writes the same rows, and the export is one query |
 | Resend / Amazon SES | US-owned; the requirement was that the service runs in Europe |
 | Mollie as a week-0 blocker | Requires KvK, and providers review a live site; Stripe covers the gap, KvK runs in parallel |
 | AdSense in year 1 | €20–50/year against the brand's core promise; gated at 50k views/video |
@@ -381,7 +533,7 @@ The recipe list appears as a section the moment recipe 1 exists; until then the 
 3. **Day 3–4 (6h):** local Astro project, then `recipes/soezendeeg.json`. VPS and domain come later, once there is a page worth deploying.
 4. **Day 5–7 (8h):** recipe page template, static scale table, print view, bake mode — all on `localhost`.
 5. **Day 8 (3h):** Umami, chapter generator, ffmpeg frame extractor.
-6. **Day 9 (2h):** Brevo form, donate block, legal pages.
+6. **Day 9 (2h):** signup form with double opt-in, donate block, legal pages.
 7. **Day 10:** shoot take 1 of soezendeeg. Second take if the first one fails — that is normal, not a setback.
 
 The **Day** numbers are sequence, not calendar dates — a slow week moves the sequence, it does not put the plan behind.

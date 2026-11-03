@@ -6,6 +6,9 @@ dist/
 # dependencies
 node_modules/
 
+# newsletter list (SQLite, lives on the server)
+data/
+
 # logs
 npm-debug.log*
 yarn-debug.log*

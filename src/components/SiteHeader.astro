@@ -1,0 +1,67 @@
+---
+import Logo from "./Logo.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+import { DEFAULT_LANG, isLang, path, t, type Lang, type RouteKey } from "../lib/i18n";
+
+interface Props {
+	lang?: Lang;
+	/** Where the language toggle points; the page pairs itself up. */
+	alternate?: string;
+}
+
+const { lang: rawLang, alternate } = Astro.props;
+const lang: Lang = isLang(rawLang) ? rawLang : DEFAULT_LANG;
+
+const currentPath = Astro.url.pathname;
+const current = lang === DEFAULT_LANG ? currentPath : currentPath.replace(/^\/en(?=\/|$)/, "") || "/";
+
+const links: { route: RouteKey; label: string }[] = [
+	{ route: "home", label: t(lang, "nav.home") },
+	{ route: "recipes", label: t(lang, "nav.recipes") },
+	{ route: "who", label: t(lang, "nav.who") },
+	{ route: "how", label: t(lang, "nav.how") },
+	{ route: "contact", label: t(lang, "nav.contact") },
+];
+
+const isCurrent = (route: RouteKey) => {
+	const href = path(lang, route);
+	if (route === "recipes") return current.startsWith(path(DEFAULT_LANG, "recipes"));
+	return current === href;
+};
+---
+
+<header class="site-header wrap">
+	<a class="site-title" href={path(lang, "home")}>
+		<Logo class="site-logo" size={40} />
+		<span>Bakmark</span>
+	</a>
+	<nav aria-label={t(lang, "nav.aria")}>
+		<ul class="site-nav">
+			{
+				links.map((link) => (
+					<li>
+						<a
+							href={path(lang, link.route)}
+							aria-current={isCurrent(link.route) ? "page" : undefined}
+						>
+							{link.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<div class="header-controls">
+		<a
+			class="lang-toggle"
+			href={alternate ?? path(lang === "nl" ? "en" : "nl", "home")}
+			hreflang={lang === "nl" ? "en" : "nl"}
+			lang={lang === "nl" ? "en" : "nl"}
+			aria-label={t(lang, "lang.switch")}
+			title={t(lang, "lang.switch")}
+		>
+			{t(lang, "lang.toggle")}
+		</a>
+		<ThemeToggle lang={lang} />
+	</div>
+</header>

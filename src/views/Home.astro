@@ -1,0 +1,51 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import { allRecipes, formatMinutes, recipeTiming, roleLabel } from "../lib/recipes";
+import { path, t, type Lang } from "../lib/i18n";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+/** A taste of what is new; the full list stays on the recipe index. */
+const NEWEST_LIMIT = 3;
+const newest = allRecipes(lang)
+	.slice()
+	.sort((a, b) => (b.published ?? "").localeCompare(a.published ?? ""))
+	.slice(0, NEWEST_LIMIT);
+---
+
+<Layout title="Bakmark" description={t(lang, "home.description")} lang={lang}>
+	<section class="hero">
+		<h1>{t(lang, "home.title")}</h1>
+		<p class="lead">{t(lang, "home.lead")}</p>
+		<p class="hero-more">
+			<a href={path(lang, "recipes")}>{t(lang, "home.browse")}</a>
+		</p>
+	</section>
+
+	<hr class="rule" />
+
+	<section class="section">
+		<h2>{t(lang, "home.newest")}</h2>
+		<ul class="newest-list">
+			{
+				newest.map((recipe) => (
+					<li>
+						<a href={path(lang, "recipe", recipe.slug)}>{recipe.title}</a>
+						<span class="newest-meta">
+							{formatMinutes(recipeTiming(recipe.slug).total, lang)} · {roleLabel(recipe.role, lang)}
+						</span>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<hr class="rule" />
+
+	<NewsletterForm lang={lang} />
+</Layout>

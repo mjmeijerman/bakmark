@@ -1,0 +1,66 @@
+---
+import Layout from "../layouts/Layout.astro";
+import type { Lang } from "../lib/i18n";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const contactAddress = "hello@bakmark.nl";
+
+const copy = {
+	nl: {
+		title: "Contact",
+		description:
+			"Bakvragen horen in de comments op YouTube. Voor alle andere vragen is er één e-mailadres.",
+		h1: "Contact",
+		baking: {
+			h: "Bakvragen",
+			p: "Heb je een vraag over een van de recepten? Stel hem dan onder de betreffende video op YouTube en ik probeer hem te beantwoorden.",
+		},
+		otherQuestions: {
+			h: "Overige vragen",
+			before:
+				"Heb je een andere vraag, bijvoorbeeld een verzoek voor een bepaald recept, of feedback en ideeën over de website? Stuur die naar",
+			after: ".",
+		},
+	},
+	en: {
+		title: "Contact",
+		description:
+			"Baking questions belong in the comments on YouTube. For everything else there is one email address.",
+		h1: "Contact",
+		baking: {
+			h: "Baking questions",
+			p: "Do you have a question about one of the recipes? Ask it under that video on YouTube and I will try to answer it.",
+		},
+		otherQuestions: {
+			h: "Other questions",
+			before:
+				"Have another question, such as a request for a particular recipe, or feedback and ideas about the website? Send it to",
+			after: ".",
+		},
+	},
+}[lang];
+---
+
+<Layout title={copy.title} description={copy.description} lang={lang}>
+	<section class="hero">
+		<h1>{copy.h1}</h1>
+	</section>
+
+	<section class="section">
+		<h2>{copy.baking.h}</h2>
+		<p>{copy.baking.p}</p>
+	</section>
+
+	<section class="section">
+		<h2>{copy.otherQuestions.h}</h2>
+		<p>
+			{copy.otherQuestions.before}{" "}
+			<a href={`mailto:${contactAddress}`}>{contactAddress}</a>{copy.otherQuestions.after}
+		</p>
+	</section>
+</Layout>

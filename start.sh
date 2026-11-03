@@ -12,6 +12,10 @@ cd "$(dirname "$0")"
 
 DATA_DIR="${BAKMARK_DATA_DIR:-./data}"
 PORT="${BAKMARK_PORT:-8085}"
+MAIL_UI="${MAILPIT_UI_PORT:-8025}"
+
+# Links in confirmation mail must point at the URL a visitor uses.
+export SITE_URL="${SITE_URL:-http://localhost:$PORT}"
 
 mkdir -p "$DATA_DIR"
 chmod 700 "$DATA_DIR" 2>/dev/null || true
@@ -24,4 +28,5 @@ fi
 
 docker compose up --build -d
 
-echo "Bakmark: http://localhost:$PORT"
+echo "Bakmark:      http://localhost:$PORT"
+echo "Mail catcher: http://localhost:$MAIL_UI"

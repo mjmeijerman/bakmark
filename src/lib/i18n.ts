@@ -21,6 +21,8 @@ const ROUTES = {
 	how: { nl: "/hoe-het-werkt", en: "/how-it-works" },
 	contact: { nl: "/contact", en: "/contact" },
 	privacy: { nl: "/privacy", en: "/privacy" },
+	confirm: { nl: "/nieuwsbrief/bevestig", en: "/newsletter/confirm" },
+	unsubscribe: { nl: "/nieuwsbrief/afmelden", en: "/newsletter/unsubscribe" },
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -74,9 +76,14 @@ const nl: Dict = {
 	"newsletter.button": "Inschrijven",
 	"newsletter.note":
 		"Schrijf je in voor de nieuwsbrief en je krijgt een mailtje als er nieuwe recepten geplaatst zijn.",
-	"newsletter.success": "Gelukt, je e-mailadres staat in de lijst.",
+	"newsletter.success": "Bijna klaar: check je mailbox en klik op de link.",
 	"newsletter.invalid": "Dat e-mailadres lijkt niet te kloppen.",
-	"newsletter.error": "Opslaan lukte niet. Probeer het nog een keer.",
+	"newsletter.error": "Versturen lukte niet. Probeer het nog een keer.",
+	"confirm.title": "Inschrijving bevestigd",
+	"confirm.body":
+		"Bedankt. Je inschrijving is bevestigd. Je hoort van me als er nieuwe recepten staan.",
+	"unsubscribe.title": "Uitgeschreven",
+	"unsubscribe.body": "Je bent uitgeschreven en je e-mailadres is uit de lijst verwijderd.",
 };
 
 const en: Dict = {
@@ -103,9 +110,14 @@ const en: Dict = {
 	"newsletter.button": "Subscribe",
 	"newsletter.note":
 		"Subscribe to the newsletter and you will get an email when new recipes are published.",
-	"newsletter.success": "Done, your email address is on the list.",
+	"newsletter.success": "Almost done: check your inbox and click the link.",
 	"newsletter.invalid": "That email address does not look right.",
-	"newsletter.error": "Could not save it. Try again.",
+	"newsletter.error": "Could not send it. Try again.",
+	"confirm.title": "Subscription confirmed",
+	"confirm.body":
+		"Thank you. Your subscription is confirmed. You will hear from me when new recipes are published.",
+	"unsubscribe.title": "Unsubscribed",
+	"unsubscribe.body": "You are unsubscribed and your email address has been removed from the list.",
 };
 
 const DICTS: Record<Lang, Dict> = { nl, en };

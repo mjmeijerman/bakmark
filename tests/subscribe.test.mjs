@@ -8,14 +8,10 @@
  * Run `npm run build` first; `npm test` does.
  */
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync, unlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync, unlinkSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-
-const ENTRY = join(process.cwd(), "dist", "server", "entry.mjs");
+import { post, postViaPublicHost, withServer } from "./helpers/server.mjs";
 
 /** Stored addresses; an untouched or brand-new file simply has none. */
 const rows = (dbPath) => {
@@ -29,49 +25,6 @@ const rows = (dbPath) => {
 		db.close();
 	}
 };
-
-/** Starts the built server on a free port with its own database. */
-const withServer = async (run) => {
-	assert.ok(
-		existsSync(ENTRY),
-		"dist/server/entry.mjs is missing — run `npm run build` before the API tests",
-	);
-
-	const dir = mkdtempSync(join(tmpdir(), "bakmark-subscribe-"));
-	const dbPath = join(dir, "subscribers.sqlite");
-	const port = 4300 + Math.floor(Math.random() * 500);
-
-	const server = spawn(process.execPath, [ENTRY], {
-		env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", SUBSCRIBERS_DB: dbPath },
-		stdio: "ignore",
-	});
-
-	const base = `http://127.0.0.1:${port}`;
-	let up = false;
-	for (let attempt = 0; attempt < 60 && !up; attempt++) {
-		try {
-			await fetch(`${base}/`, { signal: AbortSignal.timeout(1000) });
-			up = true;
-		} catch {
-			await new Promise((resolve) => setTimeout(resolve, 100));
-		}
-	}
-
-	try {
-		assert.ok(up, "the built server did not come up");
-		await run({ base, dbPath });
-	} finally {
-		server.kill();
-		rmSync(dir, { recursive: true, force: true });
-	}
-};
-
-const post = (base, body, headers = {}) =>
-	fetch(`${base}/api/subscribe`, {
-		method: "POST",
-		headers: { "content-type": "application/json", ...headers },
-		body: JSON.stringify(body),
-	});
 
 test("a valid address is stored, and a second one is not a second row", async () => {
 	await withServer(async ({ base, dbPath }) => {
@@ -135,6 +88,44 @@ test("a body over the cap is refused", async () => {
 		const response = await post(base, { email: "big@example.nl", elapsed: 5000, padding: "x".repeat(200_000) });
 		assert.ok(response.status >= 400, `expected a refusal, got ${response.status}`);
 		assert.deepEqual(rows(dbPath), []);
+	});
+});
+
+// The signup that must not be dropped: one that crossed a port mapping. Behind
+// the container's 8085->4321 forward (or Caddy on the VPS) the browser sends
+// Origin: localhost:8085 while the server's socket sits on 4321. Comparing
+// Origin to request.url (the socket) always reads as cross-origin and dropped
+// every real signup with a silent 201. The check compares Origin to the Host
+// header instead, so it must pass here — that is the regression the fix adds.
+test("a same-origin signup that crossed a port mapping is not dropped", async () => {
+	await withServer(async ({ base, dbPath, smtp }) => {
+		const socket = base.slice("http://".length); // 127.0.0.1:<port>, the real TCP target
+		const publicHost = "localhost:8085"; // the origin the browser saw
+
+		// Host (request target) and Origin (sending page) agree, as a real
+		// same-origin form does — even though both differ from the socket.
+		const response = await postViaPublicHost(base, publicHost, `http://${publicHost}`, {
+			email: "mapped@example.nl",
+			elapsed: 5000,
+		});
+		assert.equal(response.status, 201);
+		assert.deepEqual(await response.json(), { ok: true });
+		assert.deepEqual(rows(dbPath), ["mapped@example.nl"], "the real signup was stored");
+		assert.equal(smtp.messages.length, 1, "its confirmation mail went out");
+	});
+});
+
+test("a genuinely cross-origin signup is still dropped", async () => {
+	await withServer(async ({ base, dbPath, smtp }) => {
+		// A page on another origin POSTing here: Origin (sender) disagrees with
+		// the Host (target), which is what a cross-origin request looks like.
+		const response = await postViaPublicHost(base, "localhost:8085", "http://evil.example:8085", {
+			email: "evil@example.nl",
+			elapsed: 5000,
+		});
+		assert.equal(response.status, 201, "a bot still sees a success, not a refusal");
+		assert.deepEqual(rows(dbPath), [], "the cross-origin signup was not stored");
+		assert.equal(smtp.messages.length, 0);
 	});
 });
 

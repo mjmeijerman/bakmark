@@ -26,6 +26,9 @@ ENV NODE_ENV=production \
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/recipes ./recipes
+# The retention job runs in this image too: `docker compose run --rm bakmark purge`.
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/src/lib/config.ts /app/src/lib/list.ts ./src/lib/
 
 # `node` is uid 1000. The mounted /data must be owned by that uid (see README).
 USER node

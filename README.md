@@ -117,7 +117,17 @@ BAKMARK_ENV=staging SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./st
 |---|---|---|
 | local | `./data` | 8085 |
 | staging | `./data-staging` | 8086 |
-| production (VPS) | `BAKMARK_DATA_DIR=/var/lib/bakmark` | 8085 on its own host |
+| production (VPS) | `BAKMARK_DATA_DIR=/var/lib/bakmark` | its own host |
+
+All three read the same variables through the same code; only the values
+differ. `local` and `staging` come with a default path and port because a
+throwaway run should not need configuration. `production` has none, because the
+values that serve real subscribers belong in its own environment, not in a
+script default.
+
+A directory is claimed by the first environment that uses it and records the
+name; pointing another environment at it is refused rather than silently mixing
+two lists:
 
 `compose.yaml` has no default for `BAKMARK_DATA_DIR`; a bare `docker compose up`
 fails rather than guess. `start.sh` also refuses to run with `BAKMARK_ENV=staging`

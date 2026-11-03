@@ -46,7 +46,10 @@ case "$TARGET" in
 		;;
 esac
 
-SMTP_URL="${SMTP_URL:-smtp://127.0.0.1:1025}"
+# Both environments send real mail through the host's Postfix. Staging is kept
+# safe by the domain allowlist, not by a catcher: mail that never arrives cannot
+# tell you whether DMARC, SPF or the content work.
+SMTP_URL="${SMTP_URL:-smtp://127.0.0.1:25}"
 HEALTH_URL="${BAKMARK_HEALTH_URL:-http://127.0.0.1:$PORT/}"
 HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"

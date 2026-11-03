@@ -90,6 +90,9 @@ translation shows up on the next request without restarting the server.
 
 ## Docker
 
+<!-- deploy pipeline check -->
+
+
 The site runs from one image; the subscriber list is a bind mount on the host,
 never a container layer. Removing or rebuilding the container does not touch it.
 

@@ -216,6 +216,8 @@ const findBrowser = () => {
 // out of a running body leaves the server and SMTP sink pending, and the test
 // runner then reports "cancelled" after its own timeout.
 const browser = findBrowser();
+// Worth one line in a CI log: "skipped" and "ran and hung" look identical without it.
+console.log(`[email-render] browser: ${browser ?? "none (render check skipped)"}`);
 
 test(
 	"rendering the html produces the same pixels as the baseline",

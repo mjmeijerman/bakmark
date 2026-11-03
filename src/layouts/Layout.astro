@@ -3,6 +3,7 @@ import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import Logo from "../components/Logo.astro";
 import { alternatePath, DEFAULT_LANG, isLang, path, t, type Lang } from "../lib/i18n";
+import { absolute, isIndexable } from "../lib/site";
 
 interface Props {
 	title: string;
@@ -16,6 +17,8 @@ const siteName = "Bakmark";
 const pageTitle = title === siteName ? title : `${title} · ${siteName}`;
 const year = new Date().getFullYear();
 const alternate = alternatePath(Astro.url.pathname, lang);
+const indexable = isIndexable();
+const canonical = absolute(Astro.url.pathname);
 ---
 
 <!doctype html>
@@ -28,8 +31,13 @@ const alternate = alternatePath(Astro.url.pathname, lang);
 		<!-- Tokens travel in the query string; never hand them to another site. -->
 		<meta name="referrer" content="no-referrer" />
 		<link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
-		<link rel="alternate" hreflang="nl" href={alternatePath(Astro.url.pathname, "nl")} />
-		<link rel="alternate" hreflang="en" href={alternatePath(Astro.url.pathname, "en")} />
+		{/* Absolute, because a relative canonical is ignored: an engine resolves
+		    it against whatever host served the page, so staging would claim its
+		    own copy as canonical. */}
+		<link rel="canonical" href={canonical} />
+		<link rel="alternate" hreflang="nl" href={absolute(alternatePath(Astro.url.pathname, "nl"))} />
+		<link rel="alternate" hreflang="en" href={absolute(alternatePath(Astro.url.pathname, "en"))} />
+		{!indexable && <meta name="robots" content="noindex, nofollow" />}
 		<title>{pageTitle}</title>
 		<script is:inline>
 			// Apply a stored choice before the page paints. No stored choice means

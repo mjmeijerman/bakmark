@@ -33,7 +33,14 @@ services:
       - /tmp
 
   bakmark:
-    build: .
+    build:
+      context: .
+      # These are baked into the HTML at build time: canonical URLs, the sitemap
+      # and the noindex tag. Passing them only to the running container would
+      # leave every page pointing at localhost.
+      args:
+        SITE_URL: ${SITE_URL:-http://localhost:8085}
+        SITE_INDEXABLE: ${SITE_INDEXABLE:-}
     # Per environment: a staging build must not overwrite the image a
     # production rollback would fall back to.
     image: bakmark:${BAKMARK_ENV:-local}
@@ -49,6 +56,9 @@ services:
       # server, otherwise confirmation mail is caught and never delivered.
       SMTP_URL: ${SMTP_URL:-smtp://mailpit:1025}
       SITE_URL: ${SITE_URL:-http://localhost:8085}
+      # 1 = indexable. Unset means noindex, which is the safe failure: a site
+      # nobody finds is recoverable, a staging copy in Google is not.
+      SITE_INDEXABLE: ${SITE_INDEXABLE:-}
       # Staging: a comma-separated allowlist, e.g.
       #   SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com
       # Empty means no restriction (development and production).

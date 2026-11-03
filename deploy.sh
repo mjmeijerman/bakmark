@@ -172,7 +172,13 @@ SMOKE_EMAIL="${BAKMARK_SMOKE_EMAIL:-test@markmeijerman.eu}"
 
 echo "==> smoke test"
 
-home_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$SITE_URL/" || echo 000)"
+# curl prints 000 itself when it cannot connect; appending another one made the
+# failure unreadable. One helper, one answer.
+http_code() {
+	curl -sS -o /dev/null -w '%{http_code}' "$@" 2>/dev/null || true
+}
+
+home_code="$(http_code --max-time 15 "$SITE_URL/")"
 if [ "$home_code" != "200" ]; then
 	echo "error: $SITE_URL/ returned $home_code" >&2
 	exit 1
@@ -181,11 +187,11 @@ echo "    home page: 200"
 
 # A refused address must be refused: this is the check that the allowlist is
 # actually wired up, and it must not depend on the mail path working.
-refused_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
+refused_code="$(http_code --max-time 15 \
 	-X POST "$SITE_URL/api/subscribe" \
 	-H 'content-type: application/json' \
 	-H "origin: $SITE_URL" \
-	--data '{"email":"someone@gmail.com","lang":"nl","elapsed":5000}' || echo 000)"
+	--data '{"email":"someone@gmail.com","lang":"nl","elapsed":5000}')"
 if [ "$refused_code" != "400" ]; then
 	echo "error: a gmail address was not refused (got $refused_code)" >&2
 	exit 1
@@ -194,11 +200,11 @@ echo "    refused domain: 400"
 
 # The real signup: stores the address and sends the confirmation through the
 # host's Postfix. A 500 here is the failure this test exists for.
-signup_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+signup_code="$(http_code --max-time 20 \
 	-X POST "$SITE_URL/api/subscribe" \
 	-H 'content-type: application/json' \
 	-H "origin: $SITE_URL" \
-	--data "{\"email\":\"$SMOKE_EMAIL\",\"lang\":\"nl\",\"elapsed\":5000}" || echo 000)"
+	--data "{\"email\":\"$SMOKE_EMAIL\",\"lang\":\"nl\",\"elapsed\":5000}")"
 if [ "$signup_code" != "201" ]; then
 	echo "error: signing up $SMOKE_EMAIL returned $signup_code" >&2
 	echo "       a 500 usually means the container cannot reach SMTP; check SMTP_URL" >&2

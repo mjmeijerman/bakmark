@@ -27,3 +27,6 @@ pnpm-debug.log*
 .idea/
 tests/snapshots/confirmation.nl.html
 tests/snapshots/confirmation.nl.png
+
+# staging keeps its own list
+data-staging/

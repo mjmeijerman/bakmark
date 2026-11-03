@@ -104,12 +104,25 @@ owner, builds, and starts the container in the background.
 
 ### Staging
 
-A staging deployment runs the real form against the real code, so it can also
-reach the real mail path. Set an allowlist and only those domains may sign up:
+Staging runs the real form against the real code, so it gets **its own list**
+and its own port. One variable does both:
 
 ```sh
-SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./start.sh
+BAKMARK_ENV=staging SIGNUP_ALLOWED_DOMAINS=markmeijerman.eu,mail-tester.com ./start.sh
+# http://localhost:8086, data in ./data-staging
 ```
+
+| | data | port |
+|---|---|---|
+| local | `./data` | 8085 |
+| staging | `./data-staging` | 8086 |
+| production (VPS) | `BAKMARK_DATA_DIR=/var/lib/bakmark` | 8085 on its own host |
+
+`compose.yaml` has no default for `BAKMARK_DATA_DIR`; a bare `docker compose up`
+fails rather than guess. `start.sh` also refuses to run with `BAKMARK_ENV=staging`
+when the path resolves to a production list (`*/data`, `/var/lib/bakmark`).
+
+Only allowlisted domains may sign up on staging:
 
 An address outside the list is refused, not stored and not mailed. The response
 is byte-for-byte the same as for a malformed address, so the visitor learns

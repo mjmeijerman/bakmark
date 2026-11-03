@@ -41,8 +41,12 @@ const parseMessage = (raw) => {
 		return match ? match[1].replace(/\r?\n[ \t]+/g, " ").trim() : "";
 	};
 
+	// Only the boundary line itself separates parts; a "--" inside content
+	// (or inside a URL) must not split anything.
+	const boundary = (head.match(/boundary="?([^";\r\n]+)"?/i) ?? [])[1];
 	const parts = {};
-	for (const chunk of raw.split(/--[^\r\n]+\r?\n/).slice(1)) {
+	const chunks = boundary ? raw.split(new RegExp(`\\r?\\n--${boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`)) : [];
+	for (const chunk of chunks.slice(1)) {
 		const [partHead, ...rest] = chunk.split(/\r?\n\r?\n/);
 		const type = (partHead.match(/Content-Type:\s*([\w/+.-]+)/i) ?? [])[1];
 		if (!type) continue;
@@ -157,8 +161,24 @@ test("the html is self-contained and friendly to mail clients", async () => {
 		for (const href of html.match(/href="([^"]+)"/g) ?? []) {
 			assert.match(href, /href="https?:\/\/[^"]+"/, `relative link in mail: ${href}`);
 		}
-		// No tracker pixels or hidden preheader text that reads like spam.
-		assert.doesNotMatch(html, /display:\s*none[^"]*"(\\s|\s)*[A-Za-z]/i);
+		// The layout is a table, not a div stack: Outlook ignores most div CSS.
+		assert.match(html, /<table role="presentation"/);
+		// Properties Mailpit's caniemail check flags as unsupported by whole
+		// platforms. Each one was a real defect, not a style preference:
+		// opacity/max-height/overflow hid the preheader on 20+ clients,
+		// max-width broke the container in Outlook Windows, outline did
+		// nothing in 9 clients, and body styling is ignored by webmails.
+		for (const banned of [
+			/\bopacity:/i,
+			/\bmax-height:/i,
+			/\boverflow:/i,
+			/\boutline:/i,
+			/\bmax-width:\s*100%/i,
+		]) {
+			assert.doesNotMatch(html, banned, `unsupported property in mail: ${banned}`);
+		}
+		assert.doesNotMatch(html, /<body[^>]*style="[^"]*background/i, "body background does not render in several webmails");
+		assert.match(html, /<table[^>]*bgcolor="#f6f1e7"/, "the background belongs on the outer table");
 	});
 });
 
@@ -211,16 +231,30 @@ test("rendering the html produces the same pixels as the baseline", async (t) =>
 		// Tokens differ on every run; freeze them so the image is stable.
 		writeFileSync(htmlPath, html.replace(/[a-f0-9]{64}/g, "0".repeat(64)));
 
-		execFileSync(browser, [
-			"--headless",
-			"--disable-gpu",
-			"--no-sandbox",
-			"--hide-scrollbars",
-			"--force-device-scale-factor=1",
-			"--window-size=600,800",
-			`--screenshot=${shotPath}`,
-			`file://${htmlPath}`,
-		], { stdio: "ignore" });
+		// No test server is running now: the logo URL points at the throwaway
+		// port from the signup. Swap it for the real file so the screenshot
+		// shows the mail, not a broken image icon. A finite timeout keeps a
+		// browser that never exits from hanging the whole suite.
+		const withLocalLogo = readFileSync(htmlPath, "utf8").replace(
+			/http:\/\/[^"'\s]+\/logo-bakmark\.png/,
+			`file://${join(ROOT, "public", "logo-bakmark.png")}`,
+		);
+		writeFileSync(htmlPath, withLocalLogo);
+
+		execFileSync(
+			browser,
+			[
+				"--headless",
+				"--disable-gpu",
+				"--no-sandbox",
+				"--hide-scrollbars",
+				"--force-device-scale-factor=1",
+				"--window-size=600,800",
+				`--screenshot=${shotPath}`,
+				`file://${htmlPath}`,
+			],
+			{ stdio: "ignore", timeout: 60_000 },
+		);
 
 		assert.ok(existsSync(shotPath), "the browser produced no screenshot");
 

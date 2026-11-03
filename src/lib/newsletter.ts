@@ -88,26 +88,73 @@ export const sendConfirmation = async ({
 		`${text.unsubscribe}: ${unsubscribeUrl}`,
 		"",
 		text.why,
+		siteUrl(),
 	].join("\n");
+
+	// Kept deliberately old-fashioned: tables, align and explicit widths are
+	// what Outlook, Gmail and the rest actually honour. No flexbox, no grid,
+	// no border-radius as the only shape, no <style> block. Mailpit's support
+	// score reads every unsupported property against the whole audience, so a
+	// single modern shorthand costs percentage points for a detail nobody sees.
+	const button = { bg: "#8a3b1e", fg: "#fffdf8" };
 
 	const html = `<!doctype html>
 <html lang="${lang}">
-	<body style="margin:0;padding:24px;background:#f6f1e7;color:#2a211a;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5">
-		<div style="max-width:520px;margin:0 auto;background:#fffdf8;border:1px solid #e4d9c8;border-radius:12px;padding:24px">
-			<p style="margin:0 0 20px">
-				<a href="${escapeHtml(siteUrl())}"><img src="${escapeHtml(logoUrl())}" alt="${escapeHtml(LOGO_ALT[lang])}" width="160" style="display:block;width:160px;max-width:100%;height:auto;border:0" /></a>
-			</p>
-			<h1 style="margin:0 0 12px;font-size:22px">${escapeHtml(text.heading)}</h1>
-			<p style="margin:0 0 20px">${escapeHtml(text.intro)}</p>
-			<p style="margin:0 0 20px">
-				<a href="${escapeHtml(confirmUrl)}" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#8a3b1e;color:#fffdf8;text-decoration:none;font-weight:600">${escapeHtml(text.action)}</a>
-			</p>
-			<p style="margin:0 0 20px;font-size:14px;color:#5c4b3c">${escapeHtml(text.ignore)}</p>
-			<p style="margin:0 0 20px;font-size:14px">
-				<a href="${escapeHtml(unsubscribeUrl)}" style="color:#8a3b1e">${escapeHtml(text.unsubscribe)}</a>
-			</p>
-			<p style="margin:0;font-size:12px;color:#7a6757">${escapeHtml(text.why)}</p>
-		</div>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>${escapeHtml(text.heading)}</title>
+	</head>
+	<body style="margin:0;padding:0;">
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f6f1e7" style="background-color:#f6f1e7;margin:0;padding:0;">
+			<tr>
+				<td align="center" style="padding:24px 12px;">
+					<table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="width:520px;background-color:#fffdf8;border:1px solid #e4d9c8;">
+						<tr>
+							<td style="padding:24px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;">
+								<a href="${escapeHtml(siteUrl())}" style="text-decoration:none;"><img src="${escapeHtml(logoUrl())}" alt="${escapeHtml(LOGO_ALT[lang])}" width="160" height="160" style="display:block;width:160px;height:auto;border:0;text-decoration:none;" /></a>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;font-weight:bold;color:#2a211a;">
+								${escapeHtml(text.heading)}
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:12px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#2a211a;">
+								${escapeHtml(text.intro)}
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 0 24px;">
+								<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+									<tr>
+										<td align="center" bgcolor="${button.bg}" style="background-color:${button.bg};mso-padding-alt:12px 20px;">
+											<a href="${escapeHtml(confirmUrl)}" style="display:inline-block;padding:12px 20px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.2;font-weight:bold;color:${button.fg};text-decoration:none;">${escapeHtml(text.action)}</a>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#5c4b3c;">
+								${escapeHtml(text.ignore)}
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
+								<a href="${escapeHtml(unsubscribeUrl)}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.unsubscribe)}</a>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 24px 24px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#7a6757;">
+								${escapeHtml(text.why)}
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>`;
 

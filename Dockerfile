@@ -5,6 +5,13 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 
+# Baked into the prerendered HTML. A build without these produces pages whose
+# canonical URL is localhost and whose robots meta is noindex.
+ARG SITE_URL=http://localhost:4321
+ARG SITE_INDEXABLE=
+ENV SITE_URL=$SITE_URL \
+	SITE_INDEXABLE=$SITE_INDEXABLE
+
 # Dependencies first, so a source edit does not reinstall them.
 COPY package.json package-lock.json ./
 RUN npm ci

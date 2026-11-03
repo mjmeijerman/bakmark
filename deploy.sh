@@ -31,6 +31,8 @@ case "$TARGET" in
 		DATA_DIR="${BAKMARK_DATA_DIR:-/var/lib/bakmark}"
 		PORT="${BAKMARK_PORT:-8085}"
 		SITE_URL="${SITE_URL:-https://bakmark.nl}"
+		# Indexable. This is the site people are supposed to find.
+		SITE_INDEXABLE="${SITE_INDEXABLE:-1}"
 		SIGNUP_ALLOWED_DOMAINS="${SIGNUP_ALLOWED_DOMAINS:-}"
 		;;
 	staging)
@@ -38,6 +40,9 @@ case "$TARGET" in
 		DATA_DIR="${BAKMARK_DATA_DIR:-/var/lib/bakmark-staging}"
 		PORT="${BAKMARK_PORT:-8090}"
 		SITE_URL="${SITE_URL:-https://staging.bakmark.nl}"
+		# Not indexable. A staging copy in Google competes with production for
+		# its own content, which is worse than never being listed.
+		SITE_INDEXABLE="${SITE_INDEXABLE:-0}"
 		SIGNUP_ALLOWED_DOMAINS="${SIGNUP_ALLOWED_DOMAINS:-markmeijerman.eu,mail-tester.com}"
 		;;
 	*)
@@ -77,7 +82,7 @@ if [ "${1:-}" != "--local" ]; then
 	# already exists there, and this script is what the checkout runs.
 	ssh "$USER_@$HOST" \
 		"BAKMARK_ENV='$TARGET' APP_DIR='$APP_DIR' DATA_DIR='$DATA_DIR' \
-		PORT='$PORT' SITE_URL='$SITE_URL' \
+		PORT='$PORT' SITE_URL='$SITE_URL' SITE_INDEXABLE='$SITE_INDEXABLE' \
 		SIGNUP_ALLOWED_DOMAINS='$SIGNUP_ALLOWED_DOMAINS' \
 		SMTP_URL='$SMTP_URL' HEALTH_URL='$HEALTH_URL' BRANCH='$BRANCH' \
 		'$APP_DIR/deploy.sh' --local"
@@ -117,13 +122,16 @@ CONFIG_FILE=".env"
 	echo "BAKMARK_DATA_DIR=$DATA_DIR"
 	echo "BAKMARK_PORT=$PORT"
 	echo "SITE_URL=$SITE_URL"
+	echo "SITE_INDEXABLE=$SITE_INDEXABLE"
 	echo "SIGNUP_ALLOWED_DOMAINS=$SIGNUP_ALLOWED_DOMAINS"
 	echo "SMTP_URL=$SMTP_URL"
 } > "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"
 
 echo "==> building"
-docker compose build
+# SITE_URL is baked into canonical tags and the sitemap, so the build needs it,
+# not just the running container.
+SITE_URL="$SITE_URL" SITE_INDEXABLE="$SITE_INDEXABLE" docker compose build
 
 PREVIOUS="$(docker compose ps -q bakmark 2>/dev/null || true)"
 PREVIOUS_IMAGE=""

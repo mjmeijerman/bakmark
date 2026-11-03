@@ -103,6 +103,7 @@ cp env.dist .env   # every variable, documented
 Same thing via npm: `npm start`. The script creates `./data` with the right
 owner, builds, and starts the container in the background.
 
+
 ### Deploying
 
 The server is prepared by the `vps1-provisioning` project: Docker, the checkout,
@@ -123,6 +124,7 @@ which means nothing secret has to live in this repository.
 
 Required secrets for Actions: `STAGING_SSH_KEY`, `STAGING_HOST`,
 `STAGING_USER`.
+
 
 ### Staging
 

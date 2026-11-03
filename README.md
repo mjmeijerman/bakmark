@@ -144,7 +144,7 @@ The container runs as uid 1000, so `BAKMARK_DATA_DIR` must be owned by
 
 ### Deleting unconfirmed addresses
 
-An address that was never confirmed is deleted 7 days after signup
+An address that was never confirmed is deleted 24 hours after signup
 (`src/lib/config.ts`). The confirmation mail states that window, so the number
 lives in one place and the job reads it.
 
@@ -157,7 +157,7 @@ container's crontab dies with the container.
 ```
 
 Run it by hand the same way. It prints one line, `removed N unconfirmed
-addresses older than 7 days`, so a cron log answers whether it ran.
+addresses older than 24 hours`, so a cron log answers whether it ran.
 
 Backup: stop the container, then copy every `subscribers.sqlite*` file — the
 `-wal` file holds committed rows that are not in the main file yet.

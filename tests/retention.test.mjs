@@ -3,7 +3,7 @@
  *
  * Two things are asserted here that a wording change could quietly break:
  * the logo links home, and the retention sentence is the same number the
- * purge uses. A mail that promises "after 7 days" while the job deletes at 30
+ * purge uses. A mail that promises "after 24 hours" while the job deletes later
  * is worse than no sentence at all.
  */
 import assert from "node:assert/strict";
@@ -18,7 +18,7 @@ const run = promisify(execFile);
 
 // The retention window, read from the source the app and the purge share. A
 // hard-coded 7 here would pass while the mail said something else.
-const { UNCONFIRMED_TTL_DAYS } = await import("../src/lib/config.ts");
+const { UNCONFIRMED_TTL_HOURS } = await import("../src/lib/config.ts");
 
 /** Nodemailer folds and base64-encodes parts; undo that before matching. */
 const decode = (raw) =>
@@ -62,8 +62,8 @@ test("the mail says when an unconfirmed address is deleted, in both languages", 
 		assert.equal((await post(base, { email: "en@example.nl", lang: "en", elapsed: 5000 })).status, 201);
 
 		const [dutch, english] = [decode(smtp.messages[0]), decode(smtp.messages[1])];
-		assert.match(dutch, /verwijderen we je e-mailadres na 7 dagen/);
-		assert.match(english, /we delete your email address after 7 days/);
+		assert.match(dutch, /verwijderen we je e-mailadres na 24 uur/);
+		assert.match(english, /we delete your email address after 24 hours/);
 		assert.doesNotMatch(dutch, /verdwijnen vanzelf/);
 		assert.doesNotMatch(english, /disappears on its own/);
 	});
@@ -84,7 +84,7 @@ test("the purge deletes only old, unconfirmed rows", async () => {
 			const insert = db.prepare(
 				"insert into subscribers (email, lang, source, created_at, confirmed_at) values (?, ?, ?, ?, ?)",
 			);
-			const old = new Date(Date.now() - (UNCONFIRMED_TTL_DAYS + 1) * 86_400_000).toISOString();
+			const old = new Date(Date.now() - (UNCONFIRMED_TTL_HOURS + 1) * 3_600_000).toISOString();
 			insert.run("old@example.nl", "nl", "/", old, null);
 			insert.run("kept@example.nl", "nl", "/", old, new Date().toISOString());
 			db.close();

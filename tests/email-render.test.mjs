@@ -131,8 +131,8 @@ test("every promise of the mail is in both parts, in the reader's language", asy
 
 		assert.match(dutch.html, /lang="nl"/);
 		assert.match(english.html, /lang="en"/);
-		assert.match(dutch.text, /verwijderen we je e-mailadres na 7 dagen/);
-		assert.match(english.text, /we delete your email address after 7 days/);
+		assert.match(dutch.text, /verwijderen we je e-mailadres na 24 uur/);
+		assert.match(english.text, /we delete your email address after 24 hours/);
 	});
 });
 

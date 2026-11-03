@@ -5,12 +5,12 @@
  * true reads the same constant, so the promise and the behaviour cannot drift.
  */
 
-/** Days an unconfirmed address is kept after signup, then deleted. */
-export const UNCONFIRMED_TTL_DAYS = 7;
+/** Hours an unconfirmed address is kept after signup, then deleted. */
+export const UNCONFIRMED_TTL_HOURS = 24;
 
-/** Used in the mail and in the page copy: "7 days" must match the job. */
-export const UNCONFIRMED_TTL_LABEL = { nl: "7 dagen", en: "7 days" } as const;
+/** Used in the mail and in the page copy: "24 uur" must match the job. */
+export const UNCONFIRMED_TTL_LABEL = { nl: "24 uur", en: "24 hours" } as const;
 
 /** ISO timestamp before which a still-unconfirmed row is expired. */
 export const unconfirmedCutoff = (now = Date.now()): string =>
-	new Date(now - UNCONFIRMED_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+	new Date(now - UNCONFIRMED_TTL_HOURS * 60 * 60 * 1000).toISOString();

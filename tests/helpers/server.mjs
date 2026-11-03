@@ -66,8 +66,11 @@ export const withServer = async (run, { env = {}, keep = false } = {}) => {
 		assert.ok(up, "the built server did not come up");
 		await run({ base, dbPath, smtp, port });
 	} finally {
-		server.kill();
-		await smtp.close();
+		// SIGKILL: a child that ignores SIGTERM keeps the runner alive and
+		// turns the whole file into "cancelled" after its timeout.
+		server.kill("SIGKILL");
+		// A never-awaited close leaves a pending promise that kills the run.
+		await smtp.close().catch(() => {});
 		// Tests that re-run a script against this database ask to keep it.
 		if (!keep) rmSync(dir, { recursive: true, force: true });
 	}

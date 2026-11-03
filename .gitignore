@@ -26,3 +26,4 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 tests/snapshots/confirmation.nl.html
+tests/snapshots/confirmation.nl.png

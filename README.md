@@ -102,6 +102,22 @@ Local:
 Same thing via npm: `npm start`. The script creates `./data` with the right
 owner, builds, and starts the container in the background.
 
+### Mail in development
+
+Nothing leaves the machine. `./start.sh` also starts Mailpit, and every mail
+the app sends is caught there:
+
+- catcher UI: http://localhost:8025
+- SMTP: `127.0.0.1:1025`
+
+`src/lib/mail.ts` defaults to the catcher and refuses a non-loopback SMTP host
+unless `MAIL_ALLOW_REMOTE=1` is set, so a copied production `.env` cannot mail
+a real person. `NODE_ENV=production` has no default at all: without
+`SMTP_URL`, sending throws instead of falling back.
+
+Running the app outside Docker (`npm run dev`) works too, as long as the
+catcher is up: `docker compose up -d mailpit`.
+
 `docker compose down -v` leaves `./data` alone. It only removes the container
 and its network.
 
@@ -110,7 +126,7 @@ the public door:
 
 ```sh
 sudo install -d -o 1000 -g 1000 -m 700 /var/lib/bakmark
-BAKMARK_DATA_DIR=/var/lib/bakmark ./start.sh
+BAKMARK_DATA_DIR=/var/lib/bakmark SMTP_URL=smtp://<mail-host>:25 ./start.sh
 ```
 
 Caddy site block (the container publishes on loopback only, so it cannot

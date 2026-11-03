@@ -1,0 +1,22 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { t } from "../../lib/i18n";
+import { confirmByToken } from "../../lib/list";
+
+export const prerender = false;
+
+// A valid, used or unknown token all get the same page: the click itself is
+// the whole interaction, and a stranger learns nothing from the answer.
+confirmByToken(Astro.url.searchParams.get("token") ?? "");
+const lang = "nl" as const;
+---
+
+<Layout title={t(lang, "confirm.title")} description={t(lang, "confirm.body")} lang={lang}>
+	<section class="hero">
+		<h1>{t(lang, "confirm.title")}</h1>
+	</section>
+	<section class="section">
+		<p>{t(lang, "confirm.body")}</p>
+		<p><a href="/">{t(lang, "nav.home")}</a></p>
+	</section>
+</Layout>

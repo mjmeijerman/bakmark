@@ -10,6 +10,19 @@
 # and mode 0700 (see README).
 
 services:
+  # Development mail catcher. Every mail the app sends locally lands here, in
+  # the web UI on http://localhost:8025. It never forwards anything.
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    read_only: true
+    tmpfs:
+      - /tmp
+
   bakmark:
     build: .
     image: bakmark:local
@@ -21,6 +34,10 @@ services:
       - "127.0.0.1:${BAKMARK_PORT:-8085}:4321"
     environment:
       SUBSCRIBERS_DB: /data/subscribers.sqlite
+      # The catcher by default. On the VPS set SMTP_URL to the real mail
+      # server, otherwise confirmation mail is caught and never delivered.
+      SMTP_URL: ${SMTP_URL:-smtp://mailpit:1025}
+      SITE_URL: ${SITE_URL:-http://localhost:8085}
     volumes:
       - ${BAKMARK_DATA_DIR:-./data}:/data
     read_only: true

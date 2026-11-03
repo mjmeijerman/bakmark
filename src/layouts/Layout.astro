@@ -25,6 +25,8 @@ const alternate = alternatePath(Astro.url.pathname, lang);
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
 		<meta name="color-scheme" content="light dark" />
+		<!-- Tokens travel in the query string; never hand them to another site. -->
+		<meta name="referrer" content="no-referrer" />
 		<link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
 		<link rel="alternate" hreflang="nl" href={alternatePath(Astro.url.pathname, "nl")} />
 		<link rel="alternate" hreflang="en" href={alternatePath(Astro.url.pathname, "en")} />

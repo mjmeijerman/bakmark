@@ -1,93 +1,24 @@
 /**
- * Newsletter signup: store the address.
+ * Newsletter signup: store the address, then ask the owner to confirm it.
  *
  * The list lives on our own server, in a SQLite file next to the app
  * (`data/subscribers.sqlite`, override with SUBSCRIBERS_DB). No external
  * service sees the address; sending stays on the VPS too.
  *
- * Double opt-in is NOT built yet — `confirmed_at` stays NULL until it is.
- * Every row here is an unverified string, and no mail may go to one. The
- * work is tracked in issue #295 and is blocked on the mail server.
+ * A signup is not a subscription. The row starts with `confirmed_at` NULL, and
+ * the only mail an unconfirmed address ever gets is the confirmation request.
+ * In development that mail goes to the catcher and never to the internet; see
+ * `src/lib/mail.ts`.
  */
-import { chmodSync, mkdirSync, statSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { DatabaseSync } from "node:sqlite";
 import type { APIRoute } from "astro";
+import { newToken, sendConfirmation } from "../../lib/newsletter";
+import {
+	deleteByConfirmToken,
+	store,
+	storedSince,
+} from "../../lib/list";
 
 export const prerender = false;
-
-const DB_PATH =
-	process.env.SUBSCRIBERS_DB ?? join(process.cwd(), "data", "subscribers.sqlite");
-
-let db: DatabaseSync | undefined;
-/** Identity of the file the open handle points at. */
-let dbInode: number | undefined;
-
-/*
- * SQLite keeps writing to a file that has been deleted or replaced, and every
- * write then lands in an unlinked inode: the signup is answered 201 and is
- * gone. Comparing the inode catches a replaced file, and the restart after a
- * backup restore does not silently swallow rows.
- */
-const fileChanged = (): boolean => {
-	try {
-		const stats = statSync(DB_PATH);
-		return dbInode === undefined || stats.ino !== dbInode;
-	} catch {
-		// Gone: reopen, which recreates the folder and the table.
-		return true;
-	}
-};
-
-const closeDb = () => {
-	try {
-		db?.close();
-	} catch {
-		/* already gone */
-	}
-	db = undefined;
-	dbInode = undefined;
-};
-
-const openDb = (): DatabaseSync => {
-	if (db && !fileChanged()) return db;
-	if (db) closeDb();
-
-	// A list that cannot be opened is a dead form, so the failure names the path
-	// instead of surfacing as a generic 500 on someone else's signup.
-	try {
-		mkdirSync(dirname(DB_PATH), { recursive: true, mode: 0o700 });
-		db = new DatabaseSync(DB_PATH);
-		dbInode = statSync(DB_PATH).ino;
-
-		// The list is nobody else's business: 0600 on the file, 0700 on the folder.
-		try {
-			chmodSync(DB_PATH, 0o600);
-		} catch {
-			/* a read-only file system fails later and louder */
-		}
-
-		db.exec(`
-			PRAGMA journal_mode = WAL;
-			PRAGMA synchronous = NORMAL;
-			CREATE TABLE IF NOT EXISTS subscribers (
-				email TEXT PRIMARY KEY,
-				lang TEXT NOT NULL,
-				source TEXT,
-				created_at TEXT NOT NULL,
-				confirmed_at TEXT
-			);
-			CREATE INDEX IF NOT EXISTS subscribers_created_at ON subscribers (created_at);
-		`);
-	} catch (error) {
-		closeDb();
-		throw new Error(
-			`[subscribe] the list at ${DB_PATH} cannot be opened: ${(error as Error).message}`,
-		);
-	}
-
-	return db;
-};
 
 const normalise = (value: unknown): string =>
 	typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -124,24 +55,6 @@ const isEmail = (value: string): boolean => {
 
 const isLang = (value: unknown): "nl" | "en" => (value === "en" ? "en" : "nl");
 
-/** One insert; a stale handle (file moved or deleted) is reopened once. */
-const store = (email: string, lang: string, source: string | null): boolean => {
-	const insert = () =>
-		openDb()
-			.prepare(
-				`INSERT OR IGNORE INTO subscribers (email, lang, source, created_at)
-				 VALUES (?, ?, ?, ?)`,
-			)
-			.run(email, lang, source, new Date().toISOString());
-
-	try {
-		return insert().changes > 0;
-	} catch {
-		closeDb();
-		return insert().changes > 0;
-	}
-};
-
 /*
  * Bots. A public form fills up with junk, and a CAPTCHA means a third party
  * in the path, a privacy statement line and an accessibility problem.
@@ -158,13 +71,8 @@ const RATE_MAX = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DAY_MAX = 200;
 
-const storedInLastDay = (): number => {
-	const since = new Date(Date.now() - DAY_MS).toISOString();
-	const row = openDb()
-		.prepare("SELECT COUNT(*) AS n FROM subscribers WHERE created_at >= ?")
-		.get(since) as { n: number } | undefined;
-	return row?.n ?? 0;
-};
+const storedInLastDay = (): number =>
+	storedSince(new Date(Date.now() - DAY_MS).toISOString());
 
 const attempts = new Map<string, number[]>();
 
@@ -261,10 +169,32 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	// Say "saved" and save nothing: a bot gets no signal to retune against.
 	if (isBot(request, body, ip)) return answer(201, true);
 
+	const confirmToken = newToken();
+	const unsubscribeToken = newToken();
+
 	try {
 		// Same answer whether it was new or already there: "are you on this
 		// list?" is not a question a stranger gets to ask.
-		store(email, lang, source);
+		const created = store({ email, lang, source, confirmToken, unsubscribeToken });
+
+		// Only a new row gets a mail. Repeating a signup must not be a way to
+		// stuff someone's inbox.
+		if (created) {
+			try {
+				await sendConfirmation({ email, lang, confirmToken, unsubscribeToken });
+			} catch (error) {
+				// A row nobody can confirm is a dead row: remove it and let the
+				// visitor try again.
+				console.error("[subscribe] could not send the confirmation mail", error);
+				try {
+					deleteByConfirmToken(confirmToken);
+				} catch (cleanupError) {
+					console.error("[subscribe] could not remove the unconfirmed row", cleanupError);
+				}
+				return answer(500, false, "server_error");
+			}
+		}
+
 		return answer(201, true);
 	} catch (error) {
 		console.error("[subscribe] could not store address", error);

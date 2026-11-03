@@ -8,14 +8,10 @@
  * Run `npm run build` first; `npm test` does.
  */
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync, unlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync, unlinkSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-
-const ENTRY = join(process.cwd(), "dist", "server", "entry.mjs");
+import { post, withServer } from "./helpers/server.mjs";
 
 /** Stored addresses; an untouched or brand-new file simply has none. */
 const rows = (dbPath) => {
@@ -29,49 +25,6 @@ const rows = (dbPath) => {
 		db.close();
 	}
 };
-
-/** Starts the built server on a free port with its own database. */
-const withServer = async (run) => {
-	assert.ok(
-		existsSync(ENTRY),
-		"dist/server/entry.mjs is missing — run `npm run build` before the API tests",
-	);
-
-	const dir = mkdtempSync(join(tmpdir(), "bakmark-subscribe-"));
-	const dbPath = join(dir, "subscribers.sqlite");
-	const port = 4300 + Math.floor(Math.random() * 500);
-
-	const server = spawn(process.execPath, [ENTRY], {
-		env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", SUBSCRIBERS_DB: dbPath },
-		stdio: "ignore",
-	});
-
-	const base = `http://127.0.0.1:${port}`;
-	let up = false;
-	for (let attempt = 0; attempt < 60 && !up; attempt++) {
-		try {
-			await fetch(`${base}/`, { signal: AbortSignal.timeout(1000) });
-			up = true;
-		} catch {
-			await new Promise((resolve) => setTimeout(resolve, 100));
-		}
-	}
-
-	try {
-		assert.ok(up, "the built server did not come up");
-		await run({ base, dbPath });
-	} finally {
-		server.kill();
-		rmSync(dir, { recursive: true, force: true });
-	}
-};
-
-const post = (base, body, headers = {}) =>
-	fetch(`${base}/api/subscribe`, {
-		method: "POST",
-		headers: { "content-type": "application/json", ...headers },
-		body: JSON.stringify(body),
-	});
 
 test("a valid address is stored, and a second one is not a second row", async () => {
 	await withServer(async ({ base, dbPath }) => {

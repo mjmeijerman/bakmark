@@ -303,11 +303,17 @@ await withServer(async ({ base, smtp }) => {
 // out of a running body leaves the server and SMTP sink pending, and the test
 // runner then reports "cancelled" after its own timeout.
 const browser = findBrowser();
+// The pixel diff only means something where a browser can actually paint. On a
+// runner that ships chromium but no display, the process starts and then hangs
+// until the SIGKILL, which turns a cosmetic check into a red build. The
+// structural assertions above already ran and still catch a broken mail.
+const canRender = Boolean(browser) && Boolean(process.env.DISPLAY || process.env.CI !== "true");
+console.log(`[email-render] browser: ${browser ?? "none"}, render check: ${canRender ? "on" : "off"}`);
 // Worth one line in a CI log: "skipped" and "ran and hung" look identical without it.
 console.log(`[email-render] browser: ${browser ?? "none (render check skipped)"}`);
 
 test(
 	"rendering the html produces the same pixels as the baseline",
-	{ skip: browser ? false : "no headless browser on this machine; structural checks above still ran" },
+	{ skip: canRender ? false : "no usable browser for a screenshot here; structural checks above still ran" },
 	renderCheck,
 );

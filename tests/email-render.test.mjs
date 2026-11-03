@@ -249,6 +249,8 @@ test(
 		// Chromium on a runner image can finish the screenshot and then hang,
 		// and a hung child is what turned this into a cancelled suite. A
 		// screenshot on disk is the success condition, not the exit code.
+		const started = Date.now();
+		console.log(`[email-render] launching ${browser}`);
 		try {
 			spawnSync(
 				browser,
@@ -267,6 +269,7 @@ test(
 		} catch {
 			/* the screenshot below decides whether it worked */
 		}
+		console.log(`[email-render] browser returned after ${Date.now() - started} ms`);
 
 		assert.ok(existsSync(shotPath), "the browser produced no screenshot");
 

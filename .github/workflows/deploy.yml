@@ -1,0 +1,57 @@
+name: deploy
+
+# Every push to trunk deploys staging, but only if CI on that same commit
+# passed: `workflow_run` fires when the ci workflow finishes, and the job below
+# checks the conclusion. Deploying a red commit is how staging stops being a
+# place you can trust.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [trunk]
+  # Lets you deploy by hand from the Actions tab without a laptop checkout.
+  # Staging is what a green push to trunk deploys; production is only ever
+  # manual, because a merge should never reach real subscribers by itself.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Which environment"
+        type: choice
+        options: [staging, production]
+        default: staging
+
+# One deploy at a time. A queue that runs two deploys in parallel races on
+# `git reset --hard` in the same checkout.
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.head_branch == 'trunk')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: trunk
+          fetch-depth: 0
+
+      # The deploy runs the repository's own script on the server, so this step
+      # only has to get there. No registry, no image upload, no token on the box.
+      - name: Install the deploy key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "${{ secrets.STAGING_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy
+        env:
+          BAKMARK_ENV: ${{ github.event.inputs.environment || 'staging' }}
+          BAKMARK_HOST: ${{ secrets.STAGING_HOST }}
+          BAKMARK_USER: ${{ secrets.STAGING_USER }}
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes
+        run: ./deploy.sh

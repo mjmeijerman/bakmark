@@ -103,6 +103,29 @@ cp env.dist .env   # every variable, documented
 Same thing via npm: `npm start`. The script creates `./data` with the right
 owner, builds, and starts the container in the background.
 
+
+### Deploying
+
+The server is prepared by the `vps1-provisioning` project: Docker, the checkout,
+and the data directory with the right owner. This repo only ships the app.
+
+```sh
+./deploy.sh     # one command, from your machine
+```
+
+It fetches `trunk`, builds the image on the server, swaps the container, and
+rolls back if the new one never answers. GitHub Actions runs the same script
+after every green push to `trunk`, so there is one deploy path and not two that
+can drift. If Actions is down, `./deploy.sh` still works.
+
+The subscriber list lives in `/var/lib/bakmark-staging` on the host, so a bad
+deploy cannot lose it. `deploy.sh` writes the server's `.env` on every deploy,
+which means nothing secret has to live in this repository.
+
+Required secrets for Actions: `STAGING_SSH_KEY`, `STAGING_HOST`,
+`STAGING_USER`.
+
+
 ### Staging
 
 Staging runs the real form against the real code, so it gets **its own list**

@@ -14,6 +14,10 @@
 # The container runs as uid 1000, so that directory must be owned by 1000:1000
 # and mode 0700 (see README).
 
+# The project name is per environment. Two checkouts on one host (staging and
+# production) must not be able to `down` each other's containers.
+name: ${COMPOSE_PROJECT_NAME:-bakmark}
+
 services:
   # Development mail catcher. Every mail the app sends locally lands here, in
   # the web UI on http://localhost:8025. It never forwards anything.
@@ -30,7 +34,9 @@ services:
 
   bakmark:
     build: .
-    image: bakmark:local
+    # Per environment: a staging build must not overwrite the image a
+    # production rollback would fall back to.
+    image: bakmark:${BAKMARK_ENV:-local}
     restart: unless-stopped
     init: true
     ports:

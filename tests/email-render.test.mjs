@@ -17,7 +17,7 @@
  * still runs.
  */
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -245,20 +245,28 @@ test(
 		);
 		writeFileSync(htmlPath, withLocalLogo);
 
-		execFileSync(
-			browser,
-			[
-				"--headless",
-				"--disable-gpu",
-				"--no-sandbox",
-				"--hide-scrollbars",
-				"--force-device-scale-factor=1",
-				"--window-size=600,800",
-				`--screenshot=${shotPath}`,
-				`file://${htmlPath}`,
-			],
-			{ stdio: "ignore", timeout: 60_000 },
-		);
+		// `spawnSync`, not `execFileSync`, and the timeout kills the process:
+		// Chromium on a runner image can finish the screenshot and then hang,
+		// and a hung child is what turned this into a cancelled suite. A
+		// screenshot on disk is the success condition, not the exit code.
+		try {
+			spawnSync(
+				browser,
+				[
+					"--headless",
+					"--disable-gpu",
+					"--no-sandbox",
+					"--hide-scrollbars",
+					"--force-device-scale-factor=1",
+					"--window-size=600,800",
+					`--screenshot=${shotPath}`,
+					`file://${htmlPath}`,
+				],
+				{ stdio: "ignore", timeout: 30_000, killSignal: "SIGKILL" },
+			);
+		} catch {
+			/* the screenshot below decides whether it worked */
+		}
 
 		assert.ok(existsSync(shotPath), "the browser produced no screenshot");
 

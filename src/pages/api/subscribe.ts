@@ -108,8 +108,23 @@ const isBot = (request: Request, body: Payload, ip: string): boolean => {
 	const elapsed = Number(body.elapsed);
 	if (Number.isFinite(elapsed) && elapsed >= 0 && elapsed < MIN_FILL_MS) return true;
 
+	// The request's own URL can hide the public origin: behind the container's
+	// 8085-to-4321 mapping (or Caddy on the VPS) request.url is the internal
+	// host, so a perfectly legitimate same-origin request would read as
+	// cross-origin. Compare against the Host the browser put in the URL bar.
 	const origin = request.headers.get("origin");
-	if (origin && origin !== new URL(request.url).origin) return true;
+	if (origin) {
+		let originHost;
+		try {
+			originHost = new URL(origin).host.toLowerCase();
+		} catch {
+			return true;
+		}
+		const host = request.headers
+			.get("host")
+			?.toLowerCase();
+		if (!host || originHost !== host) return true;
+	}
 
 	return false;
 };
@@ -126,14 +141,29 @@ const readPayload = async (request: Request): Promise<{ body: Payload; json: boo
 	return { body: Object.fromEntries(form), json: false };
 };
 
+/**
+ * Public origin as the browser sees it. request.url is the internal host
+ * behind the port mapping or Caddy, so derive the address from the Host
+ * header instead; fall back to the request when Host is absent.
+ */
+const publicOrigin = (request: Request): string => {
+	const host = request.headers.get("host");
+	if (host) {
+		const secure = request.headers.get("x-forwarded-proto")?.split(",")[0].trim() === "https";
+		return `${secure ? "https" : "http"}://${host}`;
+	}
+	return new URL(request.url).origin;
+};
+
 /** Only bounce back to our own origin, never to whatever the Referer claims. */
 const backTo = (request: Request, outcome: "ok" | "fout"): string => {
-	const fallback = new URL("/", request.url);
+	const ourOrigin = publicOrigin(request);
+	const fallback = new URL("/", ourOrigin);
 	const referer = request.headers.get("referer");
 	let target = fallback;
 	if (referer) {
 		const url = new URL(referer);
-		if (url.origin === new URL(request.url).origin) target = url;
+		if (url.origin === ourOrigin) target = url;
 	}
 	target.searchParams.set("nieuwsbrief", outcome);
 	target.hash = "nieuwsbrief";

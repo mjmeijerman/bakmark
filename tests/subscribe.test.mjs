@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { existsSync, unlinkSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { post, withServer } from "./helpers/server.mjs";
+import { post, postViaPublicHost, withServer } from "./helpers/server.mjs";
 
 /** Stored addresses; an untouched or brand-new file simply has none. */
 const rows = (dbPath) => {
@@ -88,6 +88,44 @@ test("a body over the cap is refused", async () => {
 		const response = await post(base, { email: "big@example.nl", elapsed: 5000, padding: "x".repeat(200_000) });
 		assert.ok(response.status >= 400, `expected a refusal, got ${response.status}`);
 		assert.deepEqual(rows(dbPath), []);
+	});
+});
+
+// The signup that must not be dropped: one that crossed a port mapping. Behind
+// the container's 8085->4321 forward (or Caddy on the VPS) the browser sends
+// Origin: localhost:8085 while the server's socket sits on 4321. Comparing
+// Origin to request.url (the socket) always reads as cross-origin and dropped
+// every real signup with a silent 201. The check compares Origin to the Host
+// header instead, so it must pass here — that is the regression the fix adds.
+test("a same-origin signup that crossed a port mapping is not dropped", async () => {
+	await withServer(async ({ base, dbPath, smtp }) => {
+		const socket = base.slice("http://".length); // 127.0.0.1:<port>, the real TCP target
+		const publicHost = "localhost:8085"; // the origin the browser saw
+
+		// Host (request target) and Origin (sending page) agree, as a real
+		// same-origin form does — even though both differ from the socket.
+		const response = await postViaPublicHost(base, publicHost, `http://${publicHost}`, {
+			email: "mapped@example.nl",
+			elapsed: 5000,
+		});
+		assert.equal(response.status, 201);
+		assert.deepEqual(await response.json(), { ok: true });
+		assert.deepEqual(rows(dbPath), ["mapped@example.nl"], "the real signup was stored");
+		assert.equal(smtp.messages.length, 1, "its confirmation mail went out");
+	});
+});
+
+test("a genuinely cross-origin signup is still dropped", async () => {
+	await withServer(async ({ base, dbPath, smtp }) => {
+		// A page on another origin POSTing here: Origin (sender) disagrees with
+		// the Host (target), which is what a cross-origin request looks like.
+		const response = await postViaPublicHost(base, "localhost:8085", "http://evil.example:8085", {
+			email: "evil@example.nl",
+			elapsed: 5000,
+		});
+		assert.equal(response.status, 201, "a bot still sees a success, not a refusal");
+		assert.deepEqual(rows(dbPath), [], "the cross-origin signup was not stored");
+		assert.equal(smtp.messages.length, 0);
 	});
 });
 

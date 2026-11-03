@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import http from "node:http";
 import net from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -77,4 +78,42 @@ export const post = (base, body, headers = {}) =>
 		method: "POST",
 		headers: { "content-type": "application/json", ...headers },
 		body: JSON.stringify(body),
+	});
+
+/**
+ * A POST to `api/subscribe` that reaches `socketBase`'s real TCP socket while
+ * carrying the public `Host` and `Origin` a reverse proxy (or the container's
+ * 8085-to-4321 mapping) would leave behind. This is how we reproduce, in a
+ * test, the situation where the Host header and the server's socket disagree
+ * exactly as they do on the box; `fetch` cannot aim one host and present
+ * another, so we drive the socket with `node:http`.
+ */
+export const postViaPublicHost = (socketBase, host, origin, body) =>
+	new Promise((resolve, reject) => {
+		const [hostPart, port] = socketBase.slice("http://".length).split(":");
+		const req = http.request(
+			{
+				host: hostPart,
+				port: Number(port),
+				path: "/api/subscribe",
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					host,
+					...(origin ? { origin } : {}),
+				},
+			},
+			(res) => {
+				let data = "";
+				res.on("data", (chunk) => (data += chunk));
+				res.on("end", () =>
+					resolve({
+						status: res.statusCode,
+						json: () => JSON.parse(data),
+					}),
+				);
+			},
+		);
+		req.on("error", reject);
+		req.end(JSON.stringify(body));
 	});

@@ -41,9 +41,6 @@ services:
       args:
         SITE_URL: ${SITE_URL:-http://localhost:8085}
         SITE_INDEXABLE: ${SITE_INDEXABLE:-}
-      # Must be at a domain OpenDKIM signs. Empty falls back to the code
-      # default, which is news.bakmark.nl for the same reason.
-      MAIL_FROM: ${MAIL_FROM:-}
     # Per environment: a staging build must not overwrite the image a
     # production rollback would fall back to.
     image: bakmark:${BAKMARK_ENV:-local}

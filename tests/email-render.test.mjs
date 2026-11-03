@@ -212,13 +212,15 @@ const findBrowser = () => {
 	return undefined;
 };
 
-test("rendering the html produces the same pixels as the baseline", async (t) => {
-	const browser = findBrowser();
-	if (!browser) {
-		t.skip("no headless browser on this machine; structural checks above still ran");
-		return;
-	}
+// `skip` is passed at declaration, not called inside the test body: bailing
+// out of a running body leaves the server and SMTP sink pending, and the test
+// runner then reports "cancelled" after its own timeout.
+const browser = findBrowser();
 
+test(
+	"rendering the html produces the same pixels as the baseline",
+	{ skip: browser ? false : "no headless browser on this machine; structural checks above still ran" },
+	async () => {
 	await withServer(async ({ base, smtp }) => {
 		assert.equal((await post(base, { email: "shot@example.nl", lang: "nl", elapsed: 5000 })).status, 201);
 		const { html } = parseMessage(smtp.messages[0]);
@@ -260,7 +262,7 @@ test("rendering the html produces the same pixels as the baseline", async (t) =>
 
 		if (UPDATE || !existsSync(baseline)) {
 			writeFileSync(baseline, readFileSync(shotPath));
-			t.diagnostic(`baseline written: ${baseline}`);
+			console.log(`baseline written: ${baseline}`);
 			return;
 		}
 
@@ -270,4 +272,5 @@ test("rendering the html produces the same pixels as the baseline", async (t) =>
 			"the rendered mail changed; review it, then UPDATE_SNAPSHOTS=1 to accept",
 		);
 	});
-});
+	},
+);

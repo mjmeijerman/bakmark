@@ -18,7 +18,8 @@
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -212,6 +213,92 @@ const findBrowser = () => {
 	return undefined;
 };
 
+/**
+ * Why the browser runs in its own process, in a temporary HOME, with a hard
+ * SIGKILL: a runner image Chromium finished, wrote the file, and then kept the
+ * event loop alive forever, which node reports as "cancelled" for every test
+ * in the file. A child that cannot outlive its timeout cannot do that again.
+ */
+const renderCheck = async () => {
+await withServer(async ({ base, smtp }) => {
+	assert.equal((await post(base, { email: "shot@example.nl", lang: "nl", elapsed: 5000 })).status, 201);
+	const { html } = parseMessage(smtp.messages[0]);
+
+	mkdirSync(SNAPSHOT_DIR, { recursive: true });
+	const htmlPath = join(SNAPSHOT_DIR, "confirmation.nl.html");
+	const shotPath = join(SNAPSHOT_DIR, "confirmation.nl.png");
+	const baseline = join(SNAPSHOT_DIR, "confirmation.nl.baseline.png");
+
+	// Tokens differ on every run; freeze them so the image is stable.
+	writeFileSync(htmlPath, html.replace(/[a-f0-9]{64}/g, "0".repeat(64)));
+
+	// No test server is running now: the logo URL points at the throwaway
+	// port from the signup. Swap it for the real file so the screenshot
+	// shows the mail, not a broken image icon. A finite timeout keeps a
+	// browser that never exits from hanging the whole suite.
+	const withLocalLogo = readFileSync(htmlPath, "utf8").replace(
+		/http:\/\/[^"'\s]+\/logo-bakmark\.png/,
+		`file://${join(ROOT, "public", "logo-bakmark.png")}`,
+	);
+	writeFileSync(htmlPath, withLocalLogo);
+
+	// `spawnSync`, not `execFileSync`, and the timeout kills the process:
+	// Chromium on a runner image can finish the screenshot and then hang,
+	// and a hung child is what turned this into a cancelled suite. A
+	// screenshot on disk is the success condition, not the exit code.
+	const started = Date.now();
+	console.log(`[email-render] launching ${browser}`);
+	try {
+		spawnSync(
+			browser,
+			[
+				"--headless",
+				"--disable-gpu",
+				"--no-sandbox",
+				"--hide-scrollbars",
+				"--force-device-scale-factor=1",
+				"--window-size=600,800",
+				`--screenshot=${shotPath}`,
+				`file://${htmlPath}`,
+			],
+			{
+				stdio: "ignore",
+				timeout: 30_000,
+				killSignal: "SIGKILL",
+				// A throwaway profile: a reused one can leave a singleton lock.
+				env: { ...process.env, HOME: mkdtempSync(join(tmpdir(), "bakmark-browser-")) },
+			},
+		);
+	} catch {
+		/* the screenshot below decides whether it worked */
+	}
+	console.log(`[email-render] browser returned after ${Date.now() - started} ms`);
+
+	assert.ok(existsSync(shotPath), "the browser produced no screenshot");
+
+	if (UPDATE || !existsSync(baseline)) {
+		writeFileSync(baseline, readFileSync(shotPath));
+		console.log(`baseline written: ${baseline}`);
+		return;
+	}
+
+	// Font rasterisation differs between machines, so a byte-identical image
+	// is a developer-machine check. Elsewhere, a wildly different size means
+	// the mail really did change shape.
+	const sizeOf = (path) => readFileSync(path).length;
+	const drift = Math.abs(sizeOf(shotPath) - sizeOf(baseline)) / sizeOf(baseline);
+	if (process.env.CI) {
+		assert.ok(drift < 0.5, `the rendered mail changed a lot (${(drift * 100).toFixed(0)}% size drift); review it, then UPDATE_SNAPSHOTS=1`);
+	} else {
+		assert.deepEqual(
+			readFileSync(shotPath),
+			readFileSync(baseline),
+			"the rendered mail changed; review it, then UPDATE_SNAPSHOTS=1 to accept",
+		);
+	}
+});
+};
+
 // `skip` is passed at declaration, not called inside the test body: bailing
 // out of a running body leaves the server and SMTP sink pending, and the test
 // runner then reports "cancelled" after its own timeout.
@@ -222,68 +309,5 @@ console.log(`[email-render] browser: ${browser ?? "none (render check skipped)"}
 test(
 	"rendering the html produces the same pixels as the baseline",
 	{ skip: browser ? false : "no headless browser on this machine; structural checks above still ran" },
-	async () => {
-	await withServer(async ({ base, smtp }) => {
-		assert.equal((await post(base, { email: "shot@example.nl", lang: "nl", elapsed: 5000 })).status, 201);
-		const { html } = parseMessage(smtp.messages[0]);
-
-		mkdirSync(SNAPSHOT_DIR, { recursive: true });
-		const htmlPath = join(SNAPSHOT_DIR, "confirmation.nl.html");
-		const shotPath = join(SNAPSHOT_DIR, "confirmation.nl.png");
-		const baseline = join(SNAPSHOT_DIR, "confirmation.nl.baseline.png");
-
-		// Tokens differ on every run; freeze them so the image is stable.
-		writeFileSync(htmlPath, html.replace(/[a-f0-9]{64}/g, "0".repeat(64)));
-
-		// No test server is running now: the logo URL points at the throwaway
-		// port from the signup. Swap it for the real file so the screenshot
-		// shows the mail, not a broken image icon. A finite timeout keeps a
-		// browser that never exits from hanging the whole suite.
-		const withLocalLogo = readFileSync(htmlPath, "utf8").replace(
-			/http:\/\/[^"'\s]+\/logo-bakmark\.png/,
-			`file://${join(ROOT, "public", "logo-bakmark.png")}`,
-		);
-		writeFileSync(htmlPath, withLocalLogo);
-
-		// `spawnSync`, not `execFileSync`, and the timeout kills the process:
-		// Chromium on a runner image can finish the screenshot and then hang,
-		// and a hung child is what turned this into a cancelled suite. A
-		// screenshot on disk is the success condition, not the exit code.
-		const started = Date.now();
-		console.log(`[email-render] launching ${browser}`);
-		try {
-			spawnSync(
-				browser,
-				[
-					"--headless",
-					"--disable-gpu",
-					"--no-sandbox",
-					"--hide-scrollbars",
-					"--force-device-scale-factor=1",
-					"--window-size=600,800",
-					`--screenshot=${shotPath}`,
-					`file://${htmlPath}`,
-				],
-				{ stdio: "ignore", timeout: 30_000, killSignal: "SIGKILL" },
-			);
-		} catch {
-			/* the screenshot below decides whether it worked */
-		}
-		console.log(`[email-render] browser returned after ${Date.now() - started} ms`);
-
-		assert.ok(existsSync(shotPath), "the browser produced no screenshot");
-
-		if (UPDATE || !existsSync(baseline)) {
-			writeFileSync(baseline, readFileSync(shotPath));
-			console.log(`baseline written: ${baseline}`);
-			return;
-		}
-
-		assert.deepEqual(
-			readFileSync(shotPath),
-			readFileSync(baseline),
-			"the rendered mail changed; review it, then UPDATE_SNAPSHOTS=1 to accept",
-		);
-	});
-	},
+	renderCheck,
 );

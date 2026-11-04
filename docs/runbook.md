@@ -11,7 +11,7 @@ Dependabot (`.github/dependabot.yml`) opens three kinds of PR on Mondays:
 | ecosystem | what it bumps | how to merge |
 | --- | --- | --- |
 | npm | `astro`, `@astrojs/*`, `nodemailer` — grouped minor+patch | merge when `ci` is green |
-| docker | `node:24-alpine` in the Dockerfile | merge when `ci` is green |
+| docker | `node:26-alpine` in the Dockerfile | merge when `ci` is green |
 | github-actions | `actions/checkout`, `actions/setup-node` | merge when `ci` is green |
 
 A major (astro 8, nodemailer 11) arrives as its own PR. Read the release notes

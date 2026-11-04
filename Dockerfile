@@ -2,7 +2,7 @@
 # The data directory is mounted from the host; nothing in here survives a
 # `docker rm`, and nothing here is allowed to hold the subscriber list.
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 # Baked into the prerendered HTML. A build without these produces pages whose
@@ -26,7 +26,7 @@ RUN cd /prod && npm ci --omit=dev
 COPY . .
 RUN npm run build
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production \

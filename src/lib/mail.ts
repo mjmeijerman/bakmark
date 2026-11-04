@@ -64,12 +64,20 @@ const sender = (): Transporter => {
 	return transport.sender;
 };
 
+const envelopeFrom = (): string =>
+	process.env.MAIL_ENVELOPE_FROM?.trim() || "bounce@bakmark.nl";
+
 export const sendMail = async (mail: Mail): Promise<void> => {
 	await sender().sendMail({
 		// news.bakmark.nl, not bakmark.nl: that is the domain OpenDKIM signs for
 		// (SigningTable), and D6 keeps newsletter reputation off the domain that
 		// serves the site. A From at bakmark.nl would go out unsigned.
 		from: process.env.MAIL_FROM?.trim() || "Bakmark <noreply@news.bakmark.nl>",
+		// The envelope lives on bakmark.nl because that domain has an MX (Proton).
+		// news.bakmark.nl has none, so bounces had nowhere to go and mail-tester
+		// scored -3 for "no mail server behind news.bakmark.nl". bakmark.nl's SPF
+		// already authorises this IP, so the envelope still passes.
+		envelope: { from: envelopeFrom(), to: mail.to },
 		...mail,
 	});
 };

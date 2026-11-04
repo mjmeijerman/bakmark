@@ -62,6 +62,9 @@ SMTP_URL="${SMTP_URL:-smtp://host.docker.internal:25}"
 # domain leaves the message unsigned, which mail-tester reports as
 # "your message is not signed with DKIM".
 MAIL_FROM="${MAIL_FROM:-Bakmark <noreply@news.bakmark.nl>}"
+# Bounces need an MX. bakmark.nl has one (Proton); news.bakmark.nl does not, and
+# mail-tester scores that -3. bakmark.nl's SPF already authorises this IP.
+MAIL_ENVELOPE_FROM="${MAIL_ENVELOPE_FROM:-bounce@bakmark.nl}"
 HEALTH_URL="${BAKMARK_HEALTH_URL:-http://127.0.0.1:$PORT/}"
 HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
@@ -87,7 +90,7 @@ if [ "${1:-}" != "--local" ]; then
 	ssh "$USER_@$HOST" \
 		"BAKMARK_ENV='$TARGET' APP_DIR='$APP_DIR' DATA_DIR='$DATA_DIR' \
 		PORT='$PORT' SITE_URL='$SITE_URL' SITE_INDEXABLE='$SITE_INDEXABLE' \
-		MAIL_FROM='$MAIL_FROM' \
+		MAIL_FROM='$MAIL_FROM' MAIL_ENVELOPE_FROM='$MAIL_ENVELOPE_FROM' \
 		SIGNUP_ALLOWED_DOMAINS='$SIGNUP_ALLOWED_DOMAINS' \
 		SMTP_URL='$SMTP_URL' HEALTH_URL='$HEALTH_URL' BRANCH='$BRANCH' \
 		'$APP_DIR/deploy.sh' --local"

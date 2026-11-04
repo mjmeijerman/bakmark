@@ -1,0 +1,47 @@
+# Dependabot, so "our packages are current" is a weekly pull request and not a
+# thing someone remembers to check.
+#
+# Patch and minor updates arrive as one grouped PR per ecosystem: a PR per
+# package turns into fifteen tabs nobody reads, and this project has four
+# runtime dependencies. Majors stay ungrouped on purpose — astro 7 to 8 is a
+# migration with a release note to read, not a version bump to rubber-stamp.
+#
+# CI is the gate: `npm test` builds the site and runs both suites, so a bad bump
+# fails on the PR instead of on staging.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # node:24-alpine in the Dockerfile. This is the one that silently changes what
+  # staging runs: the image is rebuilt on every deploy, so an untracked base tag
+  # is a version bump nobody reviewed.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # actions/checkout and actions/setup-node pins.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope

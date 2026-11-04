@@ -36,12 +36,15 @@ npm run build   # static site in ./dist
 ├── recipes/            # one JSON per recipe: the single source of truth
 ├── recipes/en/         # English text per recipe, words only (see below)
 ├── docs/design-tokens.md
+├── docs/runbook.md    # what to check weekly, monthly, yearly; DKIM rotation
 ├── public/             # static assets, copied as-is
 ├── astro.config.mjs
 └── package.json
 ```
 
 Design tokens and typography are documented in [`docs/design-tokens.md`](docs/design-tokens.md).
+Maintenance — dependency updates, mail health checks, DKIM rotation — is in
+[`docs/runbook.md`](docs/runbook.md).
 
 ## Languages
 

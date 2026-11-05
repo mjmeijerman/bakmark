@@ -31,7 +31,7 @@ npm run build   # static site in ./dist
 ├── src/lib/recipes.ts  # recipe loading, scaling, English text overlays
 ├── src/layouts/        # Layout.astro: head, header, footer, theme script
 ├── src/components/     # SiteHeader, ThemeToggle, NewsletterForm, PlaceholderImage,
-│                       # RecipeCard, DifficultyBadge, RecipeSection
+│                       # RecipeCard, DifficultyBadge, RecipeSection, QrCode
 ├── src/styles/         # global.css: tokens + base styles
 ├── recipes/            # one JSON per recipe: the single source of truth
 ├── recipes/en/         # English text per recipe, words only (see below)
@@ -41,6 +41,22 @@ npm run build   # static site in ./dist
 ├── astro.config.mjs
 └── package.json
 ```
+
+### The printed sheet
+
+Printing a recipe gives ingredients, steps and codes, nothing else: no photos,
+no explanations, no navigation, no newsletter. The print view is the same page
+with CSS doing the filtering, so nothing can drift.
+
+Two things are print-only:
+
+- **A QR code per part that has a published video.** A page built from three
+  base recipes prints three codes, each pointing at the video of the part in
+  the reader's hand; `video.start` in the recipe JSON makes it open at that
+  chapter instead of the first frame. Codes are inline SVG, generated at build
+  time (`src/components/QrCode.astro`), so they stay sharp on paper.
+- **A QR code to the tip block**, always. Paper has no links, and the tip is the
+  one thing a reader cannot act on later.
 
 Design tokens and typography are documented in [`docs/design-tokens.md`](docs/design-tokens.md).
 Maintenance — dependency updates, mail health checks, DKIM rotation — is in

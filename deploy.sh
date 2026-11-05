@@ -271,6 +271,20 @@ fi
 echo "==> starting"
 docker compose up -d --remove-orphans
 
+# A service in a profile this environment does not enable is not an orphan: it
+# is still declared, so `--remove-orphans` leaves a running container alone.
+# The mail catcher that kept running on staging for two days was exactly that.
+enabled=" $(docker compose config --services | tr '\n' ' ') "
+for service in $(docker compose --profile '*' config --services); do
+	case "$enabled" in
+		*" $service "*) ;;
+		*)
+			echo "    removing $service: not enabled in $TARGET"
+			docker compose rm -sf "$service" >/dev/null 2>&1 || true
+			;;
+	esac
+done
+
 healthy=""
 for _ in $(seq 1 "$HEALTH_TRIES"); do
 	if curl -fsS -o /dev/null --max-time 3 "$HEALTH_URL"; then

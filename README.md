@@ -120,6 +120,30 @@ vhost, the deploy writes the secrets and starts the stack.
 DNS is the only record provisioning does not manage: an A/AAAA record for
 `analytics.bakmark.nl` → 5.79.100.71.
 
+### The video description
+
+```sh
+npm run chapters -- soesjes > ~/beschrijving.txt
+```
+
+Prints the text for YouTube's description field: one chapter per step, from the
+same `t=` the printed codes and the step photos use, then the link back to the
+recipe page.
+
+YouTube silently drops a chapter list that breaks its rules, so the three that
+matter are checked before anything is printed: at least three chapters, the
+first at `0:00`, and no chapter shorter than ten seconds. A step without a `t`
+is named in the error instead of being skipped.
+
+A long hands-on phase is worth splitting (`"split": true` on the step): twenty
+minutes of kneading becomes five chapters a baker can jump between, while thirty
+minutes of rising stays one chapter to skip past. When the recording deserves
+real names, give the step its own `chapters` array with absolute timestamps —
+"kneden tot het deeg van de kom loslaat" beats "deel 3 van 5".
+
+The test suite runs the same check for every recipe whose `video.status` is
+`gepubliceerd`, so a broken list cannot reach a video announcement.
+
 ### The printed sheet
 
 Printing a recipe gives ingredients, steps and codes, nothing else: no photos,

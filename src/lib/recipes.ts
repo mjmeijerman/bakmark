@@ -25,6 +25,14 @@ export interface Step {
 	text: string;
 	why?: string;
 	tips?: string[];
+	/**
+	 * Hand-written chapters for this step, with absolute timestamps. Use it when
+	 * the recording deserves real names; otherwise `split` cuts a long step into
+	 * even parts (see chapters.ts).
+	 */
+	chapters?: { t: string; title: string }[];
+	/** True for a hands-on phase long enough that a viewer wants to jump into it. */
+	split?: boolean;
 }
 
 /** A link to another recipe, so one change lands everywhere it is used. */

@@ -273,8 +273,10 @@ look-alikes are not (`a@evilmarkmeijerman.eu`).
 
 ### Mail in development
 
-Nothing leaves the machine. `./start.sh` also starts Mailpit, and every mail
-the app sends is caught there:
+Nothing leaves the machine. `./start.sh` also starts Mailpit — it sits in the
+compose `dev` profile, so a staging or production run of the same file never
+starts one (their mail goes through the host's Postfix) — and every mail the app
+sends is caught there:
 
 - catcher UI: http://localhost:8025
 - SMTP: `127.0.0.1:1025`

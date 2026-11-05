@@ -174,37 +174,42 @@ export const sendConfirmation = async ({
  * with the timings and the print view around it, and a watch link would send
  * the reader straight past all of that.
  *
+ * Every recipe gets a picture, the same one the card on /recepten shows. Today
+ * that is one raster stand-in for the CSS placeholder box (a card cannot be a
+ * <div> in a mail), so the slot is an <img> that a real photo can replace one
+ * URL at a time without touching the layout.
+ *
  * `preview` keeps the layout but says what it is and shows the status of a
  * recipe that is not live yet, so the mail can be looked at before anything is
  * published.
  */
 const weeklyCopy = {
 	nl: {
-		one: (title: string) => `Nieuwe video op Bakmark: ${title}`,
-		many: (count: number) => `Nieuwe video's op Bakmark (${count})`,
-		introOne: "Er staat één nieuwe video op Bakmark.",
-		introMany: (count: number) => `Er staan ${count} nieuwe video's op Bakmark.`,
+		one: (title: string) => `Nieuw recept op Bakmark: ${title}`,
+		many: (count: number) => `Nieuwe recepten op Bakmark (${count})`,
+		introOne: "Er staat één nieuw recept op Bakmark.",
+		introMany: (count: number) => `Er staan ${count} nieuwe recepten op Bakmark.`,
 		action: "Bekijk het recept",
 		browse: "Alle recepten",
 		why: "Je krijgt deze mail omdat je je hebt aangemeld voor de nieuwsbrief van Bakmark.",
 		unsubscribe: "Uitschrijven",
 		previewIntro: (count: number) =>
 			`Testmail met alle ${count} recepten die een video hebben, ook de concepten.`,
-		previewSubject: (count: number) => `Testmail: alle ${count} recepten met een video`,
+		previewSubject: (count: number) => `Testmail: alle ${count} recepten`,
 		previewWhy: "Testmail, met de hand verstuurd. Telt niet mee voor de nieuwsbrief van volgende week.",
 	},
 	en: {
-		one: (title: string) => `New video on Bakmark: ${title}`,
-		many: (count: number) => `New videos on Bakmark (${count})`,
-		introOne: "There is one new video on Bakmark.",
-		introMany: (count: number) => `There are ${count} new videos on Bakmark.`,
+		one: (title: string) => `New recipe on Bakmark: ${title}`,
+		many: (count: number) => `New recipes on Bakmark (${count})`,
+		introOne: "There is one new recipe on Bakmark.",
+		introMany: (count: number) => `There are ${count} new recipes on Bakmark.`,
 		action: "Open the recipe",
 		browse: "All recipes",
 		why: "You get this mail because you signed up for the Bakmark newsletter.",
 		unsubscribe: "Unsubscribe",
 		previewIntro: (count: number) =>
 			`Test mail with all ${count} recipes that have a video, drafts included.`,
-		previewSubject: (count: number) => `Test mail: all ${count} recipes with a video`,
+		previewSubject: (count: number) => `Test mail: all ${count} recipes`,
 		previewWhy: "Test mail, sent by hand. It does not count towards next week's newsletter.",
 	},
 } satisfies Record<Lang, Record<string, unknown>>;
@@ -214,6 +219,12 @@ export interface WeeklyMail {
 	text: string;
 	html: string;
 }
+
+/** Stand-in for the picture on the recipe card, until every recipe has a photo. */
+export const PLACEHOLDER_IMAGE = "/recept-placeholder.png";
+/** 16:10, the ratio the card uses; 2x, so a phone does not blur it. */
+const IMAGE_WIDTH = 472;
+const IMAGE_HEIGHT = 295;
 
 export const weeklyMail = ({
 	videos,
@@ -267,6 +278,11 @@ export const weeklyMail = ({
 					? ` <span style="color:#7a6757;font-weight:normal;">(${escapeHtml(video.status)})</span>`
 					: "";
 			return `<tr>
+									<td style="padding:0 0 8px 0;">
+										<a href="${escapeHtml(url)}" style="text-decoration:none;"><img src="${escapeHtml(base + PLACEHOLDER_IMAGE)}" alt="${escapeHtml(video.title)}" width="${IMAGE_WIDTH}" height="${IMAGE_HEIGHT}" style="display:block;width:100%;max-width:${IMAGE_WIDTH}px;height:auto;border:0;text-decoration:none;" /></a>
+									</td>
+								</tr>
+								<tr>
 									<td style="padding:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.35;font-weight:bold;color:#2a211a;">
 										<a href="${escapeHtml(url)}" style="color:#2a211a;text-decoration:none;">${escapeHtml(video.title)}</a>${status}
 									</td>

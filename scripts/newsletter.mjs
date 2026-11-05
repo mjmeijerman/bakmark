@@ -90,7 +90,7 @@ if (preview) {
 
 const fresh = newSince(videos, state);
 if (fresh.length === 0) {
-	console.log(`[newsletter] ${videos.length} published video(s), 0 new; nothing sent`);
+	console.log(`[newsletter] ${videos.length} published recipe(s), 0 new; nothing sent`);
 	process.exit(0);
 }
 
@@ -98,7 +98,7 @@ const recipients = confirmedSubscribers();
 if (recipients.length === 0) {
 	// No snapshot either: when the first subscriber arrives they get what is
 	// live then, instead of an invisible back catalogue.
-	console.log(`[newsletter] ${fresh.length} new video(s), but the list is empty; nothing sent`);
+	console.log(`[newsletter] ${fresh.length} new recipe(s), but the list is empty; nothing sent`);
 	process.exit(0);
 }
 
@@ -108,7 +108,7 @@ if (result.sent === 0) {
 	// Every send failed: writing the snapshot now would silently drop these
 	// videos from every future newsletter. Fail loudly instead.
 	console.error(
-		`[newsletter] nothing of ${fresh.length} video(s) reached the ${recipients.length} subscriber(s); snapshot kept`,
+		`[newsletter] nothing of ${fresh.length} recipe(s) reached the ${recipients.length} subscriber(s); snapshot kept`,
 	);
 	process.exit(1);
 }
@@ -116,7 +116,7 @@ if (result.sent === 0) {
 writeState(stateFile, { ...snapshotOf(videos, state), reported_at: new Date().toISOString() });
 
 console.log(
-	`[newsletter] ${fresh.length} new video(s) to ${result.sent}/${recipients.length} subscriber(s): ` +
+	`[newsletter] ${fresh.length} new recipe(s) to ${result.sent}/${recipients.length} subscriber(s): ` +
 		fresh.map((video) => video.slug).join(", ") +
 		(result.failed.length ? ` (failed: ${result.failed.join(", ")})` : ""),
 );

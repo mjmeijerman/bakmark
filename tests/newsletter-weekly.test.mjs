@@ -21,12 +21,18 @@ import { startSink } from "./helpers/smtp-sink.mjs";
 const run = promisify(execFile);
 const SCRIPT = fileURLToPath(new URL("../scripts/newsletter.mjs", import.meta.url));
 
-/** Nodemailer base64-encodes the parts; undo that before matching. */
+/**
+ * Nodemailer base64-encodes a plain part and quoted-printable-encodes an html
+ * part; undo both before matching, or every tag reads =3Ctd=3E.
+ */
 const decode = (raw) =>
-	raw.replace(
-		/Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*?)(?=\r?\n--|\r?\n\r?\nContent-)/gi,
-		(_, body) => Buffer.from(body.replace(/\s+/g, ""), "base64").toString("utf8"),
-	);
+	raw
+		.replace(
+			/Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*?)(?=\r?\n--|\r?\n\r?\nContent-)/gi,
+			(_, body) => Buffer.from(body.replace(/\s+/g, ""), "base64").toString("utf8"),
+		)
+		.replace(/=\r?\n/g, "")
+		.replace(/=([0-9a-f]{2})/gi, (_, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
 
 const recipe = (slug, title, video) => ({ slug, title, published: "2026-10-29", video });
 
@@ -94,6 +100,7 @@ test("only confirmed addresses are mailed, each in its own language", async () =
 	const space = workspace(
 		[
 			recipe("soezenbeslag", "Soezenbeslag", { status: "gepubliceerd", youtube_id: "aaa111" }),
+			recipe("soesjes", "Soesjes", { status: "gepubliceerd", youtube_id: "bbb222" }),
 			recipe("slagroom", "Slagroom", { status: "concept", youtube_id: null }),
 			// An id without "gepubliceerd" is a private upload, not a video a viewer has.
 			recipe("zwitserse-room", "Zwitserse room", { status: "opgenomen", youtube_id: "ccc333" }),
@@ -108,16 +115,27 @@ test("only confirmed addresses are mailed, each in its own language", async () =
 
 	try {
 		const first = await newsletter(space, smtp);
-		assert.match(first.stdout, /1 new video\(s\) to 2\/2 subscriber\(s\): soezenbeslag/);
+		// Two new recipes, one mail, not one mail per recipe.
+		assert.match(first.stdout, /2 new recipe\(s\) to 2\/2 subscriber\(s\): soesjes, soezenbeslag/);
 		assert.equal(smtp.messages.length, 2, "one mail per confirmed subscriber");
 
 		const dutch = decode(smtp.messages[0]);
 		const english = decode(smtp.messages[1]);
-		assert.match(dutch, /Nieuwe video op Bakmark: Soezenbeslag/);
-		assert.match(dutch, /https:\/\/bakmark\.nl\/recepten\/soezenbeslag/);
+		assert.match(dutch, /Nieuwe recepten op Bakmark \(2\)/);
+		assert.match(dutch, /Er staan 2 nieuwe recepten op Bakmark\./);
+		for (const slug of ["soesjes", "soezenbeslag"]) {
+			assert.match(dutch, new RegExp(`https://bakmark\\.nl/recepten/${slug}`));
+			// One picture per recipe, the same stand-in the card on /recepten shows.
+			assert.match(
+				dutch,
+				new RegExp(
+					`<a href="https://bakmark\\.nl/recepten/${slug}"[^>]*><img src="https://bakmark\\.nl/recept-placeholder\\.png" alt="[^"]+" width="472"`,
+				),
+			);
+		}
 		assert.match(dutch, /Uitschrijven/);
 		assert.match(dutch, /afmelden\?token=tok-nl/);
-		assert.match(english, /New video on Bakmark: Soezenbeslag/);
+		assert.match(english, /New recipes on Bakmark \(2\)/);
 		assert.match(english, /unsubscribe\?token=tok-en/);
 
 		for (const raw of smtp.messages) {
@@ -131,7 +149,7 @@ test("only confirmed addresses are mailed, each in its own language", async () =
 		}
 
 		const state = JSON.parse(readFileSync(space.stateFile, "utf8"));
-		assert.deepEqual(state.youtube_ids, ["aaa111"]);
+		assert.deepEqual(state.youtube_ids.sort(), ["aaa111", "bbb222"]);
 		assert.ok(state.reported_at);
 
 		// Second week, same deployment: nothing new, so nothing is sent.
@@ -165,7 +183,7 @@ test("a video published after the last newsletter is the only one mailed", async
 		);
 
 		const next = await newsletter(space, smtp);
-		assert.match(next.stdout, /1 new video\(s\)/);
+		assert.match(next.stdout, /1 new recipe\(s\)/);
 		assert.equal(smtp.messages.length, 2);
 
 		const text = decode(smtp.messages[1]);
@@ -248,7 +266,7 @@ test("--hour makes the job silent outside its own hour", async () => {
 		assert.equal(existsSync(space.stateFile), false, "a skipped run leaves the snapshot alone");
 
 		const sent = await newsletter(space, smtp, ["--hour", String(now)]);
-		assert.match(sent.stdout, /1 new video\(s\) to 1\/1/);
+		assert.match(sent.stdout, /1 new recipe\(s\) to 1\/1/);
 		assert.equal(smtp.messages.length, 1);
 	} finally {
 		await smtp.close();

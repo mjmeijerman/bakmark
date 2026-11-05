@@ -243,7 +243,11 @@ week" trains the list to ignore the next one.
 
 The mail links to the recipe page, not to YouTube: the video is embedded there,
 next to the timings and the print view, and a watch link would send the reader
-past all of it. Each subscriber gets their own mail, in their own language, with
+past all of it. Every recipe carries a picture, the same one the card on
+`/recepten` shows. Until a recipe has a photo that is
+`public/recept-placeholder.png`, a raster stand-in for the CSS placeholder box
+(a card cannot be a `<div>` in a mail); the slot is an `<img>`, so a real photo
+replaces it one URL at a time. Each subscriber gets their own mail, in their own language, with
 their own unsubscribe link and a `List-Unsubscribe` header. Not a bcc: a shared
 recipient header shows everyone who else is on the list, and one unsubscribe
 link cannot serve all of them.

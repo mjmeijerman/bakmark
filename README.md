@@ -148,6 +148,9 @@ present.
 - An ingredient that is weighed but bought by the piece can say what one piece
   weighs (`"each": {"name": "eidooier", "grams": 17.5}`), and its tooltip then
   follows the batch: 80 g is "ongeveer 4,5 eidooiers", 120 g is 7.
+- An ingredient bought by the piece can name a weighed substitute
+  (`"substitute": {"name": "vanille-extract", "grams_each": 8}`), and that line
+  follows the count: one pod is "Of 8 g vanille-extract", three are 24 g.
 - Grams only. There is no millilitre or litre anywhere in the data, and a test
   keeps it that way: a scale is the one instrument every reader has.
 - Rounding stops where a scale stops: one decimal below ten, whole numbers above.

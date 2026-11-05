@@ -21,6 +21,8 @@ import {
 	round,
 	scaledAmount,
 	searchFor,
+	substituteGrams,
+	substituteText,
 	typedAmountFactor,
 } from "../src/lib/rescale.ts";
 import { withServer } from "./helpers/server.mjs";
@@ -151,6 +153,25 @@ test("a weighed ingredient that is bought by the piece says how many", () => {
 	assert.equal(approxText("Ongeveer %count% %name%.", "4,5", "eidooier"), "Ongeveer 4,5 eidooiers.");
 	assert.equal(approxText("Ongeveer %count% %name%.", "1", "eidooier"), "Ongeveer 1 eidooier.");
 	assert.equal(approxText("About %count% %name%.", "4.5", "egg yolk"), "About 4.5 egg yolks.");
+});
+
+test("a pod that can be bought as extract counts in grams too", () => {
+	assert.equal(substituteGrams(1, 8), 8);
+	assert.equal(substituteGrams(1.5, 8), 12);
+	assert.equal(substituteGrams(0.5, 8), 4);
+	assert.equal(substituteGrams(3, 8), 24);
+	assert.equal(substituteText("Of %amount% %name%.", "12 g", "vanille-extract"), "Of 12 g vanille-extract.");
+});
+
+test("the extract hint follows the number of pods, in both languages", async () => {
+	await withServer(async ({ base }) => {
+		const dutch = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
+		assert.match(dutch, /data-grams-each="8" data-substitute-name="vanille-extract"/);
+		assert.match(dutch, /Of 8 g vanille-extract\./);
+
+		const english = await (await fetch(`${base}/en/recipes/banketbakkersroom`)).text();
+		assert.match(english, /Or 8 g vanilla extract\./);
+	});
 });
 
 test("the hint follows the weight, in both languages", async () => {

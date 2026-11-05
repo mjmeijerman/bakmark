@@ -25,7 +25,13 @@ import {
 } from "../lib/recipes";
 import { path, type Lang } from "../lib/i18n";
 import { absolute } from "../lib/site";
-import { approxPieces, approxText, formatAmount as formatScaledAmount } from "../lib/rescale";
+import {
+	approxPieces,
+	approxText,
+	formatAmount as formatScaledAmount,
+	substituteGrams,
+	substituteText,
+} from "../lib/rescale";
 import QrCode from "../components/QrCode.astro";
 
 interface Props {
@@ -66,6 +72,7 @@ const copy = {
 		rescaleResult: "Aantal",
 		rescaleAmountLabel: "Hoeveelheid",
 		approxTemplate: "Ongeveer %count% %name%.",
+		substituteTemplate: "Of %amount% %name%.",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
@@ -148,6 +155,7 @@ const copy = {
 		rescaleResult: "Count",
 		rescaleAmountLabel: "Amount",
 		approxTemplate: "About %count% %name%.",
+		substituteTemplate: "Or %amount% %name%.",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
@@ -563,6 +571,24 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 																)}
 															</p>
 														) : null}
+														{ingredient.substitute ? (
+															<p
+																class="ingredient-substitute"
+																data-substitute
+																data-grams-each={ingredient.substitute.grams_each}
+																data-substitute-name={ingredient.substitute.name}
+																data-substitute-template={copy.substituteTemplate}
+															>
+																{substituteText(
+																	copy.substituteTemplate,
+																	`${formatScaledAmount(
+																		substituteGrams(ingredient.amount, ingredient.substitute.grams_each),
+																		lang,
+																	)} g`,
+																	ingredient.substitute.name,
+																)}
+															</p>
+														) : null}
 														<p>{ingredient.note}</p>
 													</div>
 												</details>
@@ -809,6 +835,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		approxPieces,
 		approxText,
 		clampedResult,
+		substituteGrams,
+		substituteText,
 		factorFromSearch,
 		formatAmount,
 		scaledAmount,
@@ -962,6 +990,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			text: HTMLElement;
 			/** "80 g is about 4,5 egg yolks", for ingredients bought by the piece. */
 			approx?: { node: HTMLElement; each: number; name: string; template: string };
+			/** "Or 24 g vanilla extract", for a pod that can be bought as extract. */
+			substitute?: { node: HTMLElement; gramsEach: number; name: string; template: string };
 		};
 		const rows: Row[] = [];
 
@@ -1009,8 +1039,18 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					}
 				: undefined;
 
+			const substituteNode = item.querySelector<HTMLElement>("[data-substitute]");
+			const substitute = substituteNode
+				? {
+						node: substituteNode,
+						gramsEach: Number(substituteNode.dataset.gramsEach),
+						name: substituteNode.dataset.substituteName ?? "",
+						template: substituteNode.dataset.substituteTemplate ?? "%amount% %name%",
+					}
+				: undefined;
+
 			item.classList.add("is-rescalable");
-			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text, approx });
+			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text, approx, substitute });
 		}
 
 		let factor = 1;
@@ -1029,6 +1069,17 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				if (row.approx) {
 					const count = formatAmount(approxPieces(amount, row.approx.each), lang);
 					row.approx.node.textContent = approxText(row.approx.template, count, row.approx.name);
+				}
+
+				if (row.substitute) {
+					// The pieces are what drives this: three pods are 24 g, whatever
+					// the pod weighs.
+					const grams = `${formatAmount(substituteGrams(amount, row.substitute.gramsEach), lang)} g`;
+					row.substitute.node.textContent = substituteText(
+						row.substitute.template,
+						grams,
+						row.substitute.name,
+					);
 				}
 			}
 

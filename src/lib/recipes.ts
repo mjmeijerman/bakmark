@@ -26,6 +26,11 @@ export interface Ingredient {
 	 * the batch.
 	 */
 	each?: { name: string; grams: number };
+	/**
+	 * For an ingredient bought by the piece and replaced by weight: one vanilla
+	 * pod is 8 g of extract, so three pods are 24 g.
+	 */
+	substitute?: { name: string; grams_each: number };
 }
 
 export interface Step {
@@ -174,7 +179,14 @@ export interface RecipeTextOverlay {
 	time?: { note?: string };
 	ingredients?: Record<
 		string,
-		{ name?: string; note?: string; unit?: string; amount_display?: string; each_name?: string }
+		{
+			name?: string;
+			note?: string;
+			unit?: string;
+			amount_display?: string;
+			each_name?: string;
+			substitute_name?: string;
+		}
 	>;
 	steps?: Record<string, { title?: string; text?: string; why?: string; tips?: string[] }>;
 	tools?: Record<string, { name?: string; note?: string }>;
@@ -237,6 +249,14 @@ export function localize(recipe: Recipe, lang: Lang = DEFAULT_LANG): Recipe {
 				? {
 						...ingredient.each,
 						name: overlay.ingredients?.[ingredient.id]?.each_name ?? ingredient.each.name,
+					}
+				: undefined,
+			substitute: ingredient.substitute
+				? {
+						...ingredient.substitute,
+						name:
+							overlay.ingredients?.[ingredient.id]?.substitute_name ??
+							ingredient.substitute.name,
 					}
 				: undefined,
 			unit: overlay.ingredients?.[ingredient.id]?.unit ?? ingredient.unit,
@@ -322,6 +342,12 @@ export function localizeGroup(group: ResolvedGroup, lang: Lang = DEFAULT_LANG): 
 				// "about 4.5 egg yolks": the piece has a name of its own.
 				each: ingredient.each
 					? { ...ingredient.each, name: text?.each_name ?? ingredient.each.name }
+					: undefined,
+				substitute: ingredient.substitute
+					? {
+							...ingredient.substitute,
+							name: text?.substitute_name ?? ingredient.substitute.name,
+						}
 					: undefined,
 				unit,
 				// Amounts are written the Dutch way in the recipe files ("1,5 g");

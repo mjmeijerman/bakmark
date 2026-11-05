@@ -46,8 +46,12 @@
 			"amount": 1,
 			"unit": "stuk",
 			"amount_display": "1 stokje",
-			"note": "Of 8 g vanille-extract, dan mee met de dooiers. Schaalt mee in halve stokjes, nooit minder dan een half.",
-			"round": 0.5
+			"note": "Schaalt mee in halve stokjes, nooit minder dan een half, en gaat mee met de dooiers.",
+			"round": 0.5,
+			"substitute": {
+				"name": "vanille-extract",
+				"grams_each": 8
+			}
 		},
 		{
 			"id": "suiker",

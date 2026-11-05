@@ -26,7 +26,8 @@
 			"amount_display": "1 pod",
 			"unit": "pod",
 			"name": "vanilla pod",
-			"note": "Or 8 g vanilla extract, added with the yolks."
+			"substitute_name": "vanilla extract",
+			"note": "Scales in half pods, never less than half, and goes in with the yolks."
 		},
 		"suiker": {
 			"name": "sugar",

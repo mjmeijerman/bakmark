@@ -98,6 +98,17 @@ export const approxPieces = (amount: number, gramsEach: number): number => {
 };
 
 /**
+ * "Of 24 g vanille-extract." for an ingredient bought by the piece and replaced
+ * by weight: three pods at 8 g each.
+ */
+export const substituteGrams = (pieces: number, gramsEach: number): number =>
+	Math.round(pieces * gramsEach * 10) / 10;
+
+/** "Of 24 g vanille-extract." from a template with %amount% and %name%. */
+export const substituteText = (template: string, amount: string, name: string): string =>
+	template.replace("%amount%", amount).replace("%name%", name);
+
+/**
  * "Ongeveer 4,5 eidooiers." from a template with %count% and %name%.
  *
  * Shared by the server render and the script, so the hint reads the same before

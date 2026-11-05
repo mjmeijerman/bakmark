@@ -12,7 +12,8 @@
 	"result": {
 		"value": 50,
 		"unit": "soesjes",
-		"note": "Ongeveer 50 soesjes van 3-4 cm, of 8-10 grote soezen, of 10-12 eclairs."
+		"note": "Ongeveer 50 soesjes van 3-4 cm, of 8-10 grote soezen, of 10-12 eclairs.",
+		"unit_singular": "soesje"
 	},
 	"category": "basistechniek",
 	"tags": [

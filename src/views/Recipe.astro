@@ -31,6 +31,7 @@ import {
 	formatAmount as formatScaledAmount,
 	substituteGrams,
 	substituteText,
+	unitFor,
 } from "../lib/rescale";
 import QrCode from "../components/QrCode.astro";
 
@@ -489,6 +490,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				data-lang={lang}
 				data-result-base={recipe.result.value}
 				data-result-unit={recipe.result.unit}
+				data-result-unit-singular={recipe.result.unit_singular ?? ""}
 				data-ref-base={reference?.amount ?? 0}
 				data-ref-unit={reference?.amount_display.replace(/^[\d.,]+\s*/, "") ?? ""}
 				data-clamped-min={copy.rescaleClampedMin}
@@ -506,7 +508,11 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 						data-result-input
 						value={recipe.result.value}
 					/>
-					<span>{recipe.result.unit}</span>
+					<span data-result-unit>
+						{recipe.result.value >= 2 || !recipe.result.unit_singular
+							? recipe.result.unit
+							: recipe.result.unit_singular}
+					</span>
 				</label>
 				<p class="form-note">{copy.rescaleHint}</p>
 				<p class="form-note rescale-message" role="status" data-rescale-message hidden></p>
@@ -536,6 +542,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 										data-unit-display={
 											ingredient.amount_display.replace(/^[\d.,]+\s*/, "") || ingredient.unit
 										}
+										data-unit-plural={ingredient.unit_plural ?? ""}
 										data-round={ingredient.round ?? ""}
 										data-scalable={ingredient.scale === false ? "0" : "1"}
 									>
@@ -837,6 +844,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		clampedResult,
 		substituteGrams,
 		substituteText,
+		unitFor,
 		factorFromSearch,
 		formatAmount,
 		scaledAmount,
@@ -978,11 +986,14 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		const refBase = Number(panel.dataset.refBase);
 		const resultInput = panel.querySelector<HTMLInputElement>("[data-result-input]");
 		const resultUnit = panel.dataset.resultUnit ?? "";
+		const resultUnitNode = panel.querySelector<HTMLElement>("[data-result-unit]");
+		const resultUnitSingular = panel.dataset.resultUnitSingular || resultUnit;
 
 		type Row = {
 			base: number;
 			unit: string;
 			unitDisplay: string;
+			unitPlural: string;
 			step?: number;
 			scalable: boolean;
 			input: HTMLInputElement;
@@ -1004,6 +1015,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			// "1 stokje" and "100 g" both end in the word a reader recognises; the
 			// unit column is that word, not the database's "stuk".
 			const unitDisplay = item.dataset.unitDisplay || unit;
+			const unitPlural = item.dataset.unitPlural ?? "";
 			const step = Number(item.dataset.round) || undefined;
 			const scalable = item.dataset.scalable !== "0";
 
@@ -1050,7 +1062,19 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				: undefined;
 
 			item.classList.add("is-rescalable");
-			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text, approx, substitute });
+			rows.push({
+				base,
+				unit,
+				unitDisplay,
+				unitPlural,
+				step,
+				scalable,
+				input,
+				unitNode,
+				text,
+				approx,
+				substitute,
+			});
 		}
 
 		let factor = 1;
@@ -1063,8 +1087,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					factor,
 				);
 				row.input.value = formatAmount(amount, lang);
-				row.unitNode.textContent = row.unitDisplay;
-				row.text.textContent = `${formatAmount(amount, lang)} ${row.unitDisplay}`;
+				const word = unitFor(amount, row.unitDisplay, row.unitPlural);
+				row.unitNode.textContent = word;
+				row.text.textContent = `${formatAmount(amount, lang)} ${word}`;
 
 				if (row.approx) {
 					const count = formatAmount(approxPieces(amount, row.approx.each), lang);
@@ -1087,6 +1112,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			const yield_ = Math.max(1, Math.round(resultBase * factor));
 
 			if (resultInput) resultInput.value = String(yield_);
+			const resultWord = unitFor(yield_, resultUnitSingular, resultUnit);
+			if (resultUnitNode) resultUnitNode.textContent = resultWord;
 
 			// A scaled list and a ½×/1×/2× table of the same ingredients would
 			// print two different truths on one sheet.

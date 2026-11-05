@@ -20,6 +20,8 @@ export interface Ingredient {
 	 * of a pod, so half is the least you get.
 	 */
 	round?: number;
+	/** The plural of the display unit: "2 stokjes", not "2 stokje". */
+	unit_plural?: string;
 	/**
 	 * What one piece weighs, for an ingredient that is weighed but bought by the
 	 * piece: 80 g of yolk is "about 4,5 egg yolks", and the number has to follow
@@ -105,7 +107,13 @@ export interface Recipe {
 	video?: Video;
 	/** ISO date the recipe went live. Default sort order is newest first. */
 	published?: string;
-	result: { value: number; unit: string; note?: string };
+	result: {
+		value: number;
+		unit: string;
+		/** For a yield of one: "1 soesje" from a unit of "soesjes". */
+		unit_singular?: string;
+		note?: string;
+	};
 	yield?: Record<string, unknown>;
 	category: string;
 	tags: string[];
@@ -450,13 +458,26 @@ const applyVariant = (recipe: Recipe, variant?: string): Ingredient[] => {
 		.filter((ingredient) => ingredient.amount > 0);
 };
 
+/**
+ * The word after a scaled number: "1 stokje", "2 stokjes".
+ *
+ * The unit column is display text ("stokje"), not the database unit ("stuk"), so
+ * a scaled amount is rebuilt from the display word. Without this the table said
+ * "2 stuk" while the list above it said "2 stokjes".
+ */
+const displayUnit = (ingredient: Ingredient, amount: number): string => {
+	const singular = (ingredient.amount_display ?? "").replace(/^[\d.,]+\s*/, "") || ingredient.unit;
+	return amount >= 2 && ingredient.unit_plural ? ingredient.unit_plural : singular;
+};
+
 const scaleIngredient = (ingredient: Ingredient, factor: number): ResolvedIngredient => {
 	const scalable = ingredient.scale !== false;
 	const amount = scalable ? scaleWithStep(ingredient, factor) : ingredient.amount;
+	const number = String(amount).replace(".", ",");
 	const display =
 		scalable && factor !== 1
-			? `${String(amount).replace(".", ",")} ${ingredient.unit}`
-			: (ingredient.amount_display ?? `${String(amount).replace(".", ",")} ${ingredient.unit}`);
+			? `${number} ${displayUnit(ingredient, amount)}`
+			: (ingredient.amount_display ?? `${number} ${displayUnit(ingredient, amount)}`);
 	return { ...ingredient, amount, amount_display: display, scaled: scalable && factor !== 1 };
 };
 

@@ -11,7 +11,8 @@
 	},
 	"result": {
 		"value": 50,
-		"unit": "gevulde soesjes"
+		"unit": "gevulde soesjes",
+		"unit_singular": "gevuld soesje"
 	},
 	"category": "gebak",
 	"tags": [

@@ -24,6 +24,7 @@ import {
 	substituteGrams,
 	substituteText,
 	typedAmountFactor,
+	unitFor,
 } from "../src/lib/rescale.ts";
 import { withServer } from "./helpers/server.mjs";
 
@@ -155,6 +156,26 @@ test("a weighed ingredient that is bought by the piece says how many", () => {
 	assert.equal(approxText("About %count% %name%.", "4.5", "egg yolk"), "About 4.5 egg yolks.");
 });
 
+test("one pod, two pods: the word follows the number", () => {
+	assert.equal(unitFor(1, "stokje", "stokjes"), "stokje");
+	assert.equal(unitFor(0.5, "stokje", "stokjes"), "stokje");
+	assert.equal(unitFor(1.5, "stokje", "stokjes"), "stokje");
+	assert.equal(unitFor(2, "stokje", "stokjes"), "stokjes");
+	assert.equal(unitFor(3, "stokje", "stokjes"), "stokjes");
+	assert.equal(unitFor(2, "g"), "g", "no plural given, no invention");
+});
+
+test("the static table and the yield say the same word as the list", async () => {
+	await withServer(async ({ base }) => {
+		const html = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
+		// The 2× column of the table: "2 stokjes", not the database's "2 stuk".
+		assert.match(html, /<td>2 stokjes<\/td>/);
+
+		const buns = await (await fetch(`${base}/recepten/soesjes`)).text();
+		assert.match(buns, /<span data-result-unit>\s*soesjes\s*<\/span>/);
+	});
+});
+
 test("a pod that can be bought as extract counts in grams too", () => {
 	assert.equal(substituteGrams(1, 8), 8);
 	assert.equal(substituteGrams(1.5, 8), 12);
@@ -190,8 +211,10 @@ test("the unit stays visible, in the word the recipe uses", async () => {
 	await withServer(async ({ base }) => {
 		const html = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
 		// "1 stokje" in the data, not the database's "stuk".
-		assert.match(html, /data-unit-display="stokje" data-round="0\.5"/);
-		assert.match(html, /data-unit-display="g"/);
+		const vanilla = html.match(/<li[^>]*data-ingredient="vanille"[^>]*>/)?.[0] ?? "";
+		for (const attribute of ['data-unit-display="stokje"', 'data-unit-plural="stokjes"', 'data-round="0.5"']) {
+			assert.ok(vanilla.includes(attribute), `vanilla is missing ${attribute}`);
+		}
 	});
 });
 

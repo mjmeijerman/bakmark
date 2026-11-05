@@ -109,6 +109,16 @@ export const substituteText = (template: string, amount: string, name: string): 
 	template.replace("%amount%", amount).replace("%name%", name);
 
 /**
+ * The word after a number: "1 stokje", "2 stokjes", "0,5 stokje".
+ *
+ * Dutch uses the singular up to and including one; from two it is plural. A
+ * count with no plural given falls back to the singular, which is wrong less
+ * often than adding an "s" to a word that does not take one.
+ */
+export const unitFor = (amount: number, singular: string, plural?: string): string =>
+	amount >= 2 && plural ? plural : singular;
+
+/**
  * "Ongeveer 4,5 eidooiers." from a template with %count% and %name%.
  *
  * Shared by the server render and the script, so the hint reads the same before

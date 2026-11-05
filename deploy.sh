@@ -76,10 +76,16 @@ HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
 
 # The visit counter. Not per environment: one dashboard holds a website per
-# hostname, and one stack serves both. Provisioning creates the directory (and
-# its data subdirectory, owned by Postgres's uid 70); this script writes the
-# secrets into it once and starts the containers.
-ANALYTICS_DIR="${BAKMARK_ANALYTICS_DIR:-/var/lib/bakmark-analytics}"
+# hostname, and one stack serves both. Provisioning creates the data directory
+# (owned by Postgres's uid 70, which is why a deploy cannot even stat it), this
+# script writes the secrets once and starts the containers.
+#
+# The env file lives in the checkout next to the app's own .env, not in the data
+# directory: that directory is owned by the container's uid, so a deploy could
+# not write into it. Both are git-ignored and both survive `git reset --hard`,
+# which is what the existing .env already relies on.
+ANALYTICS_DATA="${BAKMARK_ANALYTICS_DATA_DIR:-/var/lib/bakmark-analytics/data}"
+ANALYTICS_ENV="${BAKMARK_ANALYTICS_ENV:-$APP_DIR/analytics/.env}"
 ANALYTICS_PORT="${BAKMARK_ANALYTICS_PORT:-8091}"
 
 # ---------------------------------------------------------------------------
@@ -91,17 +97,11 @@ ANALYTICS_PORT="${BAKMARK_ANALYTICS_PORT:-8091}"
 # done by hand, which is the whole point of the exercise.
 # ---------------------------------------------------------------------------
 start_analytics() {
-	if [ ! -d "$ANALYTICS_DIR" ]; then
-		echo "warning: $ANALYTICS_DIR is missing; provisioning creates it (install_docker)." >&2
-		echo "         Skipping the visit counter for now." >&2
-		return 0
-	fi
-
-	env_file="$ANALYTICS_DIR/env"
+	env_file="$ANALYTICS_ENV"
 	if [ ! -f "$env_file" ]; then
 		umask 077
 		{
-			echo "BAKMARK_ANALYTICS_DATA=$ANALYTICS_DIR/data"
+			echo "BAKMARK_ANALYTICS_DATA=$ANALYTICS_DATA"
 			echo "APP_SECRET=$(openssl rand -hex 24)"
 			# Assembled rather than written out: a repository is not the place
 			# for a connection string, and this one carries no password anyway
@@ -114,8 +114,13 @@ start_analytics() {
 
 	# -p and --env-file, both explicit: this checkout's .env names the app's
 	# compose project, and the counter must not be dragged into it.
-	docker compose -p bakmark-analytics --env-file "$env_file" \
-		-f analytics/compose.yaml up -d --remove-orphans
+	if ! docker compose -p bakmark-analytics --env-file "$env_file" \
+		-f analytics/compose.yaml up -d --remove-orphans; then
+		echo "error: the visit counter did not start." >&2
+		echo "       Its data directory is provisioning's job (vps1-provisioning," >&2
+		echo "       install_docker: $ANALYTICS_DATA)." >&2
+		exit 1
+	fi
 
 	echo "==> visit counter: 127.0.0.1:$ANALYTICS_PORT (public door is the host's nginx)"
 }

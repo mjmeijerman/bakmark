@@ -83,18 +83,21 @@ Nothing here is a manual step: provisioning creates the directories and the
 vhost, the deploy writes the secrets and starts the stack.
 
 1. **Provisioning** (`vps1-provisioning`, `install_docker` and
-   `group_vars/production/websites.yml`): `/var/lib/bakmark-analytics` owned by
-   uid 1000 (the deploy account writes the env file there), its `data`
-   subdirectory owned by uid 70 (Postgres inside that image), and the nginx
-   vhost `analytics.bakmark.nl` → `127.0.0.1:8091`, which also gets certbot's
-   certificate on the same run.
-2. **The deploy** writes `/var/lib/bakmark-analytics/env` the first time —
-   `APP_SECRET` from `openssl rand`, and the connection string for user
-   `umami`, host `db`, database `umami`, no password (the database trusts the
-   private compose network and publishes no port, so there is nothing to
-   repeat). It never overwrites an existing file: a new secret signs the
-   dashboard out, a new database URL points at a cluster that is not there.
-   Then `docker compose -p bakmark-analytics --env-file … -f analytics/compose.yaml up -d`.
+   `group_vars/production/websites.yml`): `/var/lib/bakmark-analytics` and its
+   `data` subdirectory, owned by uid 70 (Postgres inside that image; the deploy
+   account cannot read it and does not need to — compose runs as root via the
+   daemon), and the nginx vhost `analytics.bakmark.nl` → `127.0.0.1:8091`,
+   which also gets certbot's certificate on the same run.
+2. **The deploy** writes `analytics/.env` in the checkout (git-ignored, next to
+   the app's own) the first time — `APP_SECRET` from `openssl rand`, and the
+   connection string for user `umami`, host `db`, database `umami`, no password
+   (the database trusts the private compose network and publishes no port, so
+   there is nothing to repeat). It never overwrites an existing file: a new
+   secret signs the dashboard out, a new database URL points at a cluster that
+   is not there. Then `docker compose -p bakmark-analytics --env-file … -f
+   analytics/compose.yaml up -d`. The env file is there rather than in
+   `/var/lib/bakmark-analytics` because that directory belongs to the
+   container's uid: a deploy cannot write into it, and should not have to.
 3. **One visit to the dashboard**, to change the `admin`/`umami` login and add
    the site. Copy its id into `UMAMI_WEBSITE_ID` in the deploy environment
    (GitHub Actions secret / your shell) and deploy: the tracker appears from

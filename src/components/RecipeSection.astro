@@ -4,15 +4,17 @@ interface Props {
 	/** Sections that remain on screen only, like the reasoning. */
 	noPrint?: boolean;
 	open?: boolean;
+	/** Extra class, for a section another script has to find or hide. */
+	className?: string;
 }
 
-const { title, noPrint = false, open = false } = Astro.props;
+const { title, noPrint = false, open = false, className } = Astro.props;
 ---
 
 {/* Collapsed by default: the step list is the thing you came for, the
     reasoning is what you read once. Print opens these again (see the script on
     the recipe page), because a sheet of paper cannot be clicked. */}
-<details class:list={["section", "collapsible", noPrint && "no-print"]} open={open}>
+<details class:list={["section", "collapsible", noPrint && "no-print", className]} open={open}>
 	<summary>
 		<h2>{title}</h2>
 	</summary>

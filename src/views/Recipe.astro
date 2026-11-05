@@ -53,6 +53,11 @@ const copy = {
 		composition: "Opbouw",
 		compositionLede:
 			"Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen pagina en een eigen video, en wijzigingen daar werken hier direct door.",
+		rescaleTitle: "Hoeveel wil je maken?",
+		rescaleHint: "Verander een hoeveelheid of het aantal; de rest rekent mee.",
+		rescaleNoScale: "schaalt niet mee",
+		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
+		rescaleResult: "Aantal",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
@@ -123,6 +128,16 @@ const copy = {
 		composition: "Composition",
 		compositionLede:
 			"This recipe is built from base recipes. Every part has its own page and its own video, and changes there land here immediately.",
+		rescaleTitle: "Hoeveel wil je maken?",
+		rescaleHint: "Verander een hoeveelheid of het aantal; de rest rekent mee.",
+		rescaleNoScale: "schaalt niet mee",
+		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
+		rescaleResult: "Aantal",
+		rescaleTitle: "How much are you making?",
+		rescaleHint: "Change an amount or the count; the rest follows.",
+		rescaleNoScale: "does not scale",
+		rescaleAmount: (name: string) => `Amount of ${name}`,
+		rescaleResult: "Count",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
@@ -279,6 +294,14 @@ const videoParts = groups
 	.filter((group) => group.recipe.video?.status === "gepubliceerd" && group.recipe.video?.youtube_id)
 	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index);
 
+/*
+ * The reference ingredient: the first one that may scale, in the first group.
+ * It is what `?ref=` counts in, so a shared link needs no second parameter.
+ */
+const reference = groups
+	.flatMap((group) => group.ingredients)
+	.find((ingredient) => ingredient.scale !== false);
+
 const qrItems = [
 	...videoParts.map((group) => ({
 		url: videoWatchUrl(group.recipe.video ?? {}),
@@ -433,7 +456,35 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		<RecipeSection title={copy.ingredients}>
 			{/* What the batch is good for. It used to sit under the chips, where it
 			   repeated the yield chip and pushed the list down. */}
-			{recipe.result.note ? <p class="section-lede">{recipe.result.note}</p> : null}
+			{recipe.result.note ? (
+				<p class="section-lede result-note" data-result-note={recipe.result.note}>
+					{recipe.result.note}
+				</p>
+			) : null}
+			{/* Progressive: without JavaScript the inputs never appear and the static
+			   amounts stay exactly as rendered. */}
+			<div
+				class="rescale no-print"
+				data-rescale
+				data-lang={lang}
+				data-result-base={recipe.result.value}
+				data-ref-base={reference?.amount ?? 0}
+				hidden
+			>
+				<p class="rescale-title">{copy.rescaleTitle}</p>
+				<label class="rescale-result">
+					<span>{copy.rescaleResult}</span>
+					<input
+						type="text"
+						inputmode="decimal"
+						autocomplete="off"
+						data-result-input
+						value={recipe.result.value}
+					/>
+					<span>{recipe.result.unit}</span>
+				</label>
+				<p class="form-note">{copy.rescaleHint}</p>
+			</div>
 			{
 				groups
 					.filter((group) => group.ingredients.length > 0)
@@ -450,7 +501,14 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 							) : null}
 							<ul class="ingredients">
 								{group.ingredients.map((ingredient) => (
-									<li data-gather={`${group.recipe.slug}:${ingredient.id}`}>
+									<li
+										data-gather={`${group.recipe.slug}:${ingredient.id}`}
+										data-ingredient={ingredient.id}
+										data-name={ingredient.name}
+										data-base={ingredient.amount}
+										data-unit={ingredient.unit}
+										data-scalable={ingredient.scale === false ? "0" : "1"}
+									>
 										<input
 											type="checkbox"
 											class="gather-check"
@@ -470,7 +528,12 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 												</details>
 											)}
 										</div>
-										<span class="amount">{ingredient.amount_display}</span>
+										<span class="amount">
+											<span class="amount-text">{ingredient.amount_display}</span>
+											{ingredient.scale === false && (
+												<span class="amount-locked">{copy.rescaleNoScale}</span>
+											)}
+										</span>
 									</li>
 								))}
 							</ul>
@@ -480,7 +543,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<p class="form-note no-print">{copy.affiliateIngredient}</p>
 		</RecipeSection>
 
-		<RecipeSection title={copy.scale}>
+		<RecipeSection title={copy.scale} className="scale-section">
 			<p class="section-lede">{copy.scaleLede}</p>
 			{scaleTable.map((group) => (
 				<table class="scale-table">
@@ -700,6 +763,15 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 </Layout>
 
 <script>
+	import {
+		factorForAmount,
+		factorForResult,
+		factorFromSearch,
+		formatAmount,
+		scaledAmount,
+		searchFor,
+	} from "../lib/rescale";
+
 	// One ingredient note open at a time, and a click or Escape anywhere else
 	// closes it. <details> does the toggling itself; this only adds dismissal,
 	// so the notes still work with JavaScript off.
@@ -817,4 +889,114 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			});
 		}
 	}
+
+	/*
+	 * The rescaler.
+	 *
+	 * The page ships its amounts once, at 1×, and every row carries its base in a
+	 * data attribute. This rewrites numbers and never structure, so typing does
+	 * not touch the layout and a phone does not stutter. Without JavaScript the
+	 * inputs never exist and the static amounts stay exactly as rendered.
+	 */
+	const panel = document.querySelector<HTMLElement>("[data-rescale]");
+
+	if (panel) {
+		const lang = panel.dataset.lang === "en" ? "en" : "nl";
+		const resultBase = Number(panel.dataset.resultBase);
+		const refBase = Number(panel.dataset.refBase);
+		const resultInput = panel.querySelector<HTMLInputElement>("[data-result-input]");
+		// The sentence that opens with the yield ("Ongeveer 50 soesjes") has to
+		// follow the number, or paper prints two different batches.
+		const note = document.querySelector<HTMLElement>("[data-result-note]");
+		const noteText = note?.dataset.resultNote ?? "";
+
+		type Row = { base: number; unit: string; scalable: boolean; input: HTMLInputElement; text: HTMLElement };
+		const rows: Row[] = [];
+
+		for (const item of document.querySelectorAll<HTMLElement>("li[data-ingredient]")) {
+			const text = item.querySelector<HTMLElement>(".amount-text");
+			if (!text) continue;
+
+			const base = Number(item.dataset.base);
+			const unit = item.dataset.unit ?? "";
+			const scalable = item.dataset.scalable !== "0";
+
+			const input = document.createElement("input");
+			input.type = "text";
+			input.inputMode = "decimal";
+			input.autocomplete = "off";
+			input.className = "amount-input";
+			input.value = formatAmount(base, lang);
+			input.setAttribute("aria-label", item.dataset.name ?? "");
+			if (!scalable) {
+				// Part of the recipe, not of the batch: a pinch stays a pinch.
+				input.readOnly = true;
+				input.classList.add("is-locked");
+			}
+
+			text.before(input);
+			item.classList.add("is-rescalable");
+			rows.push({ base, unit, scalable, input, text });
+		}
+
+		let factor = 1;
+		let drivenBy: "ref" | "result" = "ref";
+
+		const render = () => {
+			for (const row of rows) {
+				const amount = scaledAmount({ amount: row.base, unit: row.unit, scalable: row.scalable }, factor);
+				row.input.value = formatAmount(amount, lang);
+				row.text.textContent = `${formatAmount(amount, lang)} ${row.unit}`;
+			}
+
+			// A yield of 25,4 soesjes is not a thing anyone wants to read.
+			const yield_ = Math.max(1, Math.round(resultBase * factor));
+
+			if (resultInput) resultInput.value = String(yield_);
+
+			if (note) {
+				// Only the leading number, and only when it is the yield: the rest
+				// of the sentence ("8-10 grote soezen") is prose, not arithmetic.
+				note.textContent =
+					factor === 1
+						? noteText
+						: noteText.replace(new RegExp(`^(\\D*?)${resultBase}\\b`), `$1${yield_}`);
+			}
+
+			// A scaled list and a ½×/1×/2× table of the same ingredients would
+			// print two different truths on one sheet.
+			document.documentElement.dataset.rescaled = factor === 1 ? "0" : "1";
+
+			// A plain visit keeps its clean URL; the state only appears once there
+			// is a state worth sharing.
+			const query = factor === 1 ? "" : searchFor({ factor, drivenBy, resultValue: resultBase }, refBase);
+			if (`${location.pathname}${location.search}` !== `${location.pathname}${query}`) {
+				history.replaceState(null, "", `${location.pathname}${query}`);
+			}
+		};
+
+		const apply = (next: number | null, by: "ref" | "result") => {
+			if (next === null) return;
+			factor = next;
+			drivenBy = by;
+			render();
+		};
+
+		for (const row of rows) {
+			if (!row.scalable) continue;
+			row.input.addEventListener("input", () => {
+				const typed = Number(row.input.value.replace(",", "."));
+				apply(factorForAmount({ amount: row.base, unit: row.unit, scalable: row.scalable }, typed), "ref");
+			});
+		}
+
+		resultInput?.addEventListener("input", () => {
+			apply(factorForResult(resultBase, Number(resultInput.value.replace(",", "."))), "result");
+		});
+
+		panel.hidden = rows.length === 0;
+		apply(factorFromSearch(location.search, { refAmount: refBase, resultValue: resultBase }), "ref");
+		render();
+	}
+
 </script>

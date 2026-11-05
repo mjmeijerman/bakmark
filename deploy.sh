@@ -34,6 +34,10 @@ case "$TARGET" in
 		# Indexable. This is the site people are supposed to find.
 		SITE_INDEXABLE="${SITE_INDEXABLE:-1}"
 		SIGNUP_ALLOWED_DOMAINS="${SIGNUP_ALLOWED_DOMAINS:-}"
+		# Empty until the analytics stack runs and has a website id; the site
+		# then ships no tracker at all (see README, "Analytics").
+		UMAMI_SCRIPT_URL="${UMAMI_SCRIPT_URL:-}"
+		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID:-}"
 		;;
 	staging)
 		APP_DIR="${BAKMARK_APP_DIR:-/srv/bakmark-staging}"
@@ -44,6 +48,8 @@ case "$TARGET" in
 		# its own content, which is worse than never being listed.
 		SITE_INDEXABLE="${SITE_INDEXABLE:-0}"
 		SIGNUP_ALLOWED_DOMAINS="${SIGNUP_ALLOWED_DOMAINS:-markmeijerman.eu,mail-tester.com}"
+		UMAMI_SCRIPT_URL="${UMAMI_SCRIPT_URL:-}"
+		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID:-}"
 		;;
 	*)
 		echo "error: unknown BAKMARK_ENV=$TARGET (staging, production)" >&2
@@ -147,6 +153,7 @@ if [ "${1:-}" != "--local" ]; then
 		PORT='$PORT' SITE_URL='$SITE_URL' SITE_INDEXABLE='$SITE_INDEXABLE' \
 		MAIL_FROM='$MAIL_FROM' MAIL_ENVELOPE_FROM='$MAIL_ENVELOPE_FROM' \
 		SIGNUP_ALLOWED_DOMAINS='$SIGNUP_ALLOWED_DOMAINS' \
+		UMAMI_SCRIPT_URL='$UMAMI_SCRIPT_URL' UMAMI_WEBSITE_ID='$UMAMI_WEBSITE_ID' \
 		SMTP_URL='$SMTP_URL' HEALTH_URL='$HEALTH_URL' BRANCH='$BRANCH' \
 		'$APP_DIR/deploy.sh' --local"
 
@@ -189,13 +196,17 @@ CONFIG_FILE=".env"
 	echo "SIGNUP_ALLOWED_DOMAINS=$SIGNUP_ALLOWED_DOMAINS"
 	echo "SMTP_URL=$SMTP_URL"
 	echo "MAIL_FROM=$MAIL_FROM"
+	echo "UMAMI_SCRIPT_URL=$UMAMI_SCRIPT_URL"
+	echo "UMAMI_WEBSITE_ID=$UMAMI_WEBSITE_ID"
 } > "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"
 
 echo "==> building"
 # SITE_URL is baked into canonical tags and the sitemap, so the build needs it,
 # not just the running container.
-SITE_URL="$SITE_URL" SITE_INDEXABLE="$SITE_INDEXABLE" docker compose build
+SITE_URL="$SITE_URL" SITE_INDEXABLE="$SITE_INDEXABLE" \
+	UMAMI_SCRIPT_URL="$UMAMI_SCRIPT_URL" UMAMI_WEBSITE_ID="$UMAMI_WEBSITE_ID" \
+	docker compose build
 
 PREVIOUS="$(docker compose ps -q bakmark 2>/dev/null || true)"
 PREVIOUS_IMAGE=""

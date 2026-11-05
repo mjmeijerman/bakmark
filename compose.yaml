@@ -41,6 +41,10 @@ services:
       args:
         SITE_URL: ${SITE_URL:-http://localhost:8085}
         SITE_INDEXABLE: ${SITE_INDEXABLE:-}
+        # Both empty by default: no collector configured, no script tag in the
+        # HTML. Production sets them once the analytics stack runs.
+        UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+        UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     # Per environment: a staging build must not overwrite the image a
     # production rollback would fall back to.
     image: bakmark:${BAKMARK_ENV:-local}

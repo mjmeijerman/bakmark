@@ -1,0 +1,63 @@
+# The visit counter: Umami and its database, on the same VPS.
+#
+# Separate project name on purpose: `docker compose down` in the site checkout
+# must never be able to stop analytics, and the other way round.
+#
+# Nothing is published to the internet. Caddy on the host is the door, exactly
+# like the app: the container listens on loopback only.
+#
+#   cp analytics/env.dist /var/lib/bakmark-analytics/env   # then fill it
+#   docker compose --env-file /var/lib/bakmark-analytics/env -f analytics/compose.yaml up -d
+#
+# See "Analytics" in README.md for the DNS record and the Caddy block.
+name: bakmark-analytics
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      # No password, on purpose. The database publishes no port and is
+      # reachable only from this compose network, by one container. A secret
+      # that must be repeated inside a connection string is a secret that ends
+      # up in three places; trust on a private bridge is the smaller risk.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ${BAKMARK_ANALYTICS_DATA:?set BAKMARK_ANALYTICS_DATA}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No port at all: nothing outside this compose network talks to the database.
+    # Postgres writes its socket and lock file to /var/run/postgresql, so that
+    # one directory is in memory while the root stays read-only.
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_TYPE: postgresql
+      # The image reads this one variable and nothing else. Its value lives in
+      # the analytics env file on the host (see env.dist), never in here: it is
+      # the connection string, and connection strings carry credentials.
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the analytics env file}
+      # Signs the dashboard session cookie. Not used for visitors.
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET}
+      # No call-home: this box counts its own visitors.
+      DISABLE_TELEMETRY: "1"
+      TRACKER_SCRIPT_NAME: script.js
+    ports:
+      - "127.0.0.1:${UMAMI_PORT:-8091}:3000"
+    read_only: true
+    tmpfs:
+      - /tmp

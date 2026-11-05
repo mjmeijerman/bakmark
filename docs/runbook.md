@@ -62,6 +62,23 @@ Before the first real video, look at the mail once with
 `npm run newsletter -- --preview you@example.com`: every recipe with a video,
 concepts included, snapshot untouched.
 
+## Monthly — analytics
+
+The visit counter (Umami + Postgres, `analytics/compose.yaml`) runs beside the
+site on the same VPS, on loopback, behind Caddy at `analytics.bakmark.nl`.
+
+1. **It is still up.**
+   `docker compose --env-file /var/lib/bakmark-analytics/env -f analytics/compose.yaml ps`
+   should show `db` healthy and `umami` running.
+2. **Pageviews are still arriving** in the dashboard. A flat line is either a
+   quiet month or a site that lost the tracker; check the built HTML for
+   `script.js` before believing the first explanation.
+3. **Cookies.** Umami sets none for visitors, which is the whole reason there is
+   no consent banner. If a `Set-Cookie` ever shows up on `/script.js` or
+   `/api/send`, the privacy statement is wrong and needs the sentence back.
+4. **Disk.** The database grows slowly but forever: `docker system df` and the
+   size of `/var/lib/bakmark-analytics/data`.
+
 ## Monthly — mail health
 
 1. **DMARC reports.** `_dmarc.news.bakmark.nl` has `rua=mailto:…`; check that

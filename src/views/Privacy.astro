@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import type { Lang } from "../lib/i18n";
+import { analytics } from "../lib/analytics";
 
 interface Props {
 	lang: Lang;
@@ -9,6 +10,8 @@ interface Props {
 const { lang } = Astro.props;
 
 const contactAddress = "hello@bakmark.nl";
+// The page must not claim "no analytics" while a collector is injected.
+const counts = analytics() !== null;
 
 const copy = {
 	nl: {
@@ -26,6 +29,10 @@ const copy = {
 		kept: {
 			h: "Waar het wordt opgeslagen",
 			p: "Je e-mailadres wordt opgeslagen op mijn eigen server, en wordt alleen gebruikt voor het versturen van de nieuwsbrief.",
+		},
+		analytics: {
+			h: "Bezoekcijfers",
+			p: "Deze site telt bezoeken met een eigen, cookieloze teller op mijn eigen server. Geen cookies, geen profiel, geen derde partij, en niets dat naar een persoon te herleiden is. Je bezoekersgegevens zijn dus niet te volgen over sites heen.",
 		},
 		affiliate: {
 			h: "Affiliate-links",
@@ -53,6 +60,10 @@ const copy = {
 		kept: {
 			h: "Where it is stored",
 			p: "Your email address is stored on my own server, and is only used to send the newsletter.",
+		},
+		analytics: {
+			h: "Visit numbers",
+			p: "This site counts visits with its own cookieless collector on my own server. No cookies, no profile, no third party, and nothing that can be traced back to a person. Your visit cannot be followed across sites.",
 		},
 		affiliate: {
 			h: "Affiliate links",
@@ -84,6 +95,15 @@ const copy = {
 		<h2>{copy.kept.h}</h2>
 		<p>{copy.kept.p}</p>
 	</section>
+
+	{
+		counts && (
+			<section class="section">
+				<h2>{copy.analytics.h}</h2>
+				<p>{copy.analytics.p}</p>
+			</section>
+		)
+	}
 
 	<section class="section">
 		<h2>{copy.affiliate.h}</h2>

@@ -9,8 +9,13 @@ WORKDIR /app
 # canonical URL is localhost and whose robots meta is noindex.
 ARG SITE_URL=http://localhost:4321
 ARG SITE_INDEXABLE=
+# Empty means no visit counter: nothing is injected without both.
+ARG UMAMI_SCRIPT_URL=
+ARG UMAMI_WEBSITE_ID=
 ENV SITE_URL=$SITE_URL \
-	SITE_INDEXABLE=$SITE_INDEXABLE
+	SITE_INDEXABLE=$SITE_INDEXABLE \
+	UMAMI_SCRIPT_URL=$UMAMI_SCRIPT_URL \
+	UMAMI_WEBSITE_ID=$UMAMI_WEBSITE_ID
 
 # Dependencies first, so a source edit does not reinstall them.
 COPY package.json package-lock.json ./

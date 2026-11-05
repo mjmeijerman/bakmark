@@ -70,40 +70,58 @@ HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
 
 # ---------------------------------------------------------------------------
-# Weekly newsletter: production only.
+# Scheduled work: the host's cron runs it, not the container's.
 #
-# The videos live in recipes/<slug>.json, so they arrive with a deploy. The job
-# compares what this deployment ships against the ids it already mailed and
-# sends only the difference, which is why it can run every week without mailing
-# the same video twice.
+# A container's crontab dies with the container, and a promise nobody schedules
+# is a promise nobody keeps: the confirmation mail says an unconfirmed address
+# is deleted after 24 hours, and that only happens if something runs the purge.
 #
-# The host's cron runs it, not the container's: a container's crontab dies with
-# the container. Two entries, one per side of daylight saving, and the job
-# itself stays silent unless it is 19:00 in Europe/Amsterdam. CRON_TZ would be
-# one line shorter, but a cron that ignores it sends at 21:00 all summer.
+# Every environment gets the daily purge. Production additionally gets the
+# weekly newsletter: the videos live in recipes/<slug>.json, so they arrive
+# with a deploy, and the job compares what this deployment ships against the ids
+# it already mailed. Two entries cover daylight saving, and the job itself stays
+# silent unless it is 19:00 in Europe/Amsterdam: CRON_TZ would be one line
+# shorter, but a cron that ignores it sends at 21:00 all summer.
+#
+# The whole block is replaced on every deploy, never appended to, and the older
+# marker names are stripped too: a renamed block must not leave a duplicate job
+# behind, which for the newsletter means mailing the list twice.
 # ---------------------------------------------------------------------------
-install_newsletter_cron() {
-	log="$HOME/.bakmark-newsletter.log"
-	begin="# >>> bakmark newsletter ($TARGET) >>>"
-	end="# <<< bakmark newsletter ($TARGET) <<<"
+install_cron_jobs() {
+	log_purge="$HOME/.bakmark-purge.log"
+	log_newsletter="$HOME/.bakmark-newsletter.log"
+	begin="# >>> bakmark cron ($TARGET) >>>"
+	end="# <<< bakmark cron ($TARGET) <<<"
 
 	if ! command -v crontab >/dev/null 2>&1; then
-		echo "warning: no crontab on this host; the weekly newsletter is not scheduled" >&2
+		echo "warning: no crontab on this host; nothing is scheduled" >&2
 		echo "         sudo apt install cron, then deploy again" >&2
 		return 0
 	fi
 
-	# The block is replaced, never appended twice: a deploy is not a reason to
-	# mail the list twice.
-	job="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/newsletter.mjs --hour 19 >>$log 2>&1"
+	purge="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/purge.mjs >>$log_purge 2>&1"
+	newsletter="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/newsletter.mjs --hour 19 >>$log_newsletter 2>&1"
+
 	current="$(crontab -l 2>/dev/null || true)"
-	kept="$(printf '%s\n' "$current" | sed '/^# >>> bakmark newsletter/,/^# <<< bakmark newsletter/d')"
+	kept="$(printf '%s\n' "$current" | sed -e '/^# >>> bakmark cron/,/^# <<< bakmark cron/d' \
+		-e '/^# >>> bakmark newsletter/,/^# <<< bakmark newsletter/d' \
+		-e '/^# >>> bakmark video report/,/^# <<< bakmark video report/d')"
 
-	printf '%s\n%s\n0 17 * * 5 %s\n0 18 * * 5 %s\n%s\n' \
-		"$kept" "$begin" "$job" "$job" "$end" | crontab -
+	{
+		printf '%s\n' "$kept"
+		printf '%s\n' "$begin"
+		# 04:17: after the nightly backup would have run, before anyone is awake.
+		printf '17 4 * * * %s\n' "$purge"
+		if [ "$TARGET" = "production" ]; then
+			printf '0 17 * * 5 %s\n0 18 * * 5 %s\n' "$newsletter" "$newsletter"
+		fi
+		printf '%s\n' "$end"
+	} | crontab -
 
-	echo "==> weekly newsletter: Friday 19:00 Europe/Amsterdam, to the confirmed list"
-	echo "    log: $log"
+	echo "==> daily purge of unconfirmed addresses: 04:17 (log: $log_purge)"
+	if [ "$TARGET" = "production" ]; then
+		echo "==> weekly newsletter: Friday 19:00 Europe/Amsterdam (log: $log_newsletter)"
+	fi
 }
 
 # ---------------------------------------------------------------------------
@@ -351,8 +369,5 @@ fi
 
 echo "==> smoke test passed"
 
-# Production only: staging sends no weekly report, and a staging checkout on the
-# same host must not schedule one.
-if [ "$TARGET" = "production" ]; then
-	install_newsletter_cron
-fi
+# Every environment gets the purge; only production gets the newsletter.
+install_cron_jobs

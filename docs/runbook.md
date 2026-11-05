@@ -25,6 +25,21 @@ Then, on staging, one signup to a mail-tester.com address and confirm ≥9/10.
 A green unit test suite says the HTML changed; only mail-tester says the mail
 still lands.
 
+## Daily — purge and the newsletter log
+
+`deploy.sh` installs two cron entries on the host: the purge of unconfirmed
+addresses at 04:17 (every environment) and the newsletter on Friday at 19:00
+(production only). Both write one line per run.
+
+```sh
+ssh deploy@vps1.markmeijerman.nl 'tail -5 ~/.bakmark-purge.log'
+```
+
+A line a day, `removed N unconfirmed addresses older than 24 hours`, is the
+proof that the promise in the confirmation mail is kept. No lines at all means
+the crontab block is gone: deploy again, and check `crontab -l` for the
+`# >>> bakmark cron` markers.
+
 ## Friday — the newsletter
 
 Production mails the confirmed list at 19:00

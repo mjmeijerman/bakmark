@@ -128,6 +128,13 @@ recalculate. `?ref=250` (grams of the reference ingredient — the first one tha
 scales) and `?result=100` (soesjes) share the state; `result` wins when both are
 present.
 
+- A value is taken when the field is left or Enter is pressed, never while a key
+  is down: recomputing per keystroke rewrote the field under the cursor, so
+  clearing it and typing the first digit landed on the smallest batch and
+  backspace did nothing.
+- A factor is bounded to 0.1×–20× of the recipe, and when a typed or linked value
+  hits a bound the page says so in one line under the fields — silently producing
+  a tenth of the batch is worse than refusing.
 - `scale: false` items never move. Half a batch still needs the vanilla pod, and
   "0,4 pod" is not something a kitchen scale can weigh.
 - Rounding stops where a scale stops: one decimal below ten, whole numbers above.

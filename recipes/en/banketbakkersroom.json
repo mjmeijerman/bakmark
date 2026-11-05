@@ -26,7 +26,8 @@
 			"amount_display": "1 pod",
 			"unit": "pod",
 			"name": "vanilla pod",
-			"note": "Or 8 g vanilla extract, added with the yolks."
+			"substitute_name": "vanilla extract",
+			"note": "Scales in half pods, never less than half, and goes in with the yolks."
 		},
 		"suiker": {
 			"name": "sugar",
@@ -34,7 +35,8 @@
 		},
 		"dooiers": {
 			"name": "egg yolks",
-			"note": "At room temperature; cold yolks combine poorly. A medium egg weighs 50 g: 17.5 g yolk and 32.5 g white, so 80 g is about 4.5 yolks."
+			"each_name": "egg yolk",
+			"note": "At room temperature; cold yolks combine poorly. A medium egg weighs 50 g: 17.5 g yolk and 32.5 g white."
 		},
 		"maizena": {
 			"name": "cornflour",

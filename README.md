@@ -143,9 +143,17 @@ present.
 - The unit stays next to the field, in the word the recipe uses — "stokje", not
   the database's "stuk". Everything is grams unless the recipe says otherwise,
   and a number without its unit is not a quantity.
+- The field's label follows that unit: "Aantal" for what you count, "Hoeveelheid"
+  for what you weigh. "Aantal 600 g" makes a reader doubt the rest of the page.
+- An ingredient that is weighed but bought by the piece can say what one piece
+  weighs (`"each": {"name": "eidooier", "grams": 17.5}`), and its tooltip then
+  follows the batch: 80 g is "ongeveer 4,5 eidooiers", 120 g is 7.
+- An ingredient bought by the piece can name a weighed substitute
+  (`"substitute": {"name": "vanille-extract", "grams_each": 8}`), and that line
+  follows the count: one pod is "Of 8 g vanille-extract", three are 24 g.
+- Grams only. There is no millilitre or litre anywhere in the data, and a test
+  keeps it that way: a scale is the one instrument every reader has.
 - Rounding stops where a scale stops: one decimal below ten, whole numbers above.
-- The prose that opens with the yield ("Ongeveer 50 soesjes…") follows the number;
-  the rest of the sentence is left alone.
 - Printing shows the numbers, not the fields, and hides the static ½×/1×/2× table
   once the list is rescaled — two truths on one sheet is worse than one.
 - Without JavaScript nothing is injected: the amounts are exactly what was

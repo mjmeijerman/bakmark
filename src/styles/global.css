@@ -960,6 +960,52 @@
 		text-align: right;
 	}
 
+	/* The rescaler panel. It sits above the ingredient list and holds one field,
+	   which carries the yield: it has to read as a sentence, not as a form. */
+	.rescale {
+		margin: var(--space-3) 0 var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		background: var(--surface-warm);
+		border: 1px dashed var(--border-strong);
+		border-radius: var(--radius);
+		max-width: 34rem;
+	}
+
+	.rescale-title {
+		margin: 0 0 var(--space-2);
+		font-weight: 600;
+	}
+
+	.rescale-result {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.rescale-result input {
+		width: 6ch;
+		min-height: 2.25rem;
+		padding: 0.3rem 0.35rem;
+		font: inherit;
+		font-variant-numeric: tabular-nums;
+		text-align: right;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+	}
+
+	.rescale-result input:focus {
+		outline: none;
+		border-color: var(--accent);
+	}
+
+	.rescale-message {
+		margin-top: var(--space-2);
+		color: var(--text);
+	}
+
 	/* The rescaler: a number you can change, and a static amount that stays for
 	   paper. Only the script adds the input, so without JavaScript there is
 	   nothing here that looks editable and is not. */

@@ -51,7 +51,8 @@
 			"substitute": {
 				"name": "vanille-extract",
 				"grams_each": 8
-			}
+			},
+			"unit_plural": "stokjes"
 		},
 		{
 			"id": "suiker",

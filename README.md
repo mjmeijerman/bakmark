@@ -141,8 +141,10 @@ present.
 - A `"round"` step, for things bought in halves: a vanilla pod goes 0,5 / 1 / 1,5
   and never below half. The step is also the floor.
 - The unit stays next to the field, in the word the recipe uses — "stokje", not
-  the database's "stuk". Everything is grams unless the recipe says otherwise,
-  and a number without its unit is not a quantity.
+  the database's "stuk" — and it pluralises from two: 1 stokje, 1,5 stokje,
+  2 stokjes. The static table and the yield field use the same rule. Everything
+  is grams unless the recipe says otherwise, and a number without its unit is
+  not a quantity.
 - The field's label follows that unit: "Aantal" for what you count, "Hoeveelheid"
   for what you weigh. "Aantal 600 g" makes a reader doubt the rest of the page.
 - An ingredient that is weighed but bought by the piece can say what one piece

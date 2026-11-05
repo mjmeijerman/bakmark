@@ -132,11 +132,17 @@ present.
   is down: recomputing per keystroke rewrote the field under the cursor, so
   clearing it and typing the first digit landed on the smallest batch and
   backspace did nothing.
-- A factor is bounded to 0.1×–20× of the recipe, and when a typed or linked value
-  hits a bound the page says so in one line under the fields — silently producing
-  a tenth of the batch is worse than refusing.
-- `scale: false` items never move. Half a batch still needs the vanilla pod, and
-  "0,4 pod" is not something a kitchen scale can weigh.
+- A factor is bounded to 0.1×–20× of the recipe, and a typed or linked value that
+  hits a bound gets a line under the fields that names the bound in the field's
+  own unit: "Te kleine hoeveelheden zijn niet makkelijk te maken. De minimum
+  hoeveelheid die wij aanhouden is 50 g." Silently producing a tenth of the batch
+  is worse than saying so.
+- `scale: false` items never move: salt stays a pinch however small the batch.
+- A `"round"` step, for things bought in halves: a vanilla pod goes 0,5 / 1 / 1,5
+  and never below half. The step is also the floor.
+- The unit stays next to the field, in the word the recipe uses — "stokje", not
+  the database's "stuk". Everything is grams unless the recipe says otherwise,
+  and a number without its unit is not a quantity.
 - Rounding stops where a scale stops: one decimal below ten, whole numbers above.
 - The prose that opens with the yield ("Ongeveer 50 soesjes…") follows the number;
   the rest of the sentence is left alone.

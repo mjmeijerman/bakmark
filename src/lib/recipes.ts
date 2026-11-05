@@ -14,6 +14,12 @@ export interface Ingredient {
 	note?: string;
 	optional?: boolean;
 	scale?: boolean;
+	/**
+	 * What this scales in, when whole units are not the only option: a vanilla
+	 * pod halves, salt does not. The step is also the floor — nobody wants 0,1
+	 * of a pod, so half is the least you get.
+	 */
+	round?: number;
 }
 
 export interface Step {
@@ -364,6 +370,18 @@ export interface ResolvedRecipe {
 const round = (value: number) =>
 	value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
 
+/**
+ * The amount at a factor, rounded to what the ingredient is bought in.
+ *
+ * A vanilla pod halves: 0,5 is a real answer, 0,37 is not. The step doubles as
+ * the floor, so a quarter batch still asks for half a pod rather than nothing.
+ */
+const scaleWithStep = (ingredient: Ingredient, factor: number): number => {
+	const step = ingredient.round;
+	if (!step || step <= 0) return round(ingredient.amount * factor);
+	return Math.max(step, Math.round((ingredient.amount * factor) / step) * step);
+};
+
 export const formatAmount = (i: { amount: number; unit: string; amount_display?: string }) =>
 	i.amount_display ?? `${String(i.amount).replace(".", ",")} ${i.unit}`;
 
@@ -388,7 +406,7 @@ const applyVariant = (recipe: Recipe, variant?: string): Ingredient[] => {
 
 const scaleIngredient = (ingredient: Ingredient, factor: number): ResolvedIngredient => {
 	const scalable = ingredient.scale !== false;
-	const amount = scalable ? round(ingredient.amount * factor) : ingredient.amount;
+	const amount = scalable ? scaleWithStep(ingredient, factor) : ingredient.amount;
 	const display =
 		scalable && factor !== 1
 			? `${String(amount).replace(".", ",")} ${ingredient.unit}`

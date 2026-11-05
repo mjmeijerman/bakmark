@@ -15,6 +15,12 @@ export interface RescaleBase {
 	unit: string;
 	/** `scale: false` items keep their amount whatever the factor. */
 	scalable: boolean;
+	/**
+	 * What this scales in, for things bought in halves: a vanilla pod is 0,5 or
+	 * 1 or 1,5, never 0,37. The step is also the floor, so a quarter batch still
+	 * asks for half a pod.
+	 */
+	step?: number;
 }
 
 /** Below ten, one decimal; above, whole numbers. Grams of salt are not 0,333. */
@@ -22,8 +28,16 @@ export const round = (value: number): number =>
 	value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
 
 /** The amount a `scale: false` item keeps, whatever the factor. */
-export const scaledAmount = (base: RescaleBase, factor: number): number =>
-	base.scalable ? round(base.amount * factor) : base.amount;
+export const scaledAmount = (base: RescaleBase, factor: number): number => {
+	if (!base.scalable) return base.amount;
+
+	const step = base.step;
+	if (!step || step <= 0) return round(base.amount * factor);
+
+	// Rounded to the step, and never below one step: half a pod is a real
+	// answer, a tenth of a pod is a shopping problem.
+	return Math.max(step, Math.round((base.amount * factor) / step) * step);
+};
 
 /** Which bound a factor hit, if any: the UI has to be able to say so. */
 export type Clamp = "min" | "max" | null;

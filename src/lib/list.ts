@@ -216,6 +216,16 @@ export const confirmedSubscribers = (): Recipient[] =>
 	) as Recipient[];
 
 /**
+ * Removes one address, whatever state it is in. Used when the sending server
+ * says the address does not exist: an unsubscribe and a bounce both end in the
+ * row being gone, and a second call is a no-op.
+ */
+export const deleteByEmail = (email: string): boolean =>
+	retry(() =>
+		openList().prepare("DELETE FROM subscribers WHERE email = ?").run(email.toLowerCase()),
+	).changes > 0;
+
+/**
  * Deletes unconfirmed rows older than the cutoff. Returns how many went.
  *
  * An address that was never confirmed is a string someone typed, not a

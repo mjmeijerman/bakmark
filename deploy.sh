@@ -152,6 +152,7 @@ start_analytics() {
 # ---------------------------------------------------------------------------
 install_cron_jobs() {
 	log_purge="$HOME/.bakmark-purge.log"
+	log_bounces="$HOME/.bakmark-bounces.log"
 	log_newsletter="$HOME/.bakmark-newsletter.log"
 	begin="# >>> bakmark cron ($TARGET) >>>"
 	end="# <<< bakmark cron ($TARGET) <<<"
@@ -163,6 +164,10 @@ install_cron_jobs() {
 	fi
 
 	purge="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/purge.mjs >>$log_purge 2>&1"
+	# The bounce sweep reads the host's Postfix log on stdin. No mount: a file
+	# that rotates under a bind mount is a broken mount, and the deploy account
+	# is in adm, which is what makes the file readable in the first place.
+	bounces="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/bounces.mjs < /var/log/mail.log >>$log_bounces 2>&1"
 	newsletter="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/newsletter.mjs --hour 19 >>$log_newsletter 2>&1"
 
 	current="$(crontab -l 2>/dev/null || true)"
@@ -175,6 +180,9 @@ install_cron_jobs() {
 		printf '%s\n' "$begin"
 		# 04:17: after the nightly backup would have run, before anyone is awake.
 		printf '17 4 * * * %s\n' "$purge"
+		# Ten minutes later: addresses the sending server declared dead are gone
+		# before the day starts.
+		printf '27 4 * * * %s\n' "$bounces"
 		if [ "$TARGET" = "production" ]; then
 			printf '0 17 * * 5 %s\n0 18 * * 5 %s\n' "$newsletter" "$newsletter"
 		fi
@@ -182,6 +190,7 @@ install_cron_jobs() {
 	} | crontab -
 
 	echo "==> daily purge of unconfirmed addresses: 04:17 (log: $log_purge)"
+	echo "==> daily bounce sweep of /var/log/mail.log: 04:27 (log: $log_bounces)"
 	if [ "$TARGET" = "production" ]; then
 		echo "==> weekly newsletter: Friday 19:00 Europe/Amsterdam (log: $log_newsletter)"
 	fi

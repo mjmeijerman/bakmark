@@ -362,6 +362,33 @@ guard if you copied the newsletter line.
 Backup: stop the container, then copy every `subscribers.sqlite*` file — the
 `-wal` file holds committed rows that are not in the main file yet.
 
+### Removing addresses that bounce
+
+The newsletter leaves with `bounce@bakmark.nl` as its envelope sender, so a
+failure comes back as a delivery report — to a Proton mailbox this code cannot
+read. What it *can* read is Postfix's own log on the box that sends the
+newsletter, which is where every failed attempt lands anyway.
+
+```sh
+# what the daily cron runs, on the host
+docker compose run --rm -T bakmark node --experimental-strip-types scripts/bounces.mjs < /var/log/mail.log
+```
+
+- **Hard bounce** (`status=bounced` with a `5.x.x` code) → the address is
+  deleted. A dead mailbox costs a send every week and hits the sending
+  reputation.
+- **Soft** (`deferred`, `4.x.x`, an expired queue) → kept. A full mailbox or a
+  greylisting server is not an unsubscribe, and the next mail may well arrive.
+- One line out, always: `3 hard bounce(s), 3 removed; 2 soft (kept); 40 delivered`.
+
+Reading that log is why `deploy` is in the `adm` group, and why provisioning
+sets `ForwardToSyslog=yes`: until it did, `/var/log/mail.log` was empty and this
+job had nothing to read.
+
+What it does not catch: a refusal a *receiving* server sends after accepting the
+message. That report goes to the Proton mailbox and needs IMAP access
+(Proton Bridge) — a separate step, deliberately not in here.
+
 ### Weekly newsletter
 
 A video exists in `recipes/<slug>.json` (`video.status` = `gepubliceerd` plus a

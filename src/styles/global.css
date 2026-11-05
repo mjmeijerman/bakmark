@@ -1219,6 +1219,45 @@
 		display: none;
 	}
 
+	/* Half, one, double: a plain table, because that is what prints and what a
+	   reader scans down a column. Numbers line up, so a stray digit shows. */
+	.scale-table {
+		width: 100%;
+		max-width: 34rem;
+		border-collapse: collapse;
+		font-size: var(--text-sm);
+		font-variant-numeric: tabular-nums;
+		margin-block: var(--space-2) var(--space-3);
+	}
+
+	.scale-table caption {
+		text-align: left;
+		font-weight: 600;
+		color: var(--text);
+		padding-block-end: var(--space-1);
+	}
+
+	.scale-table th,
+	.scale-table td {
+		text-align: left;
+		padding: 0.3rem 0.6rem 0.3rem 0;
+		border-bottom: 1px solid var(--border);
+		vertical-align: baseline;
+	}
+
+	.scale-table th:first-child {
+		width: 45%;
+		font-weight: 400;
+	}
+
+	.scale-table thead th {
+		font-weight: 600;
+	}
+
+	.scale-table td {
+		white-space: nowrap;
+	}
+
 	/* The codes on paper: one per part with a video, plus the tip. */
 	.qr-strip {
 		gap: 6mm;

@@ -48,7 +48,7 @@ Printing a recipe gives ingredients, steps and codes, nothing else: no photos,
 no explanations, no navigation, no newsletter. The print view is the same page
 with CSS doing the filtering, so nothing can drift.
 
-Two things are print-only:
+Three things are print-only:
 
 - **A QR code per part that has a published video.** A page built from three
   base recipes prints three codes, each pointing at the video of the part in
@@ -57,6 +57,10 @@ Two things are print-only:
   time (`src/components/QrCode.astro`), so they stay sharp on paper.
 - **A QR code to the tip block**, always. Paper has no links, and the tip is the
   one thing a reader cannot act on later.
+- **The ½× / 1× / 2× table** (`scaledIngredients()` in `src/lib/recipes.ts`),
+  collapsed on screen because the interactive rescaler is a later step. Amounts
+  marked `scale: false` stay put: half a batch still needs the vanilla pod, and
+  "0,5 pod" is not a thing a kitchen scale can weigh.
 
 Design tokens and typography are documented in [`docs/design-tokens.md`](docs/design-tokens.md).
 Maintenance — dependency updates, mail health checks, DKIM rotation — is in

@@ -25,11 +25,21 @@ import { withServer } from "./helpers/server.mjs";
 
 const milk = { amount: 100, unit: "g", scalable: true };
 const salt = { amount: 1.5, unit: "g", scalable: false };
+const vanilla = { amount: 1, unit: "stuk", scalable: true, step: 0.5 };
 
 test("a factor multiplies what may scale and nothing else", () => {
 	assert.equal(scaledAmount(milk, 2.5), 250);
 	assert.equal(scaledAmount(salt, 2.5), 1.5, "a pinch stays a pinch");
 	assert.equal(scaledAmount(milk, 1), 100);
+});
+
+test("a vanilla pod halves, and never becomes less than half", () => {
+	assert.equal(scaledAmount(vanilla, 1), 1);
+	assert.equal(scaledAmount(vanilla, 1.5), 1.5);
+	assert.equal(scaledAmount(vanilla, 2), 2);
+	assert.equal(scaledAmount(vanilla, 0.5), 0.5);
+	assert.equal(scaledAmount(vanilla, 0.25), 0.5, "half is the floor: a quarter pod is not a thing");
+	assert.equal(scaledAmount(vanilla, 0.1), 0.5);
 });
 
 test("numbers stop where a kitchen scale stops", () => {
@@ -111,8 +121,14 @@ test("the page carries everything the rescaler needs, and nothing it must add", 
 		assert.match(html, /data-rescale/);
 		assert.match(html, /data-result-base="50"/);
 		assert.match(html, /data-ref-base="100"/, "the reference ingredient is the first that scales");
-		assert.match(html, /data-base="100" data-unit="g" data-scalable="1"/);
-		assert.match(html, /data-base="1\.5" data-unit="g" data-scalable="0"/, "salt is marked as fixed");
+		// One row, attribute by attribute: order is a rendering detail, the
+		// presence of each value is the contract.
+		const row = html.match(/<li[^>]*data-ingredient="melk"[^>]*>/)?.[0] ?? "";
+		for (const attribute of ['data-base="100"', 'data-unit="g"', 'data-scalable="1"']) {
+			assert.ok(row.includes(attribute), `melk is missing ${attribute}`);
+		}
+		const saltRow = html.match(/<li[^>]*data-ingredient="zout"[^>]*>/)?.[0] ?? "";
+		assert.ok(saltRow.includes('data-scalable="0"'), "salt is marked as fixed");
 		assert.match(html, /data-result-input/);
 		assert.match(html, /data-result-note="Ongeveer 50 soesjes/, "the sentence about the yield follows it");
 
@@ -122,14 +138,23 @@ test("the page carries everything the rescaler needs, and nothing it must add", 
 	});
 });
 
+test("the unit stays visible, in the word the recipe uses", async () => {
+	await withServer(async ({ base }) => {
+		const html = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
+		// "1 stokje" in the data, not the database's "stuk".
+		assert.match(html, /data-unit-display="stokje" data-round="0\.5"/);
+		assert.match(html, /data-unit-display="g"/);
+	});
+});
+
 test("printing keeps the numbers and drops the fields", () => {
 	const css = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
 	const print = css.slice(css.indexOf("@media print"));
 
 	assert.match(
 		print,
-		/\.ingredients \.amount-input \{\s*display: none !important;/,
-		"a printed input is a blank line",
+		/\.ingredients \.amount-input,\s*\.amount-unit \{\s*display: none !important;/,
+		"a printed input is a blank line, and the unit travels inside the number",
 	);
 	assert.match(print, /\.ingredients li\.is-rescalable \.amount-text \{\s*display: inline;/);
 	assert.match(print, /html\[data-rescaled="1"\] \.scale-section/, "a scaled list hides the static table");

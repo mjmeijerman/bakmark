@@ -57,9 +57,9 @@ const copy = {
 		rescaleHint: "Verander een hoeveelheid of het aantal; de rest rekent mee.",
 		rescaleNoScale: "schaalt niet mee",
 		rescaleClampedMin:
-			"Dat is minder dan een tiende van het recept, en dat rekent niemand meer na. Aangepast naar de kleinste hoeveelheid.",
+			"Te kleine hoeveelheden zijn niet makkelijk te maken. De minimum hoeveelheid die wij aanhouden is %s.",
 		rescaleClampedMax:
-			"Dat is meer dan twintig keer het recept. Aangepast naar de grootste hoeveelheid.",
+			"Te grote hoeveelheden zijn niet praktisch. De maximum hoeveelheid die wij aanhouden is %s.",
 		rescaleNotANumber: "Dat is geen hoeveelheid; de vorige waarde staat er weer.",
 		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
 		rescaleResult: "Aantal",
@@ -137,9 +137,9 @@ const copy = {
 		rescaleHint: "Change an amount or the count; the rest follows.",
 		rescaleNoScale: "does not scale",
 		rescaleClampedMin:
-			"That is less than a tenth of the recipe, which nobody measures. Changed to the smallest amount.",
+			"Very small amounts are hard to make. The smallest amount we keep is %s.",
 		rescaleClampedMax:
-			"That is more than twenty times the recipe. Changed to the largest amount.",
+			"Very large amounts are impractical. The largest amount we keep is %s.",
 		rescaleNotANumber: "That is not an amount; the previous value is back.",
 		rescaleAmount: (name: string) => `Amount of ${name}`,
 		rescaleResult: "Count",
@@ -473,7 +473,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				data-rescale
 				data-lang={lang}
 				data-result-base={recipe.result.value}
+				data-result-unit={recipe.result.unit}
 				data-ref-base={reference?.amount ?? 0}
+				data-ref-unit={reference?.amount_display.replace(/^[\d.,]+\s*/, "") ?? ""}
 				data-clamped-min={copy.rescaleClampedMin}
 				data-clamped-max={copy.rescaleClampedMax}
 				data-not-a-number={copy.rescaleNotANumber}
@@ -516,6 +518,10 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 										data-name={ingredient.name}
 										data-base={ingredient.amount}
 										data-unit={ingredient.unit}
+										data-unit-display={
+											ingredient.amount_display.replace(/^[\d.,]+\s*/, "") || ingredient.unit
+										}
+										data-round={ingredient.round ?? ""}
 										data-scalable={ingredient.scale === false ? "0" : "1"}
 									>
 										<input
@@ -773,6 +779,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 <script>
 	import {
+		MAX_FACTOR,
+		MIN_FACTOR,
 		clampedResult,
 		factorFromSearch,
 		formatAmount,
@@ -914,12 +922,22 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		const resultBase = Number(panel.dataset.resultBase);
 		const refBase = Number(panel.dataset.refBase);
 		const resultInput = panel.querySelector<HTMLInputElement>("[data-result-input]");
+		const resultUnit = panel.dataset.resultUnit ?? "";
 		// The sentence that opens with the yield ("Ongeveer 50 soesjes") has to
 		// follow the number, or paper prints two different batches.
 		const note = document.querySelector<HTMLElement>("[data-result-note]");
 		const noteText = note?.dataset.resultNote ?? "";
 
-		type Row = { base: number; unit: string; scalable: boolean; input: HTMLInputElement; text: HTMLElement };
+		type Row = {
+			base: number;
+			unit: string;
+			unitDisplay: string;
+			step?: number;
+			scalable: boolean;
+			input: HTMLInputElement;
+			unitNode: HTMLElement;
+			text: HTMLElement;
+		};
 		const rows: Row[] = [];
 
 		for (const item of document.querySelectorAll<HTMLElement>("li[data-ingredient]")) {
@@ -928,6 +946,10 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 			const base = Number(item.dataset.base);
 			const unit = item.dataset.unit ?? "";
+			// "1 stokje" and "100 g" both end in the word a reader recognises; the
+			// unit column is that word, not the database's "stuk".
+			const unitDisplay = item.dataset.unitDisplay || unit;
+			const step = Number(item.dataset.round) || undefined;
 			const scalable = item.dataset.scalable !== "0";
 
 			const input = document.createElement("input");
@@ -944,8 +966,16 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			}
 
 			text.before(input);
+
+			// The unit stays visible next to the field: a number without a unit is
+			// not a quantity, and "everything in grams" is a convention, not a law.
+			const unitNode = document.createElement("span");
+			unitNode.className = "amount-unit";
+			unitNode.textContent = unitDisplay;
+			input.after(unitNode);
+
 			item.classList.add("is-rescalable");
-			rows.push({ base, unit, scalable, input, text });
+			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text });
 		}
 
 		let factor = 1;
@@ -953,9 +983,13 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 		const render = () => {
 			for (const row of rows) {
-				const amount = scaledAmount({ amount: row.base, unit: row.unit, scalable: row.scalable }, factor);
+				const amount = scaledAmount(
+					{ amount: row.base, unit: row.unit, scalable: row.scalable, step: row.step },
+					factor,
+				);
 				row.input.value = formatAmount(amount, lang);
-				row.text.textContent = `${formatAmount(amount, lang)} ${row.unit}`;
+				row.unitNode.textContent = row.unitDisplay;
+				row.text.textContent = `${formatAmount(amount, lang)} ${row.unitDisplay}`;
 			}
 
 			// A yield of 25,4 soesjes is not a thing anyone wants to read.
@@ -1014,11 +1048,18 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 		const readNumber = (input: HTMLInputElement) => Number(input.value.replace(",", "."));
 
-		const clamped = (bound: "min" | "max" | null) =>
-			bound === "min" ? copy.clampedMin : bound === "max" ? copy.clampedMax : null;
+		const clamped = (bound: "min" | "max" | null, base: number, unit: string) => {
+			if (bound === null) return null;
+			const boundFactor = bound === "min" ? MIN_FACTOR : MAX_FACTOR;
+			const value = base * boundFactor;
+			return (bound === "min" ? copy.clampedMin : copy.clampedMax).replace(
+				"%s",
+				`${formatAmount(value, lang)} ${unit}`.trim(),
+			);
+		};
 
 		const commitAmount = (row: Row) => {
-			const base = { amount: row.base, unit: row.unit, scalable: row.scalable };
+			const base = { amount: row.base, unit: row.unit, scalable: row.scalable, step: row.step };
 			const result = typedAmountFactor(base, readNumber(row.input));
 
 			if (!result) {
@@ -1028,7 +1069,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				return;
 			}
 
-			say(clamped(result.clamped));
+			say(clamped(result.clamped, row.base, row.unitDisplay));
 			apply(result.factor, "ref");
 		};
 
@@ -1044,7 +1085,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				return;
 			}
 
-			say(clamped(result.clamped));
+			say(clamped(result.clamped, resultBase, resultUnit));
 			apply(result.factor, "result");
 		};
 
@@ -1074,7 +1115,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		// thing a typed one does.
 		const initial = factorFromSearch(location.search, { refAmount: refBase, resultValue: resultBase });
 		if (initial) {
-			say(clamped(initial.clamped));
+			say(clamped(initial.clamped, refBase, panel.dataset.refUnit ?? ""));
 			apply(initial.factor, "ref");
 		}
 		render();

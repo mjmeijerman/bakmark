@@ -988,6 +988,11 @@
 		background: var(--surface);
 	}
 
+	.amount-unit {
+		color: var(--muted);
+		margin-left: 0.25rem;
+	}
+
 	.ingredients .amount-input.is-locked {
 		color: var(--muted);
 		border-style: dashed;
@@ -1392,8 +1397,11 @@
 		display: block;
 	}
 
-	/* Paper gets the numbers, not the fields: a printed input is a blank line. */
-	.ingredients .amount-input {
+	/* Paper gets the numbers, not the fields: a printed input is a blank line.
+	   The unit travels with the number inside .amount-text, so the screen-only
+	   copy of it is dropped here. */
+	.ingredients .amount-input,
+	.amount-unit {
 		display: none !important;
 	}
 

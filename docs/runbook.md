@@ -67,9 +67,17 @@ concepts included, snapshot untouched.
 The visit counter (Umami + Postgres, `analytics/compose.yaml`) runs beside the
 site on the same VPS, on loopback, behind the nginx vhost `analytics.bakmark.nl`.
 
-1. **It is still up.** `docker compose -p bakmark-analytics -f analytics/compose.yaml ps`
-   should show `db` healthy and `umami` running. The deploy starts it; the log
-   is `docker compose -p bakmark-analytics -f analytics/compose.yaml logs`.
+1. **It is still up.** From a checkout:
+
+   ```sh
+   cd /srv/bakmark-staging
+   docker compose -p bakmark-analytics --env-file analytics/.env \
+     -f analytics/compose.yaml ps
+   ```
+
+   `db` healthy and `umami` running is the expected pair. Swap `ps` for `logs`
+   when it is not. The env file name is the one `deploy.sh` wrote; it is
+   git-ignored, so it exists only on the machine that deployed.
 2. **Pageviews are still arriving** in the dashboard. A flat line is either a
    quiet month or a site that lost the tracker; check the built HTML for
    `script.js` before believing the first explanation.

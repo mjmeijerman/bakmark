@@ -232,3 +232,56 @@ addresses older than 24 hours`, so a cron log answers whether it ran.
 
 Backup: stop the container, then copy every `subscribers.sqlite*` file — the
 `-wal` file holds committed rows that are not in the main file yet.
+
+### Weekly newsletter
+
+A video exists in `recipes/<slug>.json` (`video.status` = `gepubliceerd` plus a
+`youtube_id`). Every Friday at 19:00 Europe/Amsterdam the production deployment
+mails the confirmed list the videos published since the previous newsletter.
+Nothing is sent in a week without new videos: a mail that says "no news this
+week" trains the list to ignore the next one.
+
+The mail links to the recipe page, not to YouTube: the video is embedded there,
+next to the timings and the print view, and a watch link would send the reader
+past all of it. Each subscriber gets their own mail, in their own language, with
+their own unsubscribe link and a `List-Unsubscribe` header. Not a bcc: a shared
+recipient header shows everyone who else is on the list, and one unsubscribe
+link cannot serve all of them.
+
+Only confirmed addresses are mailed. An address that never confirmed asked for
+nothing but the confirmation link.
+
+`deploy.sh` installs the cron entry itself, and only when
+`BAKMARK_ENV=production`: staging and local runs never schedule it. The entry
+lives in the deploy user's crontab, between `# >>> bakmark newsletter` markers,
+and is replaced on every deploy, so deploying twice does not mail twice.
+
+Two entries cover daylight saving (17:00 and 18:00 UTC); the job exits unless it
+is 19:00 in the Netherlands, so exactly one of them fires. `CRON_TZ` would be
+shorter, but a cron that ignores it would send at 21:00 all summer.
+
+Run it by hand the same way cron does:
+
+```sh
+cd /srv/bakmark-production && BAKMARK_ENV=production /usr/bin/env docker compose run --rm -T bakmark \
+  node --experimental-strip-types scripts/newsletter.mjs
+```
+
+Omit `--hour 19` to run regardless of the clock. One line comes out either way:
+`1 new video(s) to 12/12 subscriber(s): soesjes` or `0 new; nothing sent`. The
+log is `~/.bakmark-newsletter.log` on the server.
+
+Before anything is published, look at the mail itself:
+
+```sh
+npm run newsletter -- --preview you@example.com    # against Mailpit in development
+```
+
+`--preview` sends every recipe that has a video, concepts included and marked as
+such, to that one address, and never writes the snapshot — so a test cannot tell
+the next weekly run that this week's work was already sent.
+
+Which ids were already mailed lives in `videos-mailed.json` next to the
+subscriber list (`/var/lib/bakmark/`), not in the checkout: a deploy or a
+rollback must not turn last week's video into a new one. Delete the file to
+re-send the whole back catalogue.

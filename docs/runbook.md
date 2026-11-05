@@ -25,6 +25,28 @@ Then, on staging, one signup to a mail-tester.com address and confirm ≥9/10.
 A green unit test suite says the HTML changed; only mail-tester says the mail
 still lands.
 
+## Friday — the newsletter
+
+Production mails the confirmed list at 19:00
+(`scripts/newsletter.mjs`, cron installed by `deploy.sh`). No mail in a week
+without a new video is normal, so check the log rather than the inbox:
+
+```sh
+ssh deploy@vps1.markmeijerman.nl 'tail -5 ~/.bakmark-newsletter.log'
+```
+
+What it should say, once per Friday: one line with the hour check that did
+nothing, and one with `N new video(s) to x/y subscriber(s)`. Two send lines in
+one week means the snapshot in `/var/lib/bakmark/videos-mailed.json` is not
+being written; two `nothing done` lines means both cron entries skipped, which
+is a timezone, not a video, problem. `failed:` in the line is one address that
+refused the mail; the rest of the list got it and those videos are not retried,
+so check whether that address is real.
+
+Before the first real video, look at the mail once with
+`npm run newsletter -- --preview you@example.com`: every recipe with a video,
+concepts included, snapshot untouched.
+
 ## Monthly — mail health
 
 1. **DMARC reports.** `_dmarc.news.bakmark.nl` has `rua=mailto:…`; check that

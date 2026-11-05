@@ -41,7 +41,12 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/recipes ./recipes
 # The retention job runs in this image too, and needs exactly two source files.
 COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/src/lib/config.ts /app/src/lib/list.ts ./src/lib/
+# The retention and newsletter jobs run in this image too, and need exactly
+# these source files: config and list for the purge; i18n, list, mail,
+# newsletter and videos for the weekly mail.
+COPY --from=build /app/src/lib/config.ts /app/src/lib/list.ts \
+	/app/src/lib/i18n.ts /app/src/lib/mail.ts /app/src/lib/newsletter.ts \
+	/app/src/lib/videos.ts ./src/lib/
 
 # `node` is uid 1000. The mounted /data must be owned by that uid (see README).
 USER node

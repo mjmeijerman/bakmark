@@ -6,9 +6,11 @@
  * twice.
  */
 import { randomBytes } from "node:crypto";
-import { UNCONFIRMED_TTL_LABEL } from "./config";
-import { path, type Lang } from "./i18n";
-import { sendMail } from "./mail";
+import { UNCONFIRMED_TTL_LABEL } from "./config.ts";
+import { path, type Lang } from "./i18n.ts";
+import type { Recipient } from "./list.ts";
+import { sendMail } from "./mail.ts";
+import type { ReportVideo } from "./videos.ts";
 
 /** 32 random bytes; the token is the only thing that authorises a change. */
 export const newToken = (): string => randomBytes(32).toString("hex");
@@ -159,4 +161,233 @@ export const sendConfirmation = async ({
 </html>`;
 
 	await sendMail({ to: email, subject: text.subject, text: plain, html });
+};
+
+/* ------------------------------------------------------------------------- */
+/* The weekly newsletter: the videos published since the last one.            */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * The mail that goes to the list.
+ *
+ * It links to the recipe page, never to YouTube: the video is embedded there,
+ * with the timings and the print view around it, and a watch link would send
+ * the reader straight past all of that.
+ *
+ * `preview` keeps the layout but says what it is and shows the status of a
+ * recipe that is not live yet, so the mail can be looked at before anything is
+ * published.
+ */
+const weeklyCopy = {
+	nl: {
+		one: (title: string) => `Nieuwe video op Bakmark: ${title}`,
+		many: (count: number) => `Nieuwe video's op Bakmark (${count})`,
+		introOne: "Er staat één nieuwe video op Bakmark.",
+		introMany: (count: number) => `Er staan ${count} nieuwe video's op Bakmark.`,
+		action: "Bekijk het recept",
+		browse: "Alle recepten",
+		why: "Je krijgt deze mail omdat je je hebt aangemeld voor de nieuwsbrief van Bakmark.",
+		unsubscribe: "Uitschrijven",
+		previewIntro: (count: number) =>
+			`Testmail met alle ${count} recepten die een video hebben, ook de concepten.`,
+		previewSubject: (count: number) => `Testmail: alle ${count} recepten met een video`,
+		previewWhy: "Testmail, met de hand verstuurd. Telt niet mee voor de nieuwsbrief van volgende week.",
+	},
+	en: {
+		one: (title: string) => `New video on Bakmark: ${title}`,
+		many: (count: number) => `New videos on Bakmark (${count})`,
+		introOne: "There is one new video on Bakmark.",
+		introMany: (count: number) => `There are ${count} new videos on Bakmark.`,
+		action: "Open the recipe",
+		browse: "All recipes",
+		why: "You get this mail because you signed up for the Bakmark newsletter.",
+		unsubscribe: "Unsubscribe",
+		previewIntro: (count: number) =>
+			`Test mail with all ${count} recipes that have a video, drafts included.`,
+		previewSubject: (count: number) => `Test mail: all ${count} recipes with a video`,
+		previewWhy: "Test mail, sent by hand. It does not count towards next week's newsletter.",
+	},
+} satisfies Record<Lang, Record<string, unknown>>;
+
+export interface WeeklyMail {
+	subject: string;
+	text: string;
+	html: string;
+}
+
+export const weeklyMail = ({
+	videos,
+	lang,
+	siteUrl: base,
+	unsubscribeUrl,
+	preview = false,
+}: {
+	videos: ReportVideo[];
+	lang: Lang;
+	siteUrl: string;
+	unsubscribeUrl?: string;
+	preview?: boolean;
+}): WeeklyMail => {
+	const text = weeklyCopy[lang];
+	const count = videos.length;
+
+	if (count === 0) throw new Error("[newsletter] nothing to send; do not build an empty mail");
+
+	const subject = preview
+		? text.previewSubject(count)
+		: count === 1
+			? text.one(videos[0].title)
+			: text.many(count);
+
+	const intro = preview
+		? text.previewIntro(count)
+		: count === 1
+			? text.introOne
+			: text.introMany(count);
+
+	const recipeUrl = (video: ReportVideo) => `${base}${path(lang, "recipe", video.slug)}`;
+
+	const plain = [intro, ""];
+	videos.forEach((video, index) => {
+		const status = preview && video.status !== "gepubliceerd" ? ` (${video.status})` : "";
+		plain.push(`${index + 1}. ${video.title}${status}`);
+		plain.push(`   ${recipeUrl(video)}`);
+		plain.push("");
+	});
+	plain.push(`${text.browse}: ${base}${path(lang, "recipes")}`);
+	plain.push("");
+	plain.push(preview ? text.previewWhy : text.why);
+	if (unsubscribeUrl) plain.push(`${text.unsubscribe}: ${unsubscribeUrl}`);
+
+	const rows = videos
+		.map((video) => {
+			const url = recipeUrl(video);
+			const status =
+				preview && video.status !== "gepubliceerd"
+					? ` <span style="color:#7a6757;font-weight:normal;">(${escapeHtml(video.status)})</span>`
+					: "";
+			return `<tr>
+									<td style="padding:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.35;font-weight:bold;color:#2a211a;">
+										<a href="${escapeHtml(url)}" style="color:#2a211a;text-decoration:none;">${escapeHtml(video.title)}</a>${status}
+									</td>
+								</tr>
+								<tr>
+									<td style="padding:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
+										<a href="${escapeHtml(url)}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.action)}</a>
+									</td>
+								</tr>`;
+		})
+		.join("\n\t\t\t\t\t\t\t\t");
+
+	const unsubscribeRow = unsubscribeUrl
+		? `<tr>
+							<td style="padding:8px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
+								<a href="${escapeHtml(unsubscribeUrl)}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.unsubscribe)}</a>
+							</td>
+						</tr>`
+		: "";
+
+	const html = `<!doctype html>
+<html lang="${lang}">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>${escapeHtml(subject)}</title>
+	</head>
+	<body style="margin:0;padding:0;">
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f6f1e7" style="background-color:#f6f1e7;margin:0;padding:0;">
+			<tr>
+				<td align="center" style="padding:24px 12px;">
+					<table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="width:520px;background-color:#fffdf8;border:1px solid #e4d9c8;">
+						<tr>
+							<td style="padding:24px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;">
+								<a href="${escapeHtml(base)}" style="text-decoration:none;"><img src="${escapeHtml(logoUrl())}" alt="${escapeHtml(LOGO_ALT[lang])}" width="120" height="120" style="display:block;width:120px;height:auto;border:0;text-decoration:none;" /></a>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;font-weight:bold;color:#2a211a;">
+								${escapeHtml(intro)}
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:20px 24px 8px 24px;">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+								${rows}
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:4px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
+								<a href="${escapeHtml(base + path(lang, "recipes"))}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.browse)}</a>
+							</td>
+						</tr>
+						${unsubscribeRow}
+						<tr>
+							<td style="padding:20px 24px 24px 24px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#7a6757;">
+								${escapeHtml(preview ? text.previewWhy : text.why)}
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>`;
+
+	return { subject, text: plain.join("\n"), html };
+};
+
+export interface WeeklyResult {
+	sent: number;
+	failed: string[];
+	/** True when there was nobody to send to; nothing was attempted. */
+	empty: boolean;
+}
+
+/**
+ * One mail per subscriber, in their own language, with their own unsubscribe
+ * link. Not a bcc: a shared recipient header tells every reader who else is on
+ * the list, and one unsubscribe link cannot serve all of them.
+ */
+export const sendWeekly = async ({
+	videos,
+	siteUrl: base,
+	recipients,
+	preview = false,
+}: {
+	videos: ReportVideo[];
+	siteUrl: string;
+	recipients: Recipient[];
+	preview?: boolean;
+}): Promise<WeeklyResult> => {
+	const failed: string[] = [];
+	let sent = 0;
+
+	for (const recipient of recipients) {
+		const lang: Lang = recipient.lang === "en" ? "en" : "nl";
+		// No token, no unsubscribe link: a preview has no row to remove.
+		const unsubscribeUrl = recipient.unsubscribeToken
+			? `${base}${path(lang, "unsubscribe")}?token=${encodeURIComponent(recipient.unsubscribeToken)}`
+			: undefined;
+		const mail = weeklyMail({ videos, lang, siteUrl: base, unsubscribeUrl, preview });
+
+		try {
+			await sendMail({
+				to: recipient.email,
+				subject: mail.subject,
+				text: mail.text,
+				html: mail.html,
+				// The header Gmail and Yahoo want from a list. No -Post header:
+				// that promises a POST endpoint, and the route is a GET link.
+				...(unsubscribeUrl ? { headers: { "List-Unsubscribe": `<${unsubscribeUrl}>` } } : {}),
+			});
+			sent += 1;
+		} catch (error) {
+			// One refused recipient must not stop the rest of the list.
+			failed.push(recipient.email);
+			console.error(`[newsletter] could not mail ${recipient.email}: ${(error as Error).message}`);
+		}
+	}
+
+	return { sent, failed, empty: recipients.length === 0 };
 };

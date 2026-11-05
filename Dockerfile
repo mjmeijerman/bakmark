@@ -46,12 +46,14 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/recipes ./recipes
 # The retention job runs in this image too, and needs exactly two source files.
 COPY --from=build /app/scripts ./scripts
-# The retention and newsletter jobs run in this image too, and need exactly
-# these source files: config and list for the purge; i18n, list, mail,
-# newsletter and videos for the weekly mail.
+# The jobs that run in this image need exactly these source files: config and
+# list for the purge; bounces for the bounce sweep; i18n, list, mail, newsletter
+# and videos for the weekly mail. A missing one here is a job that fails at
+# 04:17 with ERR_MODULE_NOT_FOUND, which is why a test checks this list against
+# the scripts' imports.
 COPY --from=build /app/src/lib/config.ts /app/src/lib/list.ts \
-	/app/src/lib/i18n.ts /app/src/lib/mail.ts /app/src/lib/newsletter.ts \
-	/app/src/lib/videos.ts ./src/lib/
+	/app/src/lib/bounces.ts /app/src/lib/i18n.ts /app/src/lib/mail.ts \
+	/app/src/lib/newsletter.ts /app/src/lib/videos.ts ./src/lib/
 
 # `node` is uid 1000. The mounted /data must be owned by that uid (see README).
 USER node

@@ -62,12 +62,16 @@ test("env.dist documents nothing the code no longer reads", () => {
 	const scripts = readAll(files(join(ROOT, "scripts")));
 	const composed = readFileSync(join(ROOT, "compose.yaml"), "utf8");
 	const start = readFileSync(join(ROOT, "start.sh"), "utf8");
+	// deploy.sh reads the same environment with shell syntax, so a name it is
+	// the only reader of is exactly as invisible as any other.
+	const deploy = readFileSync(join(ROOT, "deploy.sh"), "utf8");
 
 	const used = new Set([
 		...namesIn(app),
 		...namesIn(scripts),
 		...[...composed.matchAll(/\$\{([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]),
 		...[...start.matchAll(/\$\{?([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]),
+		...[...deploy.matchAll(/\$\{?([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]),
 	]);
 	used.add("NODE_ENV");
 

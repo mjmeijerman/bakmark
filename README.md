@@ -98,10 +98,24 @@ vhost, the deploy writes the secrets and starts the stack.
    analytics/compose.yaml up -d`. The env file is there rather than in
    `/var/lib/bakmark-analytics` because that directory belongs to the
    container's uid: a deploy cannot write into it, and should not have to.
-3. **One visit to the dashboard**, to change the `admin`/`umami` login and add
-   the site. Copy its id into `UMAMI_WEBSITE_ID` in the deploy environment
-   (GitHub Actions secret / your shell) and deploy: the tracker appears from
-   that build on. Nothing to do on the server for that part.
+3. **One visit to the dashboard** (https://analytics.bakmark.nl, `admin` /
+   `umami` on the very first login — change it), then **Websites → Add website**
+   once per hostname: `bakmark.nl` and `staging.bakmark.nl`. One website per
+   hostname, so staging never counts into production's numbers.
+
+   The id is shown on the website's own page, in the tracking snippet
+   (`data-website-id="…"`) and in the URL (`/websites/<id>`). It is stored as a
+   deploy secret per environment, because the site is static and the id is baked
+   in at build time:
+
+   | secret | used by |
+   |---|---|
+   | `UMAMI_SCRIPT_URL` | both, `https://analytics.bakmark.nl/script.js` |
+   | `UMAMI_WEBSITE_ID_STAGING` | `BAKMARK_ENV=staging` |
+   | `UMAMI_WEBSITE_ID_PRODUCTION` | `BAKMARK_ENV=production` |
+
+   `UMAMI_WEBSITE_ID` alone still works as a fallback for a machine that only
+   deploys one of the two.
 
 DNS is the only record provisioning does not manage: an A/AAAA record for
 `analytics.bakmark.nl` → 5.79.100.71.

@@ -56,6 +56,12 @@ jobs:
           # Used by deploy.sh's post-deploy check, which asks Postfix whether the
           # smoke-test message actually left the queue.
           BAKMARK_TARGET_HOST: ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}
+          # One Umami website per hostname, so each environment counts into its
+          # own numbers. deploy.sh picks the one that matches BAKMARK_ENV; both
+          # empty means no tracker is injected at all.
+          UMAMI_SCRIPT_URL: ${{ secrets.UMAMI_SCRIPT_URL }}
+          UMAMI_WEBSITE_ID_STAGING: ${{ secrets.UMAMI_WEBSITE_ID_STAGING }}
+          UMAMI_WEBSITE_ID_PRODUCTION: ${{ secrets.UMAMI_WEBSITE_ID_PRODUCTION }}
         run: |
           # deploy.sh shells out to plain `ssh`, which does not read
           # GIT_SSH_COMMAND: that variable only affects git. Without an

@@ -123,12 +123,30 @@ test("the job removes a hard bounce and keeps a deferral, in the real database",
 	}
 });
 
-test("a run where every bounced address is already gone fails loudly", () => {
-	const root = mkdtempSync(join(tmpdir(), "bakmark-bounces-empty-"));
+test("an empty list is quiet: nothing to remove is not a fault", () => {
+	const root = mkdtempSync(join(tmpdir(), "bakmark-bounces-quiet-"));
 	const dbPath = join(root, "subscribers.sqlite");
 
 	try {
 		emptyList(dbPath).close();
+		const stdout = sweep(dbPath, hardBounce);
+		assert.match(stdout, /the list is empty; nothing to remove/);
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+test("a bounce that matches nobody in a list that is not empty fails loudly", () => {
+	const root = mkdtempSync(join(tmpdir(), "bakmark-bounces-empty-"));
+	const dbPath = join(root, "subscribers.sqlite");
+
+	try {
+		const db = emptyList(dbPath);
+		const now = new Date().toISOString();
+		db.prepare(
+			"INSERT INTO subscribers (email, lang, source, created_at, confirmed_at) VALUES (?, ?, ?, ?, ?)",
+		).run("someone@example.nl", "nl", "/", now, now);
+		db.close();
 
 		let failure;
 		try {

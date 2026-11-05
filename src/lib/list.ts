@@ -215,6 +215,12 @@ export const confirmedSubscribers = (): Recipient[] =>
 			.all(),
 	) as Recipient[];
 
+/** How many addresses the list holds, confirmed or not. */
+export const subscriberCount = (): number =>
+	(retry(() => openList().prepare("SELECT COUNT(*) AS n FROM subscribers").get()) as
+		| { n: number }
+		| undefined)?.n ?? 0;
+
 /**
  * Removes one address, whatever state it is in. Used when the sending server
  * says the address does not exist: an unsubscribe and a bounce both end in the

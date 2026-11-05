@@ -1,5 +1,5 @@
 ---
-import { DEFAULT_LANG, isLang, t, type Lang } from "../lib/i18n";
+import { DEFAULT_LANG, isLang, path, t, type Lang } from "../lib/i18n";
 
 interface Props {
 	lang?: Lang;
@@ -49,6 +49,9 @@ const messages = {
 	<p class="form-status" data-signup-status role="status" aria-live="polite"></p>
 	<p class="form-note">
 		{t(lang, "newsletter.note")}
+		{" "}
+		{/* The AVG note: what happens with the address, one click away. */}
+		<a href={path(lang, "privacy")}>{t(lang, "newsletter.privacy")}</a>
 	</p>
 </form>
 

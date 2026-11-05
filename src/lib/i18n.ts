@@ -75,7 +75,8 @@ const nl: Dict = {
 	"newsletter.label": "Je e-mailadres",
 	"newsletter.button": "Inschrijven",
 	"newsletter.note":
-		"Schrijf je in voor de nieuwsbrief en je krijgt een mailtje als er nieuwe recepten geplaatst zijn.",
+		"Schrijf je in voor de nieuwsbrief en je krijgt een mailtje als er nieuwe recepten geplaatst zijn. Je adres staat op mijn eigen server.",
+	"newsletter.privacy": "Privacyverklaring",
 	"newsletter.success": "Bijna klaar: check je mailbox en klik op de link.",
 	"newsletter.invalid": "Dat e-mailadres lijkt niet te kloppen.",
 	"newsletter.error": "Versturen lukte niet. Probeer het nog een keer.",
@@ -109,7 +110,8 @@ const en: Dict = {
 	"newsletter.label": "Your email address",
 	"newsletter.button": "Subscribe",
 	"newsletter.note":
-		"Subscribe to the newsletter and you will get an email when new recipes are published.",
+		"Subscribe to the newsletter and you will get an email when new recipes are published. Your address stays on my own server.",
+	"newsletter.privacy": "Privacy statement",
 	"newsletter.success": "Almost done: check your inbox and click the link.",
 	"newsletter.invalid": "That email address does not look right.",
 	"newsletter.error": "Could not send it. Try again.",

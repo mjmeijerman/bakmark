@@ -138,6 +138,17 @@ test("only confirmed addresses are mailed, each in its own language", async () =
 		assert.match(english, /New recipes on Bakmark \(2\)/);
 		assert.match(english, /unsubscribe\?token=tok-en/);
 
+		// A friendly line above the list, one hairline between the two recipes,
+		// and a closing line: the mail is read on a phone, between other things.
+		assert.match(dutch, /Hieronder wat er deze week bij kwam\./);
+		assert.match(dutch, /Veel bakplezier\./);
+		assert.equal(
+			(dutch.match(/border-top:1px solid #e4d9c8/g) ?? []).length,
+			1,
+			"one rule between two recipes, none around the list",
+		);
+		assert.match(dutch, /\n---\n/, "the text part separates them too");
+
 		for (const raw of smtp.messages) {
 			// Headers are folded at 78 columns; unfold before matching one.
 			const unfolded = raw.replace(/\r?\n[ \t]+/g, " ");

@@ -189,6 +189,9 @@ const weeklyCopy = {
 		many: (count: number) => `Nieuwe recepten op Bakmark (${count})`,
 		introOne: "Er staat één nieuw recept op Bakmark.",
 		introMany: (count: number) => `Er staan ${count} nieuwe recepten op Bakmark.`,
+		lead: "Hieronder wat er deze week bij kwam. Bij elk recept staan de video, de tijden en de printversie, dus je kunt meteen aan de slag.",
+		closing:
+			"Veel bakplezier. Ergens een vraag over, of klopt er iets niet? Laat het weten via de contactpagina, dan komt het bij me terecht.",
 		action: "Bekijk het recept",
 		browse: "Alle recepten",
 		why: "Je krijgt deze mail omdat je je hebt aangemeld voor de nieuwsbrief van Bakmark.",
@@ -203,6 +206,9 @@ const weeklyCopy = {
 		many: (count: number) => `New recipes on Bakmark (${count})`,
 		introOne: "There is one new recipe on Bakmark.",
 		introMany: (count: number) => `There are ${count} new recipes on Bakmark.`,
+		lead: "Here is what was added this week. Every recipe comes with the video, the timings and the print view, so you can start right away.",
+		closing:
+			"Happy baking. A question about one of them, or something that looks off? Let me know through the contact page and it reaches me.",
 		action: "Open the recipe",
 		browse: "All recipes",
 		why: "You get this mail because you signed up for the Bakmark newsletter.",
@@ -258,17 +264,33 @@ export const weeklyMail = ({
 
 	const recipeUrl = (video: ReportVideo) => `${base}${path(lang, "recipe", video.slug)}`;
 
-	const plain = [intro, ""];
-	videos.forEach((video, index) => {
+	const plainEntries = videos.map((video, index) => {
 		const status = preview && video.status !== "gepubliceerd" ? ` (${video.status})` : "";
-		plain.push(`${index + 1}. ${video.title}${status}`);
-		plain.push(`   ${recipeUrl(video)}`);
-		plain.push("");
+		return [`${index + 1}. ${video.title}${status}`, `   ${recipeUrl(video)}`].join("\n");
 	});
-	plain.push(`${text.browse}: ${base}${path(lang, "recipes")}`);
-	plain.push("");
-	plain.push(preview ? text.previewWhy : text.why);
+
+	const plain = [
+		intro,
+		"",
+		text.lead,
+		"",
+		// A line between the recipes, so a text reader sees where one ends and
+		// the next begins, the same as the rule in the html part.
+		plainEntries.join("\n\n---\n\n"),
+		"",
+		`${text.browse}: ${base}${path(lang, "recipes")}`,
+		"",
+		text.closing,
+		"",
+		preview ? text.previewWhy : text.why,
+	];
 	if (unsubscribeUrl) plain.push(`${text.unsubscribe}: ${unsubscribeUrl}`);
+
+	// One hairline between two recipes, never around the list: an empty cell
+	// with a top border is what survives Outlook, Gmail and the rest.
+	const rule = `<tr>
+									<td style="padding:2px 0 20px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;font-size:0;line-height:0;border-top:1px solid #e4d9c8;">&nbsp;</td></tr></table></td>
+								</tr>`;
 
 	const rows = videos
 		.map((video) => {
@@ -293,7 +315,7 @@ export const weeklyMail = ({
 									</td>
 								</tr>`;
 		})
-		.join("\n\t\t\t\t\t\t\t\t");
+		.join(`\n\t\t\t\t\t\t\t\t${rule}\n\t\t\t\t\t\t\t\t`);
 
 	const unsubscribeRow = unsubscribeUrl
 		? `<tr>
@@ -326,6 +348,11 @@ export const weeklyMail = ({
 							</td>
 						</tr>
 						<tr>
+							<td style="padding:10px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#5c4b3c;">
+								${escapeHtml(text.lead)}
+							</td>
+						</tr>
+						<tr>
 							<td style="padding:20px 24px 8px 24px;">
 								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 								${rows}
@@ -333,8 +360,13 @@ export const weeklyMail = ({
 							</td>
 						</tr>
 						<tr>
-							<td style="padding:4px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
+							<td style="padding:12px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
 								<a href="${escapeHtml(base + path(lang, "recipes"))}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.browse)}</a>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:16px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#2a211a;">
+								${escapeHtml(text.closing)}
 							</td>
 						</tr>
 						${unsubscribeRow}

@@ -63,6 +63,7 @@ const copy = {
 		rescaleNotANumber: "Dat is geen hoeveelheid; de vorige waarde staat er weer.",
 		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
 		rescaleResult: "Aantal",
+		rescaleAmountLabel: "Hoeveelheid",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
@@ -143,6 +144,7 @@ const copy = {
 		rescaleNotANumber: "That is not an amount; the previous value is back.",
 		rescaleAmount: (name: string) => `Amount of ${name}`,
 		rescaleResult: "Count",
+		rescaleAmountLabel: "Amount",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
@@ -303,6 +305,13 @@ const videoParts = groups
  * The reference ingredient: the first one that may scale, in the first group.
  * It is what `?ref=` counts in, so a shared link needs no second parameter.
  */
+/*
+ * A yield is counted ("50 soesjes") or weighed ("600 g"). Asking for an "Aantal"
+ * in grams is the kind of label that makes a reader doubt the rest of the page.
+ */
+const MASS_UNITS = ["g", "gram", "kg", "mg", "ml", "cl", "dl", "l", "liter"];
+const resultIsMass = MASS_UNITS.includes(recipe.result.unit.toLowerCase());
+
 const reference = groups
 	.flatMap((group) => group.ingredients)
 	.find((ingredient) => ingredient.scale !== false);
@@ -459,13 +468,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		}
 
 		<RecipeSection title={copy.ingredients}>
-			{/* What the batch is good for. It used to sit under the chips, where it
-			   repeated the yield chip and pushed the list down. */}
-			{recipe.result.note ? (
-				<p class="section-lede result-note" data-result-note={recipe.result.note}>
-					{recipe.result.note}
-				</p>
-			) : null}
 			{/* Progressive: without JavaScript the inputs never appear and the static
 			   amounts stay exactly as rendered. */}
 			<div
@@ -483,7 +485,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			>
 				<p class="rescale-title">{copy.rescaleTitle}</p>
 				<label class="rescale-result">
-					<span>{copy.rescaleResult}</span>
+					<span>{resultIsMass ? copy.rescaleAmountLabel : copy.rescaleResult}</span>
 					<input
 						type="text"
 						inputmode="decimal"
@@ -923,10 +925,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		const refBase = Number(panel.dataset.refBase);
 		const resultInput = panel.querySelector<HTMLInputElement>("[data-result-input]");
 		const resultUnit = panel.dataset.resultUnit ?? "";
-		// The sentence that opens with the yield ("Ongeveer 50 soesjes") has to
-		// follow the number, or paper prints two different batches.
-		const note = document.querySelector<HTMLElement>("[data-result-note]");
-		const noteText = note?.dataset.resultNote ?? "";
 
 		type Row = {
 			base: number;
@@ -996,15 +994,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			const yield_ = Math.max(1, Math.round(resultBase * factor));
 
 			if (resultInput) resultInput.value = String(yield_);
-
-			if (note) {
-				// Only the leading number, and only when it is the yield: the rest
-				// of the sentence ("8-10 grote soezen") is prose, not arithmetic.
-				note.textContent =
-					factor === 1
-						? noteText
-						: noteText.replace(new RegExp(`^(\\D*?)${resultBase}\\b`), `$1${yield_}`);
-			}
 
 			// A scaled list and a ½×/1×/2× table of the same ingredients would
 			// print two different truths on one sheet.

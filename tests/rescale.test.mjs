@@ -130,7 +130,7 @@ test("the page carries everything the rescaler needs, and nothing it must add", 
 		const saltRow = html.match(/<li[^>]*data-ingredient="zout"[^>]*>/)?.[0] ?? "";
 		assert.ok(saltRow.includes('data-scalable="0"'), "salt is marked as fixed");
 		assert.match(html, /data-result-input/);
-		assert.match(html, /data-result-note="Ongeveer 50 soesjes/, "the sentence about the yield follows it");
+		assert.doesNotMatch(html, /data-result-note/, "the sentence under the ingredients is gone");
 
 		// The field itself is created by the script: without JavaScript there is
 		// nothing that looks editable and does nothing.
@@ -144,6 +144,16 @@ test("the unit stays visible, in the word the recipe uses", async () => {
 		// "1 stokje" in the data, not the database's "stuk".
 		assert.match(html, /data-unit-display="stokje" data-round="0\.5"/);
 		assert.match(html, /data-unit-display="g"/);
+	});
+});
+
+test("the field asks for an amount in grams and a count in soesjes", async () => {
+	await withServer(async ({ base }) => {
+		const custard = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
+		assert.match(custard, /<span>Hoeveelheid<\/span>/, "600 g is an amount, not a count");
+
+		const buns = await (await fetch(`${base}/recepten/soesjes`)).text();
+		assert.match(buns, /<span>Aantal<\/span>/, "50 soesjes is a count");
 	});
 });
 

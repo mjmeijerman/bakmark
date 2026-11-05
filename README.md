@@ -120,6 +120,27 @@ vhost, the deploy writes the secrets and starts the stack.
 DNS is the only record provisioning does not manage: an A/AAAA record for
 `analytics.bakmark.nl` → 5.79.100.71.
 
+### The rescaler
+
+Every recipe page can be rescaled in place: change one amount and every amount
+that may scale follows, or ask for a different yield and the ingredients
+recalculate. `?ref=250` (grams of the reference ingredient — the first one that
+scales) and `?result=100` (soesjes) share the state; `result` wins when both are
+present.
+
+- `scale: false` items never move. Half a batch still needs the vanilla pod, and
+  "0,4 pod" is not something a kitchen scale can weigh.
+- Rounding stops where a scale stops: one decimal below ten, whole numbers above.
+- The prose that opens with the yield ("Ongeveer 50 soesjes…") follows the number;
+  the rest of the sentence is left alone.
+- Printing shows the numbers, not the fields, and hides the static ½×/1×/2× table
+  once the list is rescaled — two truths on one sheet is worse than one.
+- Without JavaScript nothing is injected: the amounts are exactly what was
+  rendered, and no field looks editable that is not.
+
+The arithmetic lives in `src/lib/rescale.ts`, shared with the static table, so
+1× there and 1× here cannot drift.
+
 ### The video description
 
 ```sh

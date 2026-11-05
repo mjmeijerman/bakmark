@@ -388,6 +388,30 @@ const scaleIngredient = (ingredient: Ingredient, factor: number): ResolvedIngred
 	return { ...ingredient, amount, amount_display: display, scaled: scalable && factor !== 1 };
 };
 
+/** The batches a static table offers: half, exactly one, double. */
+export const SCALE_FACTORS = [0.5, 1, 2] as const;
+
+/**
+ * The same ingredients at another batch size.
+ *
+ * `scale: false` items (salt, a vanilla pod) keep their amount: half a batch
+ * still needs the pod, and "0.5 pod" is not a thing. The resolved amounts are
+ * the input here, so a component link's factor stays part of the sum.
+ */
+export const scaledIngredients = (
+	ingredients: Ingredient[],
+	factor: number,
+	lang: Lang = DEFAULT_LANG,
+): ResolvedIngredient[] =>
+	ingredients.map((ingredient) => {
+		const scaled = scaleIngredient(ingredient, factor);
+		// A scaled amount is rebuilt from unit + number, so it does not come
+		// through localize() and its dot-for-comma rule.
+		return lang === "en"
+			? { ...scaled, amount_display: scaled.amount_display.replace(/(\d),(\d)/g, "$1.$2") }
+			: scaled;
+	});
+
 /**
  * Walk the component tree depth-first and flatten it into ordered groups:
  * every component's own steps come before the steps that assemble them.

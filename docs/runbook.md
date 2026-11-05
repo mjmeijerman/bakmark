@@ -40,6 +40,18 @@ proof that the promise in the confirmation mail is kept. No lines at all means
 the crontab block is gone: deploy again, and check `crontab -l` for the
 `# >>> bakmark cron` markers.
 
+Ten minutes later the bounce sweep reads the same Postfix log:
+
+```sh
+ssh deploy@vps1.markmeijerman.nl 'tail -5 ~/.bakmark-bounces.log'
+```
+
+`1 hard bounce(s), 1 removed; 0 soft (kept); 12 delivered` is a normal line. A
+`check SUBSCRIBERS_DB` error means the job found hard bounces for addresses that
+are not in the list — almost always the wrong list, not a healthy one. A missing
+log line for days on end usually means mail stopped being logged: check that
+`/var/log/mail.log` is growing at all.
+
 ## Friday — the newsletter
 
 Production mails the confirmed list at 19:00

@@ -65,11 +65,11 @@ concepts included, snapshot untouched.
 ## Monthly — analytics
 
 The visit counter (Umami + Postgres, `analytics/compose.yaml`) runs beside the
-site on the same VPS, on loopback, behind Caddy at `analytics.bakmark.nl`.
+site on the same VPS, on loopback, behind the nginx vhost `analytics.bakmark.nl`.
 
-1. **It is still up.**
-   `docker compose --env-file /var/lib/bakmark-analytics/env -f analytics/compose.yaml ps`
-   should show `db` healthy and `umami` running.
+1. **It is still up.** `docker compose -p bakmark-analytics -f analytics/compose.yaml ps`
+   should show `db` healthy and `umami` running. The deploy starts it; the log
+   is `docker compose -p bakmark-analytics -f analytics/compose.yaml logs`.
 2. **Pageviews are still arriving** in the dashboard. A flat line is either a
    quiet month or a site that lost the tracker; check the built HTML for
    `script.js` before believing the first explanation.

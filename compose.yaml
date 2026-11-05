@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      # Loopback only: Caddy on the host is the public door. Keeps this port
+      # Loopback only: nginx on the host is the public door. Keeps this port
       # out of the way of the other projects on the VPS.
       - "127.0.0.1:${BAKMARK_PORT:-8085}:4321"
     environment:

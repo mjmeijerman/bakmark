@@ -110,7 +110,7 @@ const isBot = (request: Request, body: Payload, ip: string): boolean => {
 	if (Number.isFinite(elapsed) && elapsed >= 0 && elapsed < MIN_FILL_MS) return true;
 
 	// The request's own URL can hide the public origin: behind the container's
-	// 8085-to-4321 mapping (or Caddy on the VPS) request.url is the internal
+	// 8085-to-4321 mapping (or the nginx vhost on the VPS) request.url is the internal
 	// host, so a perfectly legitimate same-origin request would read as
 	// cross-origin. Compare against the Host the browser put in the URL bar.
 	const origin = request.headers.get("origin");
@@ -144,7 +144,7 @@ const readPayload = async (request: Request): Promise<{ body: Payload; json: boo
 
 /**
  * Public origin as the browser sees it. request.url is the internal host
- * behind the port mapping or Caddy, so derive the address from the Host
+ * behind the port mapping or nginx, so derive the address from the Host
  * header instead; fall back to the request when Host is absent.
  */
 const publicOrigin = (request: Request): string => {

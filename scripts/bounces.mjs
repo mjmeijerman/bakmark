@@ -16,7 +16,7 @@
  */
 import { readFileSync } from "node:fs";
 import { parseBounces } from "../src/lib/bounces.ts";
-import { deleteByEmail } from "../src/lib/list.ts";
+import { deleteByEmail, subscriberCount } from "../src/lib/list.ts";
 
 const file = process.argv.slice(2).includes("--file")
 	? process.argv[process.argv.indexOf("--file") + 1]
@@ -42,8 +42,18 @@ console.log(
 );
 
 if (hard.length > 0 && removed === 0) {
-	// Every bounce was for an address that is already gone: almost certainly the
-	// wrong subscriber database, not a list full of dead mailboxes.
-	console.error(`[bounces] none of ${hard.length} bounced address(es) existed in the list; check SUBSCRIBERS_DB`);
-	process.exit(1);
+	const total = subscriberCount();
+	if (total === 0) {
+		// An empty list is normal on staging, which clears it on every deploy, and
+		// on production before the first subscriber. Nothing to remove, and nothing
+		// to be alarmed about.
+		console.log(`[bounces] the list is empty; nothing to remove`);
+	} else {
+		// A bounce for an address that is not here, with a list that is not empty:
+		// almost certainly the wrong subscriber database.
+		console.error(
+			`[bounces] none of ${hard.length} bounced address(es) are in a list of ${total}; check SUBSCRIBERS_DB`,
+		);
+		process.exit(1);
+	}
 }

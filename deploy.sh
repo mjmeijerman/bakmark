@@ -37,7 +37,7 @@ case "$TARGET" in
 		# Empty until the analytics stack runs and has a website id; the site
 		# then ships no tracker at all (see README, "Analytics").
 		UMAMI_SCRIPT_URL="${UMAMI_SCRIPT_URL:-}"
-		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID:-}"
+		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID_PRODUCTION:-${UMAMI_WEBSITE_ID:-}}"
 		;;
 	staging)
 		APP_DIR="${BAKMARK_APP_DIR:-/srv/bakmark-staging}"
@@ -48,8 +48,11 @@ case "$TARGET" in
 		# its own content, which is worse than never being listed.
 		SITE_INDEXABLE="${SITE_INDEXABLE:-0}"
 		SIGNUP_ALLOWED_DOMAINS="${SIGNUP_ALLOWED_DOMAINS:-markmeijerman.eu,mail-tester.com}"
+		# One Umami website per hostname, so staging and production cannot
+		# report into the same numbers. The plain name stays as a fallback for a
+		# machine that only ever deploys one of the two.
 		UMAMI_SCRIPT_URL="${UMAMI_SCRIPT_URL:-}"
-		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID:-}"
+		UMAMI_WEBSITE_ID="${UMAMI_WEBSITE_ID_STAGING:-${UMAMI_WEBSITE_ID:-}}"
 		;;
 	*)
 		echo "error: unknown BAKMARK_ENV=$TARGET (staging, production)" >&2

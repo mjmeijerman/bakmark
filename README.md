@@ -62,6 +62,41 @@ ffmpeg is a host tool, not part of the image: this runs on the machine that
 holds the recordings. `FFMPEG=/path/to/ffmpeg` if it is not on `PATH`. Steps
 without a `t` are named in the last line instead of silently skipped.
 
+## Analytics
+
+Cookieless page counts, self-hosted, off by default. The stack is in
+`analytics/compose.yaml` (Umami + Postgres, separate compose project, loopback
+only). Nothing is injected into the HTML unless **both** variables are set at
+build time:
+
+```sh
+UMAMI_SCRIPT_URL=https://analytics.bakmark.nl/script.js
+UMAMI_WEBSITE_ID=<the id Umami shows for the site>
+```
+
+With both set, `/privacy` grows a "Bezoekcijfers" section, because a privacy
+statement that says nothing is counted while counting is a lie. The site itself
+sets no cookie: verified on `/script.js` and on `/api/send`, which return no
+`Set-Cookie` at all.
+
+One-time setup on the VPS, none of it in this repository:
+
+1. DNS: an A/AAAA record for `analytics.bakmark.nl` → 5.79.100.71.
+2. Data directory and secrets: `sudo install -d -o 1000 -g 1000 -m 700
+   /var/lib/bakmark-analytics` and the same for its `data` directory owned by
+   uid 70. Copy `analytics/env.dist` to `/var/lib/bakmark-analytics/env` and fill
+   `APP_SECRET` (`openssl rand -hex 24`) and `DATABASE_URL` — the connection
+   string for user `umami`, host `db`, port 5432, database `umami`, no password.
+   The database trusts the private compose network and publishes no port, so
+   there is no password to repeat.
+3. Start it: `docker compose --env-file /var/lib/bakmark-analytics/env -f
+   analytics/compose.yaml up -d`.
+4. Caddy on the host: `analytics.bakmark.nl { reverse_proxy 127.0.0.1:8091 }`.
+
+Then open the dashboard once, change the `admin`/`umami` login, add the site,
+copy its id into `UMAMI_WEBSITE_ID` on the deploy machine and deploy: the
+tracker appears from that build on.
+
 ### The printed sheet
 
 Printing a recipe gives ingredients, steps and codes, nothing else: no photos,

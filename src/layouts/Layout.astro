@@ -4,6 +4,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import Logo from "../components/Logo.astro";
 import { alternatePath, DEFAULT_LANG, isLang, path, t, type Lang } from "../lib/i18n";
 import { absolute, isIndexable } from "../lib/site";
+import { analytics } from "../lib/analytics";
 
 interface Props {
 	title: string;
@@ -19,6 +20,8 @@ const year = new Date().getFullYear();
 const alternate = alternatePath(Astro.url.pathname, lang);
 const indexable = isIndexable();
 const canonical = absolute(Astro.url.pathname);
+// Null unless both variables are set at build time: no collector, no script tag.
+const collector = analytics();
 ---
 
 <!doctype html>
@@ -38,6 +41,18 @@ const canonical = absolute(Astro.url.pathname);
 		<link rel="alternate" hreflang="nl" href={absolute(alternatePath(Astro.url.pathname, "nl"))} />
 		<link rel="alternate" hreflang="en" href={absolute(alternatePath(Astro.url.pathname, "en"))} />
 		{!indexable && <meta name="robots" content="noindex, nofollow" />}
+		{
+			collector && (
+				<script
+					is:inline
+					defer
+					src={collector.scriptUrl}
+					data-website-id={collector.websiteId}
+					data-do-not-track="true"
+					data-exclude-search="true"
+				/>
+			)
+		}
 		<title>{pageTitle}</title>
 		<script is:inline>
 			// Apply a stored choice before the page paints. No stored choice means

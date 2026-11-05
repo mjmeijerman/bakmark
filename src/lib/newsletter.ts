@@ -191,7 +191,7 @@ const weeklyCopy = {
 		introMany: (count: number) => `Er staan ${count} nieuwe recepten op Bakmark.`,
 		lead: "Hieronder wat er deze week bij kwam. Bij elk recept staan de video, de tijden en de printversie, dus je kunt meteen aan de slag.",
 		closing:
-			"Veel bakplezier. Ergens een vraag over, of klopt er iets niet? Laat het weten via de contactpagina, dan komt het bij me terecht.",
+			"Veel bakplezier. Ergens een vraag over, of klopt er iets niet? Laat het weten in de comments onder de video op YouTube.",
 		action: "Bekijk het recept",
 		browse: "Alle recepten",
 		why: "Je krijgt deze mail omdat je je hebt aangemeld voor de nieuwsbrief van Bakmark.",
@@ -208,7 +208,7 @@ const weeklyCopy = {
 		introMany: (count: number) => `There are ${count} new recipes on Bakmark.`,
 		lead: "Here is what was added this week. Every recipe comes with the video, the timings and the print view, so you can start right away.",
 		closing:
-			"Happy baking. A question about one of them, or something that looks off? Let me know through the contact page and it reaches me.",
+			"Happy baking. A question about one of them, or something that looks off? Say so in the comments under the video on YouTube.",
 		action: "Open the recipe",
 		browse: "All recipes",
 		why: "You get this mail because you signed up for the Bakmark newsletter.",

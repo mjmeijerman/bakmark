@@ -141,7 +141,7 @@ test("only confirmed addresses are mailed, each in its own language", async () =
 		// A friendly line above the list, one hairline between the two recipes,
 		// and a closing line: the mail is read on a phone, between other things.
 		assert.match(dutch, /Hieronder wat er deze week bij kwam\./);
-		assert.match(dutch, /Veel bakplezier\./);
+		assert.match(dutch, /Veel bakplezier\. Ergens een vraag over, of klopt er iets niet\? Laat het weten in de comments onder de video op YouTube\./);
 		assert.equal(
 			(dutch.match(/border-top:1px solid #e4d9c8/g) ?? []).length,
 			1,

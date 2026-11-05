@@ -3,13 +3,13 @@
 # Separate project name on purpose: `docker compose down` in the site checkout
 # must never be able to stop analytics, and the other way round.
 #
-# Nothing is published to the internet. Caddy on the host is the door, exactly
+# Nothing is published to the internet. nginx on the host is the door, exactly
 # like the app: the container listens on loopback only.
 #
 #   cp analytics/env.dist /var/lib/bakmark-analytics/env   # then fill it
 #   docker compose --env-file /var/lib/bakmark-analytics/env -f analytics/compose.yaml up -d
 #
-# See "Analytics" in README.md for the DNS record and the Caddy block.
+# See "Analytics" in README.md: provisioning owns the vhost, this composes the stack.
 name: bakmark-analytics
 
 services:

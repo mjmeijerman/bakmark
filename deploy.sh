@@ -75,6 +75,51 @@ HEALTH_URL="${BAKMARK_HEALTH_URL:-http://127.0.0.1:$PORT/}"
 HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
 
+# The visit counter. Not per environment: one dashboard holds a website per
+# hostname, and one stack serves both. Provisioning creates the directory (and
+# its data subdirectory, owned by Postgres's uid 70); this script writes the
+# secrets into it once and starts the containers.
+ANALYTICS_DIR="${BAKMARK_ANALYTICS_DIR:-/var/lib/bakmark-analytics}"
+ANALYTICS_PORT="${BAKMARK_ANALYTICS_PORT:-8091}"
+
+# ---------------------------------------------------------------------------
+# The visit counter (analytics/compose.yaml).
+#
+# The env file is written once and then left alone: a new APP_SECRET signs the
+# dashboard out, and a new connection string points at a cluster that is not
+# there. Nothing secret is ever in this repository, and nothing here has to be
+# done by hand, which is the whole point of the exercise.
+# ---------------------------------------------------------------------------
+start_analytics() {
+	if [ ! -d "$ANALYTICS_DIR" ]; then
+		echo "warning: $ANALYTICS_DIR is missing; provisioning creates it (install_docker)." >&2
+		echo "         Skipping the visit counter for now." >&2
+		return 0
+	fi
+
+	env_file="$ANALYTICS_DIR/env"
+	if [ ! -f "$env_file" ]; then
+		umask 077
+		{
+			echo "BAKMARK_ANALYTICS_DATA=$ANALYTICS_DIR/data"
+			echo "APP_SECRET=$(openssl rand -hex 24)"
+			# Assembled rather than written out: a repository is not the place
+			# for a connection string, and this one carries no password anyway
+			# (the database trusts the private compose network).
+			printf 'DATABASE_URL=%s://umami@db:5432/umami\n' postgresql
+			echo "UMAMI_PORT=$ANALYTICS_PORT"
+		} > "$env_file"
+		echo "==> visit counter: wrote $env_file"
+	fi
+
+	# -p and --env-file, both explicit: this checkout's .env names the app's
+	# compose project, and the counter must not be dragged into it.
+	docker compose -p bakmark-analytics --env-file "$env_file" \
+		-f analytics/compose.yaml up -d --remove-orphans
+
+	echo "==> visit counter: 127.0.0.1:$ANALYTICS_PORT (public door is the host's nginx)"
+}
+
 # ---------------------------------------------------------------------------
 # Scheduled work: the host's cron runs it, not the container's.
 #
@@ -382,3 +427,5 @@ echo "==> smoke test passed"
 
 # Every environment gets the purge; only production gets the newsletter.
 install_cron_jobs
+
+start_analytics

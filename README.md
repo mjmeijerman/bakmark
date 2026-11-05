@@ -79,23 +79,29 @@ statement that says nothing is counted while counting is a lie. The site itself
 sets no cookie: verified on `/script.js` and on `/api/send`, which return no
 `Set-Cookie` at all.
 
-One-time setup on the VPS, none of it in this repository:
+Nothing here is a manual step: provisioning creates the directories and the
+vhost, the deploy writes the secrets and starts the stack.
 
-1. DNS: an A/AAAA record for `analytics.bakmark.nl` → 5.79.100.71.
-2. Data directory and secrets: `sudo install -d -o 1000 -g 1000 -m 700
-   /var/lib/bakmark-analytics` and the same for its `data` directory owned by
-   uid 70. Copy `analytics/env.dist` to `/var/lib/bakmark-analytics/env` and fill
-   `APP_SECRET` (`openssl rand -hex 24`) and `DATABASE_URL` — the connection
-   string for user `umami`, host `db`, port 5432, database `umami`, no password.
-   The database trusts the private compose network and publishes no port, so
-   there is no password to repeat.
-3. Start it: `docker compose --env-file /var/lib/bakmark-analytics/env -f
-   analytics/compose.yaml up -d`.
-4. Caddy on the host: `analytics.bakmark.nl { reverse_proxy 127.0.0.1:8091 }`.
+1. **Provisioning** (`vps1-provisioning`, `install_docker` and
+   `group_vars/production/websites.yml`): `/var/lib/bakmark-analytics` owned by
+   uid 1000 (the deploy account writes the env file there), its `data`
+   subdirectory owned by uid 70 (Postgres inside that image), and the nginx
+   vhost `analytics.bakmark.nl` → `127.0.0.1:8091`, which also gets certbot's
+   certificate on the same run.
+2. **The deploy** writes `/var/lib/bakmark-analytics/env` the first time —
+   `APP_SECRET` from `openssl rand`, and the connection string for user
+   `umami`, host `db`, database `umami`, no password (the database trusts the
+   private compose network and publishes no port, so there is nothing to
+   repeat). It never overwrites an existing file: a new secret signs the
+   dashboard out, a new database URL points at a cluster that is not there.
+   Then `docker compose -p bakmark-analytics --env-file … -f analytics/compose.yaml up -d`.
+3. **One visit to the dashboard**, to change the `admin`/`umami` login and add
+   the site. Copy its id into `UMAMI_WEBSITE_ID` in the deploy environment
+   (GitHub Actions secret / your shell) and deploy: the tracker appears from
+   that build on. Nothing to do on the server for that part.
 
-Then open the dashboard once, change the `admin`/`umami` login, add the site,
-copy its id into `UMAMI_WEBSITE_ID` on the deploy machine and deploy: the
-tracker appears from that build on.
+DNS is the only record provisioning does not manage: an A/AAAA record for
+`analytics.bakmark.nl` → 5.79.100.71.
 
 ### The printed sheet
 
@@ -267,7 +273,7 @@ catcher is up: `docker compose up -d mailpit`.
 `docker compose down -v` leaves `./data` alone. It only removes the container
 and its network.
 
-On the VPS, keep the data outside the checkout and let the host's Caddy stay
+On the VPS, keep the data outside the checkout and let the host's nginx stay
 the public door:
 
 ```sh
@@ -275,14 +281,12 @@ sudo install -d -o 1000 -g 1000 -m 700 /var/lib/bakmark
 BAKMARK_DATA_DIR=/var/lib/bakmark SMTP_URL=smtp://<mail-host>:25 ./start.sh
 ```
 
-Caddy site block (the container publishes on loopback only, so it cannot
-collide with the other projects on the box):
-
-```caddyfile
-bakmark.nl {
-	reverse_proxy 127.0.0.1:8085
-}
-```
+The vhost is provisioning's, not this repository's: `vps1-provisioning`,
+`group_vars/production/websites.yml` → `nginx_server_templates_proxies`,
+`proxy-https.conf.j2` with `proxy_pass 127.0.0.1:8085` (8085 production, 8090
+staging, 8091 the visit counter). The container publishes on loopback only, so
+it cannot collide with the other projects on the box, and Docker's iptables
+edits cannot expose it either.
 
 The container runs as uid 1000, so `BAKMARK_DATA_DIR` must be owned by
 `1000:1000`. If it is not writable, signups fail with a `[subscribe]` error in

@@ -91,8 +91,10 @@ test("ingredients are grams, with the vanilla pod as the only exception", () => 
 	}
 });
 
-test("no millilitres or spoons anywhere in the recipe data", () => {
-	const pattern = /\b\d+(?:[.,]\d+)?\s?(ml|cl|dl|tl|el|tsp|tbsp|cup|oz)\b/i;
+test("no millilitres, litres or spoons anywhere in the recipe data", () => {
+	// Grams only. A kitchen scale is the one instrument every reader has, and a
+	// site that mixes grams and millilitres makes them convert while baking.
+	const pattern = /\b\d+(?:[.,]\d+)?\s?(ml|cl|dl|l|liter|litre|tl|el|tsp|tbsp|cup|oz)\b/i;
 	for (const slug of slugs) {
 		for (const [path, text] of collectStrings(recipes.get(slug))) {
 			const hit = text.match(pattern);

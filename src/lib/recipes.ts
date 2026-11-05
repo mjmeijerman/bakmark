@@ -20,6 +20,12 @@ export interface Ingredient {
 	 * of a pod, so half is the least you get.
 	 */
 	round?: number;
+	/**
+	 * What one piece weighs, for an ingredient that is weighed but bought by the
+	 * piece: 80 g of yolk is "about 4,5 egg yolks", and the number has to follow
+	 * the batch.
+	 */
+	each?: { name: string; grams: number };
 }
 
 export interface Step {
@@ -166,7 +172,10 @@ export interface RecipeTextOverlay {
 	tags?: string[];
 	result?: { unit?: string; note?: string };
 	time?: { note?: string };
-	ingredients?: Record<string, { name?: string; note?: string; unit?: string; amount_display?: string }>;
+	ingredients?: Record<
+		string,
+		{ name?: string; note?: string; unit?: string; amount_display?: string; each_name?: string }
+	>;
 	steps?: Record<string, { title?: string; text?: string; why?: string; tips?: string[] }>;
 	tools?: Record<string, { name?: string; note?: string }>;
 	components?: Record<string, { unit?: string; note?: string }>;
@@ -223,6 +232,13 @@ export function localize(recipe: Recipe, lang: Lang = DEFAULT_LANG): Recipe {
 			...ingredient,
 			name: overlay.ingredients?.[ingredient.id]?.name ?? ingredient.name,
 			note: overlay.ingredients?.[ingredient.id]?.note ?? ingredient.note,
+			// "about 4.5 egg yolks" / "ongeveer 4,5 eidooiers": the piece has a name too.
+			each: ingredient.each
+				? {
+						...ingredient.each,
+						name: overlay.ingredients?.[ingredient.id]?.each_name ?? ingredient.each.name,
+					}
+				: undefined,
 			unit: overlay.ingredients?.[ingredient.id]?.unit ?? ingredient.unit,
 			amount_display:
 				overlay.ingredients?.[ingredient.id]?.amount_display ?? ingredient.amount_display,
@@ -303,6 +319,10 @@ export function localizeGroup(group: ResolvedGroup, lang: Lang = DEFAULT_LANG): 
 				...ingredient,
 				name: text?.name ?? ingredient.name,
 				note: text?.note ?? ingredient.note,
+				// "about 4.5 egg yolks": the piece has a name of its own.
+				each: ingredient.each
+					? { ...ingredient.each, name: text?.each_name ?? ingredient.each.name }
+					: undefined,
 				unit,
 				// Amounts are written the Dutch way in the recipe files ("1,5 g");
 				// the English page says "1.5 g".

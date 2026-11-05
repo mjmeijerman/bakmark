@@ -34,7 +34,8 @@
 		},
 		"dooiers": {
 			"name": "egg yolks",
-			"note": "At room temperature; cold yolks combine poorly. A medium egg weighs 50 g: 17.5 g yolk and 32.5 g white, so 80 g is about 4.5 yolks."
+			"each_name": "egg yolk",
+			"note": "At room temperature; cold yolks combine poorly. A medium egg weighs 50 g: 17.5 g yolk and 32.5 g white."
 		},
 		"maizena": {
 			"name": "cornflour",

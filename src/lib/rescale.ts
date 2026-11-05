@@ -87,6 +87,25 @@ export const MAX_FACTOR = 20;
 export const clampedResult = (resultValue: number, target: number) =>
 	clampFactor(target / resultValue);
 
+/**
+ * How many pieces a weighed amount comes down to: 80 g of yolk at 17,5 g each is
+ * 4,5 egg yolks. Halves, because half a yolk exists; a tenth does not.
+ */
+export const approxPieces = (amount: number, gramsEach: number): number => {
+	if (!(gramsEach > 0) || !Number.isFinite(amount)) return 0;
+	const pieces = amount / gramsEach;
+	return Math.max(0.5, Math.round(pieces * 2) / 2);
+};
+
+/**
+ * "Ongeveer 4,5 eidooiers." from a template with %count% and %name%.
+ *
+ * Shared by the server render and the script, so the hint reads the same before
+ * and after a change. The plural follows the number: one yolk, two yolks.
+ */
+export const approxText = (template: string, count: string, name: string): string =>
+	template.replace("%count%", count).replace("%name%", count === "1" ? name : `${name}s`);
+
 /** `1,5` in Dutch, `1.5` in English; no trailing `,0`. */
 export const formatAmount = (value: number, lang: "nl" | "en"): string => {
 	const text = String(round(value));

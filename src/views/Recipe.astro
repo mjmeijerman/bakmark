@@ -25,6 +25,7 @@ import {
 } from "../lib/recipes";
 import { path, type Lang } from "../lib/i18n";
 import { absolute } from "../lib/site";
+import { approxPieces, approxText, formatAmount as formatScaledAmount } from "../lib/rescale";
 import QrCode from "../components/QrCode.astro";
 
 interface Props {
@@ -64,6 +65,7 @@ const copy = {
 		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
 		rescaleResult: "Aantal",
 		rescaleAmountLabel: "Hoeveelheid",
+		approxTemplate: "Ongeveer %count% %name%.",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
@@ -145,6 +147,7 @@ const copy = {
 		rescaleAmount: (name: string) => `Amount of ${name}`,
 		rescaleResult: "Count",
 		rescaleAmountLabel: "Amount",
+		approxTemplate: "About %count% %name%.",
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
@@ -308,9 +311,11 @@ const videoParts = groups
 /*
  * A yield is counted ("50 soesjes") or weighed ("600 g"). Asking for an "Aantal"
  * in grams is the kind of label that makes a reader doubt the rest of the page.
+ *
+ * Grams only: this site weighs, it does not measure volume. Anything else is a
+ * count.
  */
-const MASS_UNITS = ["g", "gram", "kg", "mg", "ml", "cl", "dl", "l", "liter"];
-const resultIsMass = MASS_UNITS.includes(recipe.result.unit.toLowerCase());
+const resultIsMass = recipe.result.unit.toLowerCase() === "g";
 
 const reference = groups
 	.flatMap((group) => group.ingredients)
@@ -540,6 +545,24 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 														<span aria-hidden="true">i</span>
 													</summary>
 													<div class="ingredient-info-panel">
+														{ingredient.each ? (
+															<p
+																class="ingredient-approx"
+																data-approx
+																data-each={ingredient.each.grams}
+																data-each-name={ingredient.each.name}
+																data-approx-template={copy.approxTemplate}
+															>
+																{approxText(
+																	copy.approxTemplate,
+																	formatScaledAmount(
+																		approxPieces(ingredient.amount, ingredient.each.grams),
+																		lang,
+																	),
+																	ingredient.each.name,
+																)}
+															</p>
+														) : null}
 														<p>{ingredient.note}</p>
 													</div>
 												</details>
@@ -783,6 +806,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 	import {
 		MAX_FACTOR,
 		MIN_FACTOR,
+		approxPieces,
+		approxText,
 		clampedResult,
 		factorFromSearch,
 		formatAmount,
@@ -935,6 +960,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			input: HTMLInputElement;
 			unitNode: HTMLElement;
 			text: HTMLElement;
+			/** "80 g is about 4,5 egg yolks", for ingredients bought by the piece. */
+			approx?: { node: HTMLElement; each: number; name: string; template: string };
 		};
 		const rows: Row[] = [];
 
@@ -972,8 +999,18 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			unitNode.textContent = unitDisplay;
 			input.after(unitNode);
 
+			const approxNode = item.querySelector<HTMLElement>("[data-approx]");
+			const approx = approxNode
+				? {
+						node: approxNode,
+						each: Number(approxNode.dataset.each),
+						name: approxNode.dataset.eachName ?? "",
+						template: approxNode.dataset.approxTemplate ?? "%count% %name%",
+					}
+				: undefined;
+
 			item.classList.add("is-rescalable");
-			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text });
+			rows.push({ base, unit, unitDisplay, step, scalable, input, unitNode, text, approx });
 		}
 
 		let factor = 1;
@@ -988,6 +1025,11 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				row.input.value = formatAmount(amount, lang);
 				row.unitNode.textContent = row.unitDisplay;
 				row.text.textContent = `${formatAmount(amount, lang)} ${row.unitDisplay}`;
+
+				if (row.approx) {
+					const count = formatAmount(approxPieces(amount, row.approx.each), lang);
+					row.approx.node.textContent = approxText(row.approx.template, count, row.approx.name);
+				}
 			}
 
 			// A yield of 25,4 soesjes is not a thing anyone wants to read.

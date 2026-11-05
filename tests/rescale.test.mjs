@@ -11,6 +11,8 @@ import { test } from "node:test";
 import {
 	MAX_FACTOR,
 	MIN_FACTOR,
+	approxPieces,
+	approxText,
 	clampedResult,
 	factorForAmount,
 	factorForResult,
@@ -135,6 +137,31 @@ test("the page carries everything the rescaler needs, and nothing it must add", 
 		// The field itself is created by the script: without JavaScript there is
 		// nothing that looks editable and does nothing.
 		assert.doesNotMatch(html, /class="amount-input"/);
+	});
+});
+
+test("a weighed ingredient that is bought by the piece says how many", () => {
+	assert.equal(approxPieces(80, 17.5), 4.5);
+	assert.equal(approxPieces(40, 17.5), 2.5, "halves, because half a yolk exists");
+	assert.equal(approxPieces(35, 17.5), 2, "and it rounds to the nearest half, not up");
+	assert.equal(approxPieces(160, 17.5), 9);
+	assert.equal(approxPieces(1, 17.5), 0.5, "never nothing: you still need part of one");
+	assert.equal(approxPieces(80, 0), 0, "no piece weight, no claim");
+
+	assert.equal(approxText("Ongeveer %count% %name%.", "4,5", "eidooier"), "Ongeveer 4,5 eidooiers.");
+	assert.equal(approxText("Ongeveer %count% %name%.", "1", "eidooier"), "Ongeveer 1 eidooier.");
+	assert.equal(approxText("About %count% %name%.", "4.5", "egg yolk"), "About 4.5 egg yolks.");
+});
+
+test("the hint follows the weight, in both languages", async () => {
+	await withServer(async ({ base }) => {
+		const dutch = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
+		assert.match(dutch, /data-each="17\.5" data-each-name="eidooier"/);
+		assert.match(dutch, /Ongeveer 4,5 eidooiers\./);
+
+		const english = await (await fetch(`${base}/en/recipes/banketbakkersroom`)).text();
+		assert.match(english, /data-each-name="egg yolk"/);
+		assert.match(english, />About 4.5 egg yolks\.</);
 	});
 });
 

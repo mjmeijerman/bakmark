@@ -16,6 +16,7 @@
 		"test:data": "node --test tests/recipes.test.mjs",
 		"test:api": "npm run build && node --test tests/subscribe.test.mjs tests/newsletter.test.mjs tests/retention.test.mjs tests/email-render.test.mjs",
 		"purge": "node --experimental-strip-types scripts/purge.mjs",
+		"step-frames": "node --experimental-strip-types scripts/step-frames.mjs",
 		"newsletter": "node --experimental-strip-types scripts/newsletter.mjs",
 		"test:mail": "npm run build && node --test tests/email-render.test.mjs"
 	},

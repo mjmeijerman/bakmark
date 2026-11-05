@@ -42,6 +42,26 @@ npm run build   # static site in ./dist
 └── package.json
 ```
 
+### Step photos from the recording
+
+A step carries `t` in `recipes/<slug>.json`: where it starts in the video, in
+the same shape as a YouTube chapter (`1:05`, `1:02:03`, or bare seconds). That
+timestamp is the only input, so the photo, the chapter and the sheet cannot
+disagree.
+
+```sh
+npm run step-frames -- soesjes --video ~/opnames/soesjes.mp4   # one recipe
+npm run step-frames -- --all --video ~/opnames/                # <slug>.mp4 per recipe
+```
+
+Frames land in `public/fotos/<slug>/<step-id>.jpg`, served as
+`/fotos/<slug>/<step-id>.jpg`. Re-running skips what exists; `--force` rebuilds
+the set. `--width 1600` changes the long edge (default 1200, never upscaled).
+
+ffmpeg is a host tool, not part of the image: this runs on the machine that
+holds the recordings. `FFMPEG=/path/to/ffmpeg` if it is not on `PATH`. Steps
+without a `t` are named in the last line instead of silently skipped.
+
 ### The printed sheet
 
 Printing a recipe gives ingredients, steps and codes, nothing else: no photos,

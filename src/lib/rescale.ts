@@ -25,31 +25,53 @@ export const round = (value: number): number =>
 export const scaledAmount = (base: RescaleBase, factor: number): number =>
 	base.scalable ? round(base.amount * factor) : base.amount;
 
+/** Which bound a factor hit, if any: the UI has to be able to say so. */
+export type Clamp = "min" | "max" | null;
+
+export const clampFactor = (raw: number): { factor: number; clamped: Clamp } => {
+	if (raw < MIN_FACTOR) return { factor: MIN_FACTOR, clamped: "min" };
+	if (raw > MAX_FACTOR) return { factor: MAX_FACTOR, clamped: "max" };
+	return { factor: raw, clamped: null };
+};
+
+/**
+ * What a typed amount means, including the case where it was pushed to a bound.
+ *
+ * Null is "not a number I can use": an empty field, a zero, a letter. The answer
+ * to that is to leave everything alone — not to fill the field with the smallest
+ * batch, which is what made the first version unusable while typing.
+ */
+export const typedAmountFactor = (
+	base: RescaleBase,
+	typed: number,
+): { factor: number; clamped: Clamp } | null => {
+	if (!base.scalable || base.amount <= 0) return null;
+	if (!Number.isFinite(typed) || typed <= 0) return null;
+	return clampFactor(typed / base.amount);
+};
+
 /**
  * The factor implied by typing an amount into one ingredient.
  *
- * Null means "ignore this keystroke": an empty field, a zero, a letter. A
- * rescaler that accepts those produces infinities and blanks while someone is
- * still typing.
+ * Null means "ignore this input": an empty field, a zero, a letter.
  */
-export const factorForAmount = (base: RescaleBase, value: number): number | null => {
-	if (!base.scalable || base.amount <= 0) return null;
-	if (!Number.isFinite(value) || value <= 0) return null;
-	return clamp(value / base.amount);
-};
+export const factorForAmount = (base: RescaleBase, value: number): number | null =>
+	typedAmountFactor(base, value)?.factor ?? null;
 
 /** The factor implied by asking for a different yield, e.g. 30 soesjes. */
 export const factorForResult = (resultValue: number, target: number): number | null => {
 	if (resultValue <= 0) return null;
 	if (!Number.isFinite(target) || target <= 0) return null;
-	return clamp(target / resultValue);
+	return clampFactor(target / resultValue).factor;
 };
 
 /** A batch factor nobody types on purpose; also what a stray keypress would give. */
 export const MIN_FACTOR = 0.1;
 export const MAX_FACTOR = 20;
 
-const clamp = (factor: number): number => Math.min(MAX_FACTOR, Math.max(MIN_FACTOR, factor));
+/** The same bound, for a yield: `rescale` in the UI reports it the same way. */
+export const clampedResult = (resultValue: number, target: number) =>
+	clampFactor(target / resultValue);
 
 /** `1,5` in Dutch, `1.5` in English; no trailing `,0`. */
 export const formatAmount = (value: number, lang: "nl" | "en"): string => {
@@ -67,14 +89,15 @@ export const formatAmount = (value: number, lang: "nl" | "en"): string => {
 export const factorFromSearch = (
 	search: string,
 	{ refAmount, resultValue }: { refAmount: number; resultValue: number },
-): number | null => {
+): { factor: number; clamped: Clamp } | null => {
 	const params = new URLSearchParams(search);
+
 	const wanted = Number(params.get("result")?.replace(",", "."));
-	if (Number.isFinite(wanted) && wanted > 0) return factorForResult(resultValue, wanted);
+	if (Number.isFinite(wanted) && wanted > 0) return clampedResult(resultValue, wanted);
 
 	const ref = Number(params.get("ref")?.replace(",", "."));
 	if (Number.isFinite(ref) && ref > 0) {
-		return factorForAmount({ amount: refAmount, unit: "", scalable: true }, ref);
+		return typedAmountFactor({ amount: refAmount, unit: "", scalable: true }, ref);
 	}
 
 	return null;

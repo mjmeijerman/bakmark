@@ -56,6 +56,11 @@ const copy = {
 		rescaleTitle: "Hoeveel wil je maken?",
 		rescaleHint: "Verander een hoeveelheid of het aantal; de rest rekent mee.",
 		rescaleNoScale: "schaalt niet mee",
+		rescaleClampedMin:
+			"Dat is minder dan een tiende van het recept, en dat rekent niemand meer na. Aangepast naar de kleinste hoeveelheid.",
+		rescaleClampedMax:
+			"Dat is meer dan twintig keer het recept. Aangepast naar de grootste hoeveelheid.",
+		rescaleNotANumber: "Dat is geen hoeveelheid; de vorige waarde staat er weer.",
 		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
 		rescaleResult: "Aantal",
 		qrVideo: (title: string) => `Video: ${title}`,
@@ -128,14 +133,14 @@ const copy = {
 		composition: "Composition",
 		compositionLede:
 			"This recipe is built from base recipes. Every part has its own page and its own video, and changes there land here immediately.",
-		rescaleTitle: "Hoeveel wil je maken?",
-		rescaleHint: "Verander een hoeveelheid of het aantal; de rest rekent mee.",
-		rescaleNoScale: "schaalt niet mee",
-		rescaleAmount: (name: string) => `Hoeveelheid ${name}`,
-		rescaleResult: "Aantal",
 		rescaleTitle: "How much are you making?",
 		rescaleHint: "Change an amount or the count; the rest follows.",
 		rescaleNoScale: "does not scale",
+		rescaleClampedMin:
+			"That is less than a tenth of the recipe, which nobody measures. Changed to the smallest amount.",
+		rescaleClampedMax:
+			"That is more than twenty times the recipe. Changed to the largest amount.",
+		rescaleNotANumber: "That is not an amount; the previous value is back.",
 		rescaleAmount: (name: string) => `Amount of ${name}`,
 		rescaleResult: "Count",
 		qrVideo: (title: string) => `Video: ${title}`,
@@ -469,6 +474,9 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 				data-lang={lang}
 				data-result-base={recipe.result.value}
 				data-ref-base={reference?.amount ?? 0}
+				data-clamped-min={copy.rescaleClampedMin}
+				data-clamped-max={copy.rescaleClampedMax}
+				data-not-a-number={copy.rescaleNotANumber}
 				hidden
 			>
 				<p class="rescale-title">{copy.rescaleTitle}</p>
@@ -484,6 +492,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					<span>{recipe.result.unit}</span>
 				</label>
 				<p class="form-note">{copy.rescaleHint}</p>
+				<p class="form-note rescale-message" role="status" data-rescale-message hidden></p>
 			</div>
 			{
 				groups
@@ -764,12 +773,12 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 
 <script>
 	import {
-		factorForAmount,
-		factorForResult,
+		clampedResult,
 		factorFromSearch,
 		formatAmount,
 		scaledAmount,
 		searchFor,
+		typedAmountFactor,
 	} from "../lib/rescale";
 
 	// One ingredient note open at a time, and a click or Escape anywhere else
@@ -982,20 +991,92 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			render();
 		};
 
+		const message = panel.querySelector<HTMLElement>("[data-rescale-message]");
+		const copy = {
+			clampedMin: panel.dataset.clampedMin ?? "",
+			clampedMax: panel.dataset.clampedMax ?? "",
+			notANumber: panel.dataset.notANumber ?? "",
+		};
+
+		/*
+		 * Nothing happens while a key is down.
+		 *
+		 * Recomputing on every keystroke meant that clearing a field and typing the
+		 * first digit immediately became the smallest batch, and the field was
+		 * rewritten under the cursor, so backspace did nothing. A value is taken
+		 * when the field is left, or when Enter is pressed.
+		 */
+		const say = (text: string | null) => {
+			if (!message) return;
+			message.textContent = text ?? "";
+			message.hidden = !text;
+		};
+
+		const readNumber = (input: HTMLInputElement) => Number(input.value.replace(",", "."));
+
+		const clamped = (bound: "min" | "max" | null) =>
+			bound === "min" ? copy.clampedMin : bound === "max" ? copy.clampedMax : null;
+
+		const commitAmount = (row: Row) => {
+			const base = { amount: row.base, unit: row.unit, scalable: row.scalable };
+			const result = typedAmountFactor(base, readNumber(row.input));
+
+			if (!result) {
+				// An empty field or a letter: put the current value back and say why.
+				row.input.value = formatAmount(scaledAmount(base, factor), lang);
+				say(copy.notANumber);
+				return;
+			}
+
+			say(clamped(result.clamped));
+			apply(result.factor, "ref");
+		};
+
+		const commitResult = () => {
+			if (!resultInput) return;
+
+			const typed = readNumber(resultInput);
+			const result = clampedResult(resultBase, typed);
+
+			if (!result || !Number.isFinite(typed) || typed <= 0) {
+				resultInput.value = String(Math.max(1, Math.round(resultBase * factor)));
+				say(copy.notANumber);
+				return;
+			}
+
+			say(clamped(result.clamped));
+			apply(result.factor, "result");
+		};
+
 		for (const row of rows) {
 			if (!row.scalable) continue;
-			row.input.addEventListener("input", () => {
-				const typed = Number(row.input.value.replace(",", "."));
-				apply(factorForAmount({ amount: row.base, unit: row.unit, scalable: row.scalable }, typed), "ref");
+			// change fires when a changed field is left; Enter commits without leaving.
+			row.input.addEventListener("change", () => commitAmount(row));
+			row.input.addEventListener("keydown", (event) => {
+				if (event.key !== "Enter") return;
+				event.preventDefault();
+				commitAmount(row);
+				row.input.blur();
 			});
 		}
 
-		resultInput?.addEventListener("input", () => {
-			apply(factorForResult(resultBase, Number(resultInput.value.replace(",", "."))), "result");
+		resultInput?.addEventListener("change", commitResult);
+		resultInput?.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter") return;
+			event.preventDefault();
+			commitResult();
+			resultInput.blur();
 		});
 
 		panel.hidden = rows.length === 0;
-		apply(factorFromSearch(location.search, { refAmount: refBase, resultValue: resultBase }), "ref");
+
+		// A link can carry a value that had to be clamped too, so it says the same
+		// thing a typed one does.
+		const initial = factorFromSearch(location.search, { refAmount: refBase, resultValue: resultBase });
+		if (initial) {
+			say(clamped(initial.clamped));
+			apply(initial.factor, "ref");
+		}
 		render();
 	}
 

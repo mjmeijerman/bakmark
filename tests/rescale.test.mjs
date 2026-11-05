@@ -11,6 +11,7 @@ import { test } from "node:test";
 import {
 	MAX_FACTOR,
 	MIN_FACTOR,
+	clampedResult,
 	factorForAmount,
 	factorForResult,
 	factorFromSearch,
@@ -18,6 +19,7 @@ import {
 	round,
 	scaledAmount,
 	searchFor,
+	typedAmountFactor,
 } from "../src/lib/rescale.ts";
 import { withServer } from "./helpers/server.mjs";
 
@@ -56,16 +58,36 @@ test("asking for a yield gives a factor, or nothing", () => {
 	assert.equal(factorForResult(50, Number.POSITIVE_INFINITY), null);
 });
 
+test("a typed amount says when it was pushed to a bound", () => {
+	assert.equal(typedAmountFactor(milk, 250)?.factor, 2.5);
+	assert.equal(typedAmountFactor(milk, 250)?.clamped, null);
+
+	const small = typedAmountFactor(milk, 1);
+	assert.equal(small?.factor, MIN_FACTOR);
+	assert.equal(small?.clamped, "min", "the UI has to be able to explain this");
+
+	const huge = typedAmountFactor(milk, 99_999);
+	assert.equal(huge?.factor, MAX_FACTOR);
+	assert.equal(huge?.clamped, "max");
+
+	assert.equal(typedAmountFactor(milk, Number.NaN), null, "an empty field changes nothing");
+	assert.equal(typedAmountFactor(milk, 0), null);
+	assert.equal(typedAmountFactor(salt, 5), null, "an item that does not scale cannot drive");
+
+	assert.equal(clampedResult(50, 0.2).clamped, "min");
+	assert.equal(clampedResult(50, 0.2).factor, MIN_FACTOR);
+});
+
 test("`?ref=` and `?result=` reproduce a state, and result wins", () => {
 	const bases = { refAmount: 100, resultValue: 50 };
 
-	assert.equal(factorFromSearch("?ref=250", bases), 2.5);
-	assert.equal(factorFromSearch("?result=25", bases), 0.5);
-	assert.equal(factorFromSearch("?ref=100&result=25", bases), 0.5, "a link that says 25 soesjes means 25");
-	assert.equal(
+	assert.equal(factorFromSearch("?ref=250", bases)?.factor, 2.5);
+	assert.equal(factorFromSearch("?result=25", bases)?.factor, 0.5);
+	assert.equal(factorFromSearch("?ref=100&result=25", bases)?.factor, 0.5, "a link that says 25 soesjes means 25");
+	assert.deepEqual(
 		factorFromSearch("?ref=2,5", bases),
-		MIN_FACTOR,
-		"a decimal comma is accepted, and a factor under the floor is clamped",
+		{ factor: MIN_FACTOR, clamped: "min" },
+		"a decimal comma is accepted, and a factor under the floor is clamped — and says so",
 	);
 	assert.equal(factorFromSearch("", bases), null);
 	assert.equal(factorFromSearch("?ref=abc", bases), null);

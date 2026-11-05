@@ -1,0 +1,56 @@
+---
+/**
+ * A QR code as inline SVG, generated at build time.
+ *
+ * Vector on purpose: a printed sheet is read at 300 dpi, and a raster code
+ * scaled by the browser gets fuzzy module edges that some scanners refuse. No
+ * client JavaScript either: the same markup works on paper and on screen.
+ *
+ * The four-module quiet zone is part of the drawing. A scanner needs it, and a
+ * CSS margin is not enough: a code printed tight against a rule or a photo does
+ * not read.
+ */
+import qrcode from "qrcode-generator";
+
+interface Props {
+	/** What the code points at. Short text means bigger modules, which is easier to scan. */
+	text: string;
+	/** Read out by a screen reader; a QR is nothing to a person who cannot see it. */
+	label: string;
+}
+
+const { text, label } = Astro.props;
+
+// Level M tolerates about 15% damage: a thumb, a fold, a printer that ran thin.
+const qr = qrcode(0, "M");
+qr.addData(text);
+qr.make();
+
+const QUIET = 4;
+const modules = qr.getModuleCount();
+const span = modules + QUIET * 2;
+
+let path = "";
+for (let row = 0; row < modules; row++) {
+	for (let column = 0; column < modules; column++) {
+		if (qr.isDark(row, column)) {
+			path += `M${column + QUIET} ${row + QUIET}h1v1h-1z`;
+		}
+	}
+}
+---
+
+<svg
+	class="qr"
+	viewBox={`0 0 ${span} ${span}`}
+	role="img"
+	aria-label={label}
+	{/* The target, in the markup: a QR is opaque, and this is what a test and a
+	   curious reader can read without decoding it. */}
+	data-text={text}
+	shape-rendering="crispEdges"
+	xmlns="http://www.w3.org/2000/svg"
+>
+	<rect width={span} height={span} fill="#fff"></rect>
+	<path d={path} fill="#000"></path>
+</svg>

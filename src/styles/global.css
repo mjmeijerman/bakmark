@@ -1218,6 +1218,35 @@
 	.print-only {
 		display: none;
 	}
+
+	/* The codes on paper: one per part with a video, plus the tip. */
+	.qr-strip {
+		gap: 6mm;
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.qr-item {
+		display: grid;
+		justify-items: center;
+		gap: 0.1rem;
+		max-width: 32mm;
+	}
+
+	.qr-item .qr {
+		width: 22mm;
+		height: 22mm;
+		display: block;
+	}
+
+	.qr-item p {
+		font-size: 8pt;
+		line-height: 1.25;
+		margin: 0;
+		text-align: center;
+		color: #333;
+		overflow-wrap: anywhere;
+	}
 }
 
 @media print {
@@ -1271,6 +1300,14 @@
 
 	.print-only {
 		display: block;
+	}
+
+	/* A block of codes is a row, not a paragraph: one line per sheet. */
+	.qr-strip {
+		display: flex;
+		break-inside: avoid;
+		page-break-inside: avoid;
+		margin: 0.4rem 0 0.5rem;
 	}
 
 	h1 {

@@ -16,9 +16,13 @@ import {
 	recipeTiming,
 	resolveRecipe,
 	usedIn,
+	TIP_ANCHOR,
+	videoWatchUrl,
 	type Recipe,
 } from "../lib/recipes";
 import { path, type Lang } from "../lib/i18n";
+import { absolute } from "../lib/site";
+import QrCode from "../components/QrCode.astro";
 
 interface Props {
 	slug: string;
@@ -46,7 +50,9 @@ const copy = {
 		composition: "Opbouw",
 		compositionLede:
 			"Dit recept bestaat uit basisrecepten. Elk onderdeel heeft een eigen pagina en een eigen video, en wijzigingen daar werken hier direct door.",
-		usedIn: "Gebruikt in",
+		qrVideo: (title: string) => `Video: ${title}`,
+		qrTip: "Een fooi? Scan en kies zelf.",
+		qrLabel: (caption: string) => `QR-code: ${caption}`,
 		usedInLede:
 			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
 		via: (title: string) => `, via ${title}`,
@@ -110,7 +116,9 @@ const copy = {
 		composition: "Composition",
 		compositionLede:
 			"This recipe is built from base recipes. Every part has its own page and its own video, and changes there land here immediately.",
-		usedIn: "Used in",
+		qrVideo: (title: string) => `Video: ${title}`,
+		qrTip: "A tip? Scan and choose.",
+		qrLabel: (caption: string) => `QR code: ${caption}`,
 		usedInLede:
 			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
 		via: (title: string) => `, via ${title}`,
@@ -226,6 +234,32 @@ const partTiming = (partSlug: string) => {
 	return facts.join(" · ");
 };
 
+/*
+ * What a printed sheet carries as a QR code.
+ *
+ * One per part that has a published video, so a page built from three base
+ * recipes sends the reader to the video of the part in their hand instead of a
+ * summary video that does not exist. Deduplicated by slug: a part reached twice
+ * through two variants is still one code.
+ *
+ * Plus one for the tip block, always. Paper has no links, and the tip block is
+ * the one thing a reader cannot act on later.
+ */
+const videoParts = groups
+	.filter((group) => group.recipe.video?.status === "gepubliceerd" && group.recipe.video?.youtube_id)
+	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index);
+
+const qrItems = [
+	...videoParts.map((group) => ({
+		url: videoWatchUrl(group.recipe.video ?? {}),
+		caption: copy.qrVideo(group.recipe.title),
+	})),
+	{
+		url: absolute(`${path(lang, "recipe", slug)}#${TIP_ANCHOR}`),
+		caption: copy.qrTip,
+	},
+];
+
 const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
@@ -281,6 +315,15 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<p class="print-only">
 				{copy.printLine(formatMinutes(timing.active, lang), recipe.difficulty, published, ovenTemperature)}
 			</p>
+			{/* Hidden on screen: the video is right there, and a QR on a phone is a joke. */}
+			<div class="print-only qr-strip">
+				{qrItems.map((item) => (
+					<div class="qr-item">
+						<QrCode text={item.url} label={copy.qrLabel(item.caption)} />
+						<p>{item.caption}</p>
+					</div>
+				))}
+			</div>
 		</section>
 
 		{
@@ -582,7 +625,7 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			) : null
 		}
 
-		<section class="callout no-print">
+		<section class="callout no-print" id={TIP_ANCHOR}>
 			<h2>{copy.tipHeading}</h2>
 			<p>{copy.tipText}</p>
 			<ul class="tips">

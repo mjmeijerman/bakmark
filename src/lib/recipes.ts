@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { DEFAULT_LANG, type Lang } from "./i18n";
+import { DEFAULT_LANG, type Lang } from "./i18n.ts";
 
 /** Single source of truth: recipes/<slug>.json (see docs/decisions/bakmark-plan.md D4). */
 const RECIPES_DIR = join(process.cwd(), "recipes");
@@ -50,7 +50,24 @@ export interface Variant {
 export interface Video {
 	status: "concept" | "opgenomen" | "gepubliceerd";
 	youtube_id: string | null;
+	/** Chapter offset in seconds, for a part that starts mid-video. */
+	start?: number;
 }
+
+/**
+ * Where a reader who scanned a printed sheet ends up: the video itself.
+ *
+ * A published video is the only thing worth a code; `start` is what makes a
+ * QR for one base recipe jump to that part's chapter instead of the opening
+ * frame of a longer recording.
+ */
+export const videoWatchUrl = (video: Pick<Video, "youtube_id" | "start">): string => {
+	const id = encodeURIComponent(video.youtube_id ?? "");
+	return `https://www.youtube.com/watch?v=${id}${video.start ? `&t=${video.start}s` : ""}`;
+};
+
+/** The anchor the tip block carries, so a printed sheet can point at it. */
+export const TIP_ANCHOR = "een-fooi";
 
 export interface Recipe {
 	slug: string;

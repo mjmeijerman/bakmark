@@ -70,6 +70,43 @@ HEALTH_TRIES="${BAKMARK_HEALTH_TRIES:-30}"
 BRANCH="${BAKMARK_BRANCH:-trunk}"
 
 # ---------------------------------------------------------------------------
+# Weekly newsletter: production only.
+#
+# The videos live in recipes/<slug>.json, so they arrive with a deploy. The job
+# compares what this deployment ships against the ids it already mailed and
+# sends only the difference, which is why it can run every week without mailing
+# the same video twice.
+#
+# The host's cron runs it, not the container's: a container's crontab dies with
+# the container. Two entries, one per side of daylight saving, and the job
+# itself stays silent unless it is 19:00 in Europe/Amsterdam. CRON_TZ would be
+# one line shorter, but a cron that ignores it sends at 21:00 all summer.
+# ---------------------------------------------------------------------------
+install_newsletter_cron() {
+	log="$HOME/.bakmark-newsletter.log"
+	begin="# >>> bakmark newsletter ($TARGET) >>>"
+	end="# <<< bakmark newsletter ($TARGET) <<<"
+
+	if ! command -v crontab >/dev/null 2>&1; then
+		echo "warning: no crontab on this host; the weekly newsletter is not scheduled" >&2
+		echo "         sudo apt install cron, then deploy again" >&2
+		return 0
+	fi
+
+	# The block is replaced, never appended twice: a deploy is not a reason to
+	# mail the list twice.
+	job="cd $APP_DIR && BAKMARK_ENV=$TARGET /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/newsletter.mjs --hour 19 >>$log 2>&1"
+	current="$(crontab -l 2>/dev/null || true)"
+	kept="$(printf '%s\n' "$current" | sed '/^# >>> bakmark newsletter/,/^# <<< bakmark newsletter/d')"
+
+	printf '%s\n%s\n0 17 * * 5 %s\n0 18 * * 5 %s\n%s\n' \
+		"$kept" "$begin" "$job" "$job" "$end" | crontab -
+
+	echo "==> weekly newsletter: Friday 19:00 Europe/Amsterdam, to the confirmed list"
+	echo "    log: $log"
+}
+
+# ---------------------------------------------------------------------------
 # Remote mode: re-run this script on the server, over ssh.
 # ---------------------------------------------------------------------------
 if [ "${1:-}" != "--local" ]; then
@@ -313,3 +350,9 @@ db.close();
 fi
 
 echo "==> smoke test passed"
+
+# Production only: staging sends no weekly report, and a staging checkout on the
+# same host must not schedule one.
+if [ "$TARGET" = "production" ]; then
+	install_newsletter_cron
+fi

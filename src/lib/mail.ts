@@ -19,6 +19,8 @@ export type Mail = {
 	subject: string;
 	text: string;
 	html: string;
+	/** Extra headers, e.g. List-Unsubscribe on a list mail. */
+	headers?: Record<string, string>;
 };
 
 const inProduction = (): boolean => process.env.NODE_ENV === "production";

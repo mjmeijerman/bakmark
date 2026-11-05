@@ -190,6 +190,31 @@ export const storedSince = (iso: string): number => {
 	return row?.n ?? 0;
 };
 
+export interface Recipient {
+	email: string;
+	lang: string;
+	unsubscribeToken: string;
+}
+
+/**
+ * The people a newsletter may go to: confirmed, and able to leave.
+ *
+ * An unconfirmed address asked for nothing but the confirmation link, so it is
+ * not on this list. A row without an unsubscribe token is skipped as well: a
+ * mail nobody can unsubscribe from is not one worth sending.
+ */
+export const confirmedSubscribers = (): Recipient[] =>
+	retry(() =>
+		openList()
+			.prepare(
+				`SELECT email, lang, unsubscribe_token AS unsubscribeToken
+				 FROM subscribers
+				 WHERE confirmed_at IS NOT NULL AND unsubscribe_token IS NOT NULL
+				 ORDER BY created_at`,
+			)
+			.all(),
+	) as Recipient[];
+
 /**
  * Deletes unconfirmed rows older than the cutoff. Returns how many went.
  *

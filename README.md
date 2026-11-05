@@ -220,15 +220,22 @@ An address that was never confirmed is deleted 24 hours after signup
 lives in one place and the job reads it.
 
 The job is a command, run by the **host's** cron, not the container's: a
-container's crontab dies with the container.
+container's crontab dies with the container. `deploy.sh` installs the entry
+itself, on every environment, at 04:17:
 
 ```sh
-# daily at 04:17
-17 4 * * * cd /srv/bakmark && BAKMARK_DATA_DIR=/var/lib/bakmark /usr/bin/env docker compose run --rm -T bakmark node --experimental-strip-types scripts/purge.mjs
+17 4 * * * cd <app dir> && BAKMARK_ENV=<env> /usr/bin/env docker compose run --rm -T bakmark \
+  node --experimental-strip-types scripts/purge.mjs >> ~/.bakmark-purge.log 2>&1
 ```
 
-Run it by hand the same way. It prints one line, `removed N unconfirmed
-addresses older than 24 hours`, so a cron log answers whether it ran.
+The block sits between `# >>> bakmark cron` markers in the deploy user's
+crontab and is replaced on every deploy, so a deploy never leaves two copies
+running. If an older hand-added line for this job exists, delete it: the block
+does not know about it, and two purges is harmless, two newsletters is not.
+
+It prints one line, `removed N unconfirmed addresses older than 24 hours`, so
+the log answers whether it ran. Run it by hand the same way, without the `--hour`
+guard if you copied the newsletter line.
 
 Backup: stop the container, then copy every `subscribers.sqlite*` file — the
 `-wal` file holds committed rows that are not in the main file yet.

@@ -9,6 +9,10 @@
 # there is one deploy path and not two that can drift. If Actions is down, the
 # first form still works: identical code, run from your laptop.
 #
+# One consequence worth knowing: this script resets the checkout it is running
+# from, so a deploy that changes deploy.sh itself takes effect one deploy later.
+# The running shell keeps executing the version it started with.
+#
 # What it does, in order:
 #   1. refuse to deploy a dirty tree
 #   2. update the server checkout, build the image there (no registry)

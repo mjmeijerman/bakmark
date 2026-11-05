@@ -116,7 +116,14 @@ if [ ! -f "$stamp" ]; then
 	printf '%s\n' "$BAKMARK_ENV" > "$stamp"
 fi
 
-docker compose up --build -d
+# Mailpit is a development tool and sits in the "dev" profile, so a staging or
+# production run of this script never starts one: their mail goes through the
+# host's Postfix (see deploy.sh).
+if [ "$BAKMARK_ENV" = "local" ]; then
+	docker compose --profile dev up --build -d
+else
+	docker compose up --build -d
+fi
 
 echo "Bakmark:      http://localhost:$PORT ($BAKMARK_ENV, data in $DATA_DIR)"
 if [ -n "$SIGNUP_ALLOWED_DOMAINS" ]; then

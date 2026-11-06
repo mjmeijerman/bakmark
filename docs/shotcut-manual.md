@@ -1,0 +1,231 @@
+# Shotcut manual — bakmark video workflow
+
+Shotcut is free, open source, **no watermark, no paid tier, no export limits**. Nothing is ever stamped on your video.
+
+---
+
+## 1. Install
+
+```bash
+sudo apt install shotcut        # Ubuntu/Mint
+```
+Or download the AppImage from shotcut.org (any distro, no install needed).
+
+Also install `ffmpeg` — needed for some codecs and for extracting audio.
+
+---
+
+## 2. Project setup (do this first, every video)
+
+1. Make a folder `videos/bakken-aflevering-01/` and put in it: raw footage, `logo.png` (transparent PNG), `music.mp3`, the `.mlt` project file.
+2. Open Shotcut → **New Project** → save the `.mlt` into that folder.
+3. Settings → **Video Mode** → `UHD 2160p 30 fps`. Your source is 4K — a 4K timeline keeps the full zoom range (see §8). Set this before dragging anything in; changing it later shifts every clip.
+4. Settings → **Proxy → Use Proxy Files**, and **Preview Scaling → 540p**. Builds half-res copies so 4K scrubs without stutter. Preview only — the export always uses your originals. Proxies build in the background after import; wait for the task bar to finish before judging playback.
+5. Settings → **Use Hardware Decoder** if the source is H.265/HEVC. Large playback speedup.
+6. Timeline tracks (right-click timeline → **Add Audio/Video Track**):
+   - **V2** = logo + text overlays
+   - **V1** = main video
+   - **A1** = voice/original sound
+   - **A2** = music
+
+---
+
+## 3. Intro screen (colored background + text)
+
+1. **Open Other → Color** → pick your brand color → drag onto **V2** at 0:00.
+2. Drag the clip's right edge to 3–4 seconds.
+3. Select it → **Filters (+)** → **Text: Simple**:
+   - Text: `Deel 1: Banketbakkersroom`
+   - Font size ~90, center, white
+4. Same clip → add filter **Fade In Video** and **Fade Out Video** (1 s each).
+5. Optional: add **Text: Simple** again lower down for a subtitle line.
+
+Intro should be **max 4 seconds**. Longer intros lose viewers.
+
+---
+
+## 4. Logo watermark
+
+1. Drag `logo.png` onto **V2** (above the video). It snaps at the top.
+2. Select the logo **track** head (left side) → **Blend mode: Screen** if the PNG has a white background. Skip if your PNG is truly transparent.
+3. Right-click the logo clip → **Properties** → set **Duration** to your full video length (e.g. `00:09:30:00`). Or copy the logo clip and paste along the timeline.
+4. Select logo clip → **Filters (+)** → **Size, Position & Rotate** → **Size** `15%`, **Position** preset `Top Right`, margin 32 px.
+5. Optional: **Opacity** filter → `70%` so it sits behind the picture content.
+
+One logo, top-right, one position, whole video. Don't animate it.
+
+---
+
+## 5. Text over the video ("bakproces 10x versneld")
+
+1. Move the playhead to where you want the text.
+2. **Open Other → Text** → type `Bakproces 10× versneld` → drag onto **V2**.
+3. Drag the edges so it lasts exactly as long as the fast section.
+4. Filters → **Text: Simple** → size ~60, white, drop shadow on (so it reads over any footage), position bottom-center.
+
+Same clip can be reused: copy it, paste, edit the text.
+
+---
+
+## 6. Cut out parts
+
+1. Play the timeline. Press **`S`** to split at the playhead (do it at the start and end of the bad part).
+2. Click the middle piece → **`Delete`**.
+3. Everything after it leaves a gap — click a gap → **Ripple Delete** (`Ctrl+Shift+Delete`... or right-click → Ripple Delete) to close it.
+4. `Ctrl+Z` undoes anything.
+
+Shortcut cheat sheet: `S` split · `Delete` remove · `Space` play/pause · `←/→` one frame · `J/K/L` rewind/stop/fast-forward.
+
+---
+
+## 7. Speed up a part (10x)
+
+1. Select the clip → **Properties** panel → **Speed** field → type `1000` (that's 1000% = 10×).
+2. The clip becomes 1/10th as long. Tick **Ripple** if you want the rest of the timeline to shift up.
+3. Put the "bakproces 10× versneld" text on top of it (section 5).
+
+Fine-grained control: instead of Properties, right-click the clip → **Filters → Time Remap** and keyframe speed per segment.
+
+Audio pitch goes up at 10× — mute A1 for that section and let the music cover it.
+
+---
+
+## 8. Zoom + pan the camera (move to the important part)
+
+Use **Size, Position & Rotate**, with keyframes.
+
+1. Select the clip → **Filters (+)** → **Size, Position & Rotate**.
+2. Move the playhead to where the zoom starts. Click the **keyframe** button (stopwatch icon) next to **Size** and **Position**.
+3. Move the playhead to where the zoom should be done (e.g. 1.5 s later). Set **Size** to `180%`, drag the image so the important part is centered. A new keyframe is created automatically.
+4. Press play — it now eases from wide to zoomed.
+5. To pan across, add a third keyframe further along and drag **Position** to a new spot.
+
+**You have 4K source, so zoom freely.** Export at 1080p always: 4K → 1080p is a 2× downscale, so a `200%` zoom is still pixel-perfect, `300%` is acceptable, past `400%` it turns to mush. The preview looks soft while proxies are active — the export is sharp.
+
+If one source clip is only 1080p, Shotcut upscales it into the 4K timeline. That's fine, but that clip's zoom ceiling is 200%.
+
+Optional: **Smooth** checkbox in the filter to make keyframes ease instead of linear.
+
+---
+
+## 9. Remove noise (mixer sounds, hum, fridge)
+
+Two filters, in this order:
+
+1. **High Pass** filter → frequency `120 Hz`. Kills rumble, mixer motor, table thumps, wind. Do this first.
+2. **Reduce Noise: Simple** → `20%`. Quick, no setup.
+   - Better result: **Reduce Noise: Advanced** → select a 1-second silent stretch → click **Analyze** → then **Apply**. This learns your room's actual noise floor.
+3. Check with headphones. Too much reduction = underwater/robotic voice. If it sounds hollow, back off to 15%.
+4. **Gain / Volume** filter to bring speech to a consistent level.
+
+For future recordings: record on a separate phone/recorder placed near the talking person, sync it in Shotcut with **Detach Audio** + align the waveform. Cleaner source beats any filter.
+
+---
+
+## 10. Background music
+
+Free, no attribution required: **Pixabay Music**, **Mixkit**, **Free Music Archive** (filter CC0). Avoid CC-BY unless you're willing to credit in the description.
+
+1. Drag the track onto **A2**. It will be louder than intended — that's normal.
+2. **Filters (+)** → **Gain / Volume** → **Level** `-18 dB` (music should sit under the voice).
+3. Add **Fade In Audio** and **Fade Out Audio**, 2 s each.
+4. Add **Duck** manually: for each speaking section, split the music clip (`S`) and drop the volume another `-6 dB` on those pieces. Shotcut also has a **Compressor: Makeup** + **Duck** filter combo, but manual volume is faster to learn.
+5. Music must not loop awkwardly — cut at a musical beat, or set **Properties → Speed** to fit the length.
+
+---
+
+## 11. Three separate videos *and* one combined video
+
+You want each part as its own upload **and** all three merged. That flips the usual rule: **edit each part first, combine last.** "Combine first" exists to avoid duplicate work — you're accepting some duplication to get 4 videos out of one shoot.
+
+1. One folder, four projects:
+```
+videos/zwitserse-room/
+  raw/                      01-slagroom.mp4  02-banketbakkersroom.mp4  03-zwitserse-room.mp4
+  part1-slagroom.mlt
+  part2-banketbakkersroom.mlt
+  part3-zwitserse-room.mlt
+  master-alles.mlt
+  logo.png   music.mp3
+```
+2. Edit each part **completely** in its own project: cuts, speed, zooms, overlay text, logo, its own intro card (`Deel 1: Slagroom`), music with fade in/out. Each part must be an uploadable video on its own before you move on.
+3. Export each part → 1080p. Those are 3 of your 4 uploads. Done, you already have them.
+4. Open `master-alles.mlt` → **File → Open MLT XML As Clip** → pick `part1-slagroom.mlt`. It loads into the Source player → append to timeline. Repeat for parts 2 and 3.
+   - This reuses the **originals**, so there is **no quality loss** and no re-encode of your edits.
+   - Changed a part afterwards? Edit the part project, save, then re-add that clip in the master.
+5. In the master only: overall intro card, transitions at the two joints (drag the later clip left to overlap ~15 frames → automatic crossfade), end card.
+6. Add **Markers** (`M`) at the part boundaries — those become your YouTube chapter timestamps. Export → 4th upload.
+
+What will bite you:
+- **Video Mode must be `UHD 2160p 30` in all four projects.** If the master's mode differs, it resamples the parts and softens them.
+- **Intro count:** 4 cards total — one per part, one for the master. Never put the master intro inside a part.
+- **Music:** each part gets its own track with fades, so the combined version pauses naturally between parts. You cannot run one continuous track across three independent projects.
+- **Fallback** if your version lacks *Open MLT XML As Clip*: export each part to a high-bitrate 4K master (Quality `75%`), then combine those in the master project. Simpler, costs one generation of quality.
+
+Do not cut or zoom the raw files inside the master. The master is for assembly only.
+
+---
+
+## 12. Export
+
+1. **Export** panel → preset **YouTube** (or **H.264 High Profile**).
+2. Advanced:
+   - Resolution `1920×1080` — the downscale is what makes your zooms sharp. Don't export 2160p unless you want a 4 GB file for no visible gain on YouTube.
+   - Frame rate `30`, matching your project
+   - Codec `libx264`, **Quality** `65%` (visually lossless enough, roughly 1 GB per 10 min)
+   - Audio `AAC 192 kbps`
+   - Tick **Parallel processing**
+3. **Export File**. A 10-minute video from a 4K timeline: 20–60 minutes depending on CPU. Don't edit during the render.
+
+Watch the finished file start-to-finish at 1× before uploading. Renders hide glitches that playback doesn't.
+
+---
+
+## 13. Before you upload to YouTube
+
+Ranked, do them in this order:
+
+1. **Audio level.** Target average **-14 LUFS**, peaks never above **-1 dB**. YouTube normalizes everything to -14 LUFS, so louder just gets turned down and quieter sounds weak. Check with `ffmpeg -i out.mp4 -af loudnorm=print_format=summary -f null -`.
+2. **Thumbnail.** 1280×720, readable at 120 px wide. Show the end result (the pastry), not your kitchen.
+3. **First 3 seconds.** No logo animation, no "hey guys welcome back". Start on the food or a strong statement.
+4. **Chapter markers.** Put timestamps in the description (`00:00 Intro`, `00:45 Ingredienten`, `01:20 Banketbakkersroom`). YouTube turns them into chapters automatically.
+5. **Subtitles.** YouTube auto-captioning mangles Dutch baking terms (banketbakkersroom, roomboter). Export an SRT from Shotcut (**Subtitle panel → Export**) and upload it manually.
+
+Also worth doing, later: end screen (5 s of static card with subscribe), description with recipe link, pin a comment, and check the video plays on a phone.
+
+---
+
+## Time estimates
+
+| Task | First time | After practice |
+|---|---|---|
+| Install + setup | 20 min | 2 min |
+| Intro + logo | 25 min | 5 min |
+| Cuts + speed | 30 min | 10 min |
+| Zooms | 20 min per shot | 5 min |
+| Noise + music | 20 min | 8 min |
+| Combine finished parts | 15 min | 5 min |
+| Export + check | 60 min (4K) | 45 min |
+
+A 10-minute episode from three recordings: **first attempt ≈ 4 hours, experienced ≈ 1 hour of editing.** Budget an extra hour per part when exporting all four outputs.
+
+---
+
+## Order of operations (saves the most time)
+
+1. Edit and finish part 1 → export it. Repeat for each part: cuts, then speed, then zooms, text, logo, intro, audio, music.
+2. Combine the finished parts in the master project (`Open MLT XML As Clip`), add master intro + transitions, export.
+
+Never do the logo or intro before cutting; you'll redo them.
+
+---
+
+## Should you switch to DaVinci Resolve?
+
+Not yet. Resolve is better at motion polish (bezier keyframe easing, real retime curves), text styling, hardware export speed, and it has a tidier "new timeline from clips" flow.
+
+But the single hard problem in baking videos is **mixer and kitchen noise**, and Resolve's good tool for that — Voice Isolation — is **Studio-only, $295 one-time**. Free Resolve's denoising is weaker than Shotcut's noise-profile filter. Resolve also costs roughly 4 hours of learning before your first cut, and it wants 16 GB+ RAM and a real GPU for 4K.
+
+Switch when: you commit to 10+ episodes, or you find yourself unable to get a zoom or speed ramp to feel smooth. Until then the extra quality is invisible to viewers on a kitchen video.
+
+If you do switch, `ffmpeg` still does your loudness check and audio extraction — keep it installed either way.

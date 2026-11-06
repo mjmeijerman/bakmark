@@ -90,7 +90,7 @@ Audio pitch goes up at 10× — mute A1 for that section and let the music cover
 
 ---
 
-## 8. Zoom + pan the camera (move to the important part)
+## 8. Zoom, pan and rotate
 
 Use **Size, Position & Rotate**, with keyframes.
 
@@ -105,6 +105,28 @@ Use **Size, Position & Rotate**, with keyframes.
 If one source clip is only 1080p, Shotcut upscales it into the 4K timeline. That's fine, but that clip's zoom ceiling is 200%.
 
 Optional: **Smooth** checkbox in the filter to make keyframes ease instead of linear.
+
+### Rotate a whole clip (phone footage shot sideways)
+
+1. Same filter: **Size, Position & Rotate** → **Rotation** `90` (or `-90`, `180`).
+2. Rotation exposes empty corners, so **you must raise Size to refill the frame**. A 90° turn needs **`178%`** — a 4K 16:9 clip turned upright is only 2160 px wide, and you need 3840.
+3. Result is a heavy crop: you keep the middle third of the original. Shoot properly next time, or accept it.
+4. If the footage is portrait phone video, better plan: make a **separate 9:16 project** for Shorts/Reels (`Settings → Video Mode → Vertical HD 1080p 30`) and upload that as its own video. Don't rotate portrait footage into a landscape episode.
+
+### Rotate only part of a clip
+
+Filters apply to the whole clip, so split first: move the playhead to the start of the part, press **`S`**, move to the end, press **`S`**. Select only the middle piece and apply the filter to that. The neighbours are untouched.
+
+To change the angle *during* a clip, keyframe **Rotation** the same way as Size in step 2–3 above.
+
+### Straighten a tilted shot (0.5–3°)
+
+The common case: your camera sat slightly crooked on the tripod and the countertop runs downhill.
+
+1. **Rotation** `2.5` (positive tilts clockwise, negative counter-clockwise).
+2. **Size** `108%` — mandatory. Any angle other than 90/180/270° leaves black wedges in the corners, and the extra size crops them out.
+
+Shotcut also asks *"Convert to Edit-friendly?"* on import when phone footage carries a rotation flag. Answer **Yes** — it bakes the rotation in and you never need the filter.
 
 ---
 

@@ -30,3 +30,24 @@ pnpm-debug.log*
 # render check output; the baseline png is committed
 tests/snapshots/confirmation.nl.html
 tests/snapshots/confirmation.nl.png
+
+# video editing workspace: raw footage is far too large for git.
+# The manual lives in docs/shotcut-manual.md; projects stay local.
+videos/
+
+# media files anywhere in the repo (belt and braces, in case footage moves)
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.m4v
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+
+# editor temp/autosave
+*.mlt.autosave
+*~

@@ -154,6 +154,22 @@ Free, no attribution required: **Pixabay Music**, **Mixkit**, **Free Music Archi
 4. Add **Duck** manually: for each speaking section, split the music clip (`S`) and drop the volume another `-6 dB` on those pieces. Shotcut also has a **Compressor: Makeup** + **Duck** filter combo, but manual volume is faster to learn.
 5. Music must not loop awkwardly — cut at a musical beat, or set **Properties → Speed** to fit the length.
 
+### The music for this series
+
+One artist for the whole series, so every episode sounds like the same channel:
+
+**TungArt7** — <https://pixabay.com/users/tungart7-38741244/?tab=music&order=latest&pagi=1>
+
+- Solo piano, modern classical, instrumental, no vocals. Exactly what sits under a talking baking video without masking words.
+- First pick: **Long distance love** (4:00). Save it as `TungArt7-Long-Distance-Love.mp3`.
+- Grab **two more** from that same page and rotate one per section (ingredienten / banketbakkersroom / zwitserse room). One 4-minute track cannot cover a 10-minute episode without looping audibly.
+- Level it at **-20 dB**, not -18. Piano occupies the same frequencies as speech and masks it sooner than pads or strings do.
+- Licence: **Pixabay Content License** — commercial use, no credit required, but you may not re-upload the track standalone as a music video.
+- Artist name in the filename (`TungArt7-Long-Distance-Love.mp3`) is your credits record, for free. Keep it.
+- Solo nostalgic piano is the most common style on cooking channels — safe rather than distinctive. That is the correct trade if the goal is "no trouble".
+
+**Before publishing any episode**, upload it **unlisted** and open YouTube Studio → Content → the **Copyright** column. Empty after 15 minutes = clear. A claim is not a strike, but a claimed video earns you nothing, so swap the track instead of disputing it.
+
 ---
 
 ## 11. Three separate videos *and* one combined video

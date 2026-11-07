@@ -154,14 +154,18 @@ export const videoDescription = ({
 	const base = siteUrl.replace(/\/+$/, "");
 	const result = `${recipe.result.value} ${recipe.result.unit}`;
 
+	// The recipe link goes above the chapter list: it is the one thing a viewer
+	// is most likely to want, and in a search result only the first lines show.
+	// YouTube only asks that the chapter list starts at 0:00, not that it is the
+	// first thing in the description.
 	return [
 		`${recipe.title} — ${recipe.subtitle}`,
 		`${result}, in één take gefilmd: geen knip, geen versnelling.`,
 		"",
+		`Recept met dezelfde stappen, de tijden en een printversie: ${chapterUrl ?? `${base}/recepten/${recipe.slug}`}`,
+		"",
 		"Hoofdstukken",
 		...chapters.map((chapter) => `${formatTimestamp(chapter.seconds)} ${chapter.title}`),
-		"",
-		`Recept met dezelfde stappen, de tijden en een printversie: ${chapterUrl ?? `${base}/recepten/${recipe.slug}`}`,
 		"",
 		"Vragen? Zet ze hieronder; ik lees ze.",
 	].join("\n");

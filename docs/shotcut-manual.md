@@ -346,6 +346,27 @@ Regels die je moet respecteren:
 3. Alleen width, height, frame_rate_num en frame_rate_den van het profile tellen. `description` is cosmetisch.
 4. Proxy's staan in `<project>/proxies/<shotcut:hash>.mp4`. Die hash is niet reproduceerbaar — laat Shotcut ze bouwen (Settings → Proxy → Use Proxy Files, één keer aanzetten).
 
+### Export-pijplijn die werkt (4K)
+
+Nooit blind de hele render starten. Drie stappen:
+
+1. **Sample eerst.** Tien seconden uit het midden van de tijdlijn, en kijk één frame na:
+   ~~~
+   melt project.mlt in=600 out=899 -consumer avformat:/tmp/sample.mp4 f=mp4 \
+     vcodec=libx264 crf=18 preset=medium pix_fmt=yuv420p s=3840x2160 progressive=1 r=30 \
+     acodec=aac ab=256k ar=48000 channels=2 rescale=lanczos
+   ~~~
+   Zwart beeld, geen audio, verkeerde resolutie? Niet doorrenderen, eerst fixen.
+2. **Volledige render naar een tussenbestand** (crf 16, 4K). Dit is de tijdlijn mét titel en muziek, zonder logo.
+3. **Logo + loudness in één ffmpeg-pass**: logo overlay (PNG met alpha, 576 px, 72 px marge, 80% opacity) en loudnorm twee-pass met I=-14 LUFS en TP=-1 dB. Video opnieuw encoderen (NVENC of x264), audio AAC 192 kbps.
+
+Twee encode-stappen kost één generatie kwaliteit. Bij crf 16 voor de tussenstap is dat onzichtbaar.
+
+### Twee valkuilen die tijd kosten
+
+1. **melt negeert het profiel van het project** bij avformat-exports. Zonder `s=` en `r=` krijg je 720x576 op 25 fps. Altijd beide meegeven.
+2. **Een transparante PNG als clip op een track wordt zwart** — in Shotcut's preview én in melt zodra de consumer-afmeting van het profiel afwijkt. Een logo hoort dus niet op de tijdlijn; brand het in met ffmpeg.
+
 ### Tijdschatting
 
 | Aanpak | Tijd |

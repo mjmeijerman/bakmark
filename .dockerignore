@@ -21,6 +21,11 @@ tests
 .env.*
 .env.example
 
+# Footage. 52 GB of source clips, renders and posters; the site needs none of
+# it. Without this line every `docker compose up --build` hands the whole lot to
+# the daemon before the first instruction runs.
+videos
+
 # Editor and OS noise
 .DS_Store
 .idea

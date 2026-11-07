@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const compose = readFileSync(new URL("../compose.yaml", import.meta.url), "utf8");
+const dockerignore = readFileSync(new URL("../.dockerignore", import.meta.url), "utf8");
 
 /** The lines of one top-level service block. */
 const service = (name) => {
@@ -42,4 +43,18 @@ test("start.sh enables the dev profile for local runs only", () => {
 	const start = readFileSync(new URL("../start.sh", import.meta.url), "utf8");
 	assert.match(start, /--profile dev/);
 	assert.match(start, /BAKMARK_ENV" = "local"/);
+});
+
+test("the build context leaves the footage on the host", () => {
+	// videos/ is tens of gigabytes. In the context it does not slow the build
+	// down, it stalls it: the daemon receives every byte before the first
+	// instruction runs.
+	assert.match(
+		dockerignore,
+		/^videos$/m,
+		"videos/ in the build context turns every --build into a copy of the footage",
+	);
+	assert.match(dockerignore, /^node_modules$/m);
+	assert.match(dockerignore, /^\.git$/m);
+	assert.match(dockerignore, /^data$/m);
 });

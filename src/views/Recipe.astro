@@ -4,6 +4,7 @@ import NewsletterForm from "../components/NewsletterForm.astro";
 import DifficultyBadge from "../components/DifficultyBadge.astro";
 import RecipeSection from "../components/RecipeSection.astro";
 import RecipeSteps from "../components/RecipeSteps.astro";
+import RecipeVideo from "../components/RecipeVideo.astro";
 import {
 	DIFFICULTY_SCALE,
 	allRecipes,
@@ -34,6 +35,8 @@ import {
 	unitFor,
 } from "../lib/rescale";
 import QrCode from "../components/QrCode.astro";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 interface Props {
 	slug: string;
@@ -48,6 +51,9 @@ const copy = {
 		conceptChip: "Concept",
 		videoAria: (title: string) => `Placeholder: video van ${title} in één take`,
 		videoLabel: (title: string) => `Video: ${title} in één take`,
+		videoPlay: "Video afspelen",
+		videoNote: "Eén take, in echte tijd: geen knip, geen versnelling.",
+		videoMoment: (stamp: string) => `Bekijk dit moment · ${stamp}`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
 		timeTotal: "Totaal",
@@ -131,6 +137,9 @@ const copy = {
 		conceptChip: "Draft",
 		videoAria: (title: string) => `Placeholder: video of ${title} in one take`,
 		videoLabel: (title: string) => `Video: ${title} in one take`,
+		videoPlay: "Play the video",
+		videoNote: "One take, in real time: no cuts, no speed-up.",
+		videoMoment: (stamp: string) => `Watch this moment · ${stamp}`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
 		timeTotal: "Total",
@@ -314,6 +323,25 @@ const videoParts = groups
 	.filter((group, index, all) => all.findIndex((g) => g.recipe.slug === group.recipe.slug) === index);
 
 /*
+ * The embed only exists once the video is public. A private upload in an iframe
+ * is an error message, and a video that is still being recorded is a promise.
+ */
+const publishedVideo =
+	recipe.video?.status === "gepubliceerd" && recipe.video.youtube_id ? recipe.video : null;
+
+/*
+ * The poster is our own file, so the page makes no request to YouTube until
+ * someone presses play. Missing means the branded placeholder, not a broken box.
+ */
+const videoPoster = existsSync(join(process.cwd(), "public", "posters", `${slug}.jpg`))
+	? `/posters/${slug}.jpg`
+	: "/recept-placeholder.png";
+
+/** Steps of a part get a link into that part's video, never into another recording. */
+const partVideo = (part: Recipe): Recipe["video"] | undefined =>
+	part.video?.status === "gepubliceerd" && part.video.youtube_id ? part.video : undefined;
+
+/*
  * The reference ingredient: the first one that may scale, in the first group.
  * It is what `?ref=` counts in, so a shared link needs no second parameter.
  */
@@ -415,15 +443,30 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			)
 		}
 
-		<div
-			class="placeholder-box recipe-video no-print"
-			style="--ratio: 16 / 9"
-			role="img"
-			aria-label={copy.videoAria(recipe.title.toLocaleLowerCase(lang))}
-		>
-			<span aria-hidden="true">Placeholder</span>
-			<strong aria-hidden="true">{copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}</strong>
-		</div>
+		{
+			publishedVideo ? (
+				<RecipeVideo
+					youtubeId={publishedVideo.youtube_id ?? ""}
+					start={publishedVideo.start ?? 0}
+					poster={videoPoster}
+					title={copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}
+					playLabel={copy.videoPlay}
+					note={copy.videoNote}
+				/>
+			) : (
+				<div
+					class="placeholder-box recipe-video no-print"
+					style="--ratio: 16 / 9"
+					role="img"
+					aria-label={copy.videoAria(recipe.title.toLocaleLowerCase(lang))}
+				>
+					<span aria-hidden="true">Placeholder</span>
+					<strong aria-hidden="true">
+						{copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}
+					</strong>
+				</div>
+			)
+		}
 
 		{
 			recipe.variants && Object.keys(recipe.variants).length ? (
@@ -747,6 +790,8 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 							steps={group.steps}
 							whyTips={copy.whyTips}
 							whyLabel={copy.whyLabel}
+							video={partVideo(group.recipe)}
+							momentLabel={copy.videoMoment}
 						/>
 					);
 

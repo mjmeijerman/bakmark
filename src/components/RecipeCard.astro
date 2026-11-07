@@ -7,6 +7,8 @@ interface Props {
 	title: string;
 	description: string;
 	imageLabel: string;
+	/** `/posters/<slug>.jpg` when we have a photo; the placeholder otherwise. */
+	poster?: string | null;
 	chips?: string[];
 	concept?: boolean;
 	/** Shown on the card so the overview says how hard something is at a glance. */
@@ -19,6 +21,7 @@ const {
 	title,
 	description,
 	imageLabel,
+	poster,
 	chips = [],
 	concept = false,
 	difficulty,
@@ -30,15 +33,23 @@ const cta = lang === "en" ? "Open the recipe →" : "Bekijk het recept →";
 ---
 
 <a class="recipe-card" href={href}>
-	<div
-		class="placeholder-box"
-		style="--ratio: 16 / 10"
-		role="img"
-		aria-label={`Placeholder: ${imageLabel}`}
-	>
-		<span aria-hidden="true">Placeholder</span>
-		<strong aria-hidden="true">{imageLabel}</strong>
-	</div>
+	{
+		poster ? (
+			<div class="recipe-card-photo">
+				<img src={poster} alt={imageLabel} width="1280" height="800" loading="lazy" decoding="async" />
+			</div>
+		) : (
+			<div
+				class="placeholder-box"
+				style="--ratio: 16 / 10"
+				role="img"
+				aria-label={`Placeholder: ${imageLabel}`}
+			>
+				<span aria-hidden="true">Placeholder</span>
+				<strong aria-hidden="true">{imageLabel}</strong>
+			</div>
+		)
+	}
 	<p class="recipe-card-labels">
 		{concept && <span class="chip chip-concept">{conceptLabel}</span>}
 		{difficulty ? <DifficultyBadge level={difficulty} lang={lang} /> : null}

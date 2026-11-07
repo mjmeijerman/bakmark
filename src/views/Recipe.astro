@@ -15,6 +15,7 @@ import {
 	localizeGroup,
 	loadRecipe,
 	recipeChips,
+	recipePoster,
 	recipeTiming,
 	resolveRecipe,
 	SCALE_FACTORS,
@@ -35,8 +36,6 @@ import {
 	unitFor,
 } from "../lib/rescale";
 import QrCode from "../components/QrCode.astro";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 interface Props {
 	slug: string;
@@ -333,9 +332,7 @@ const publishedVideo =
  * The poster is our own file, so the page makes no request to YouTube until
  * someone presses play. Missing means the branded placeholder, not a broken box.
  */
-const videoPoster = existsSync(join(process.cwd(), "public", "posters", `${slug}.jpg`))
-	? `/posters/${slug}.jpg`
-	: "/recept-placeholder.png";
+const videoPoster = recipePoster(slug) ?? "/recept-placeholder.png";
 
 /** Steps of a part get a link into that part's video, never into another recording. */
 const partVideo = (part: Recipe): Recipe["video"] | undefined =>

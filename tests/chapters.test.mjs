@@ -119,6 +119,11 @@ test("the description carries the chapters and a link to the recipe", () => {
 	assert.match(text, /^Testrecept — Een test in één take/);
 	assert.match(text, /\n0:00 Mengen\n/);
 	assert.match(text, /https:\/\/bakmark\.nl\/recepten\/test/);
+	// The link sits above the chapters: only the first lines show in a search result.
+	assert.ok(
+		text.indexOf("recepten/test") < text.indexOf("Hoofdstukken"),
+		"the recipe link belongs above the chapter list",
+	);
 	// Every chapter line starts with a timestamp, which is how YouTube finds them.
 	const chapterLines = text.split("\n").filter((line) => /^\d+:\d\d(:\d\d)? \S/.test(line));
 	assert.equal(chapterLines.length, 3);

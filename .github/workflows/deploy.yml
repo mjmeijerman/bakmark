@@ -20,11 +20,19 @@ on:
         options: [staging, production]
         default: staging
 
-# One deploy at a time. A queue that runs two deploys in parallel races on
+# One deploy at a time, newest wins. Merging two PRs back to back fires two
+# deploy runs a minute apart; the first has nothing left to do once the second
+# is queued, and a queue that runs two deploys in parallel races on
 # `git reset --hard` in the same checkout.
+#
+# Cancelling a running deploy is safe here: the run it is replaced by deploys
+# the same checkout to the same commit, and deploy.sh keeps the old container
+# until the new one is healthy, so the server converges either way. The one
+# rough edge is that a cancelled run can leave its remote script finishing
+# whatever step it was on; the run that supersedes it overwrites that state.
 concurrency:
   group: deploy-${{ github.event.inputs.environment || 'staging' }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:

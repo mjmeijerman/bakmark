@@ -203,7 +203,7 @@
 			"duration": 90,
 			"t": "18:47",
 			"photo": null,
-			"text": "Blijf roeren tot de room bindt en een paar bobbels laat zien. Hij mag zo dik zijn als vla.",
+			"text": "Blijf roeren tot de room bindt en een paar bubbels laat zien. Hij mag zo dik zijn als vla.",
 			"why": "Blijf je niet roeren, dan krijg je klontjes. En stop je te vroeg, dan is de room te dun om te spuiten; kook je te lang door, dan wordt hij rubberig.",
 			"tips": [
 				"Te dik geworden? Roer er bij het verwerken een scheut extra melk door.",
@@ -255,7 +255,7 @@
 		},
 		{
 			"q": "Waarom wordt mijn room niet dik?",
-			"a": "Te kort op het vuur. Hij bindt pas als hij echt kookt: blijf roeren tot je bobbels ziet. Wordt hij te dik, dan roer je er bij het verwerken een scheut melk door."
+			"a": "Te kort op het vuur. Hij bindt pas als hij echt kookt: blijf roeren tot je bubbels ziet. Wordt hij te dik, dan roer je er bij het verwerken een scheut melk door."
 		},
 		{
 			"q": "Waarom zit er een vel op mijn room?",
@@ -279,7 +279,7 @@
 		{
 			"symptoom": "te dunne room",
 			"oorzaak": "te kort gebonden",
-			"fix": "doorroeren tot hij echt kookt en bobbels laat zien"
+			"fix": "doorroeren tot hij echt kookt en bubbels laat zien"
 		},
 		{
 			"symptoom": "te dikke room",

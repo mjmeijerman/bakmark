@@ -305,6 +305,12 @@ Bewijs uit deze aflevering: 5 clips geconverteerd naar CFR 30, 6 titelkaarten ge
 3. **YouTube-upload en thumbnail-keuze.**
 4. **Werken in een project dat open staat.** Shotcut overschrijft het `.mlt` bij opslaan. Volgorde: **Ctrl+S → Shotcut sluiten → Pi patcht → File → Open.**
 
+### Valkuil: transparante overlays
+
+Een transparante PNG (logo) op een bovenste track rendert met melt correct, maar Shotcut's eigen preview schildert hem als een zwart vlak over de hele video. Het beeld lijkt dan weg terwijl het geluid doorspeelt. Zet zulke overlays dus niet op de tijdlijn; brand ze in bij de export.
+
+Algemene les: een melt-render bewijst dat het bestand klopt, niet dat Shotcut het goed toont. Controleer visueel in Shotcut zelf voordat je iets "klaar" noemt.
+
 ### Projectstructuur van een `.mlt`
 
 ~~~

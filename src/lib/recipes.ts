@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { parseTimestamp } from "./frames.ts";
 import { DEFAULT_LANG, type Lang } from "./i18n.ts";
 
 /** Single source of truth: recipes/<slug>.json (see docs/decisions/bakmark-plan.md D4). */
@@ -91,6 +92,33 @@ export interface Video {
 export const videoWatchUrl = (video: Pick<Video, "youtube_id" | "start">): string => {
 	const id = encodeURIComponent(video.youtube_id ?? "");
 	return `https://www.youtube.com/watch?v=${id}${video.start ? `&t=${video.start}s` : ""}`;
+};
+
+/**
+ * Seconds into the recording where one step starts.
+ *
+ * `start` covers a base recipe that lives inside a longer recording: its own
+ * steps are timed from zero, the QR code and the step links are not.
+ */
+export const videoMoment = (
+	video: Pick<Video, "start"> | undefined,
+	step: string | null | undefined,
+): number | null => {
+	if (!step) return null;
+	const seconds = parseTimestamp(step);
+	if (seconds === null) return null;
+	return (video?.start ?? 0) + seconds;
+};
+
+/** The same place, as a link for a reader who is not looking at the embed. */
+export const videoMomentUrl = (
+	video: Pick<Video, "youtube_id" | "start">,
+	step: string | null | undefined,
+): string | null => {
+	const seconds = videoMoment(video, step);
+	if (seconds === null) return null;
+	const id = encodeURIComponent(video.youtube_id ?? "");
+	return `https://www.youtube.com/watch?v=${id}&t=${seconds}s`;
 };
 
 /** The anchor the tip block carries, so a printed sheet can point at it. */

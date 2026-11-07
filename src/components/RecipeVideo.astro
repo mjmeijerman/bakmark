@@ -1,0 +1,101 @@
+---
+/**
+ * The video, behind a click.
+ *
+ * A plain iframe would hand YouTube a request on every page view, and this site
+ * promises that closing the tab is the end of it. So the poster shows first and
+ * the player is only built when someone presses play. `youtube-nocookie` keeps
+ * the embed from setting its own cookies.
+ */
+interface Props {
+	youtubeId: string;
+	/** Chapter offset, for a part that starts mid-recording. */
+	start?: number;
+	poster: string;
+	title: string;
+	playLabel: string;
+	note: string;
+}
+
+const { youtubeId, start = 0, poster, title, playLabel, note } = Astro.props;
+
+const embed = new URL(`https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}`);
+embed.searchParams.set("rel", "0");
+embed.searchParams.set("modestbranding", "1");
+embed.searchParams.set("enablejsapi", "1");
+if (start) embed.searchParams.set("start", String(start));
+---
+
+<figure class="recipe-video no-print" data-video data-embed={embed.toString()} data-title={title}>
+	<div class="video-frame" data-video-frame>
+		<img
+			src={poster}
+			alt=""
+			width="1280"
+			height="720"
+			loading="lazy"
+			decoding="async"
+		/>
+		<button class="video-play" type="button" data-video-play aria-label={playLabel}>
+			<span aria-hidden="true"></span>
+		</button>
+	</div>
+	<figcaption>{note}</figcaption>
+</figure>
+
+<script>
+	const facade = document.querySelector<HTMLElement>("[data-video]");
+	if (facade) {
+		const box = facade.querySelector<HTMLElement>("[data-video-frame]");
+		const source = facade.dataset.embed ?? "";
+		const title = facade.dataset.title ?? "";
+
+		const player = (): HTMLIFrameElement | null =>
+			box?.querySelector<HTMLIFrameElement>("iframe") ?? null;
+
+		const load = (seconds: number) => {
+			if (!box || player()) return;
+			const url = new URL(source);
+			const start = seconds ? Math.round(seconds) : 0;
+			if (start) url.searchParams.set("start", String(start));
+			url.searchParams.set("autoplay", "1");
+			const frame = document.createElement("iframe");
+			frame.src = url.toString();
+			frame.title = title;
+			frame.allow =
+				"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+			frame.allowFullscreen = true;
+			box.replaceChildren(frame);
+			facade.classList.add("is-playing");
+		};
+
+		const seek = (seconds: number) => {
+			const frame = player();
+			if (!frame?.contentWindow) return false;
+			const send = (func: string, args: unknown[]) =>
+				frame.contentWindow?.postMessage(
+					JSON.stringify({ event: "command", func, args }),
+					"*",
+				);
+			send("seekTo", [seconds, true]);
+			send("playVideo", []);
+			return true;
+		};
+
+		facade.querySelector("[data-video-play]")?.addEventListener("click", () => load(0));
+
+		// A step's "watch this moment" link seeks the player when it is already
+		// there, and stays a plain YouTube link when it is not: no dead end.
+		document.addEventListener("click", (event) => {
+			const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
+				"[data-seek]",
+			);
+			if (!link || !player()) return;
+			const seconds = Number(link.dataset.seek);
+			if (!Number.isFinite(seconds)) return;
+			event.preventDefault();
+			seek(seconds);
+			facade.scrollIntoView({ behavior: "smooth", block: "center" });
+		});
+	}
+</script>

@@ -1,5 +1,7 @@
 ---
+import { formatTimestamp } from "../lib/chapters.ts";
 import type { Lang } from "../lib/i18n";
+import { videoMoment, videoMomentUrl } from "../lib/recipes.ts";
 
 interface Props {
 	slug: string;
@@ -9,13 +11,21 @@ interface Props {
 		text: string;
 		why?: string;
 		tips?: string[];
+		/** Where the step starts in the recording, `0:44`. */
+		t?: string | null;
 	}[];
 	/** The two labels this list needs; passed in so the component holds no copy. */
 	whyTips: string;
 	whyLabel: string;
+	/** Set when this part has a published video: every step gets a link into it. */
+	video?: { youtube_id?: string | null; start?: number };
+	/** `Bekijk dit moment · 0:44` */
+	momentLabel?: (stamp: string) => string;
 }
 
-const { slug, steps, whyTips, whyLabel } = Astro.props;
+const { slug, steps, whyTips, whyLabel, video, momentLabel } = Astro.props;
+
+const hasVideo = Boolean(video?.youtube_id);
 ---
 
 <ol class="steps">
@@ -29,6 +39,19 @@ const { slug, steps, whyTips, whyLabel } = Astro.props;
 					<strong>{step.title}</strong>
 				</p>
 				<p>{step.text}</p>
+				{(() => {
+					if (!hasVideo || !momentLabel) return null;
+					const seconds = videoMoment(video, step.t);
+					const href = videoMomentUrl(video ?? {}, step.t);
+					if (seconds === null || href === null) return null;
+					return (
+						<p class="step-moment">
+							<a href={href} data-seek={seconds} target="_blank" rel="noopener">
+								{momentLabel(formatTimestamp(seconds))}
+							</a>
+						</p>
+					);
+				})()}
 				{step.why || step.tips?.length ? (
 					<details class="step-extra">
 						<summary>{whyTips}</summary>

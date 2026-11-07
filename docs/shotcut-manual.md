@@ -362,6 +362,33 @@ Nooit blind de hele render starten. Drie stappen:
 
 Twee encode-stappen kost één generatie kwaliteit. Bij crf 16 voor de tussenstap is dat onzichtbaar.
 
+### Uploaden naar YouTube (via de API)
+
+De video hoeft niet met de hand omhoog. `scripts/youtube-upload.py` zet bestand, titel, beschrijving met hoofdstukken, tags, thumbnail en Nederlandse ondertitels in één keer neer.
+
+Eenmalig, alleen jij kunt dit doen:
+
+1. Google Cloud Console → nieuw project → **YouTube Data API v3** aanzetten.
+2. **Google Auth Platform → Branding**: app-naam, support-e-mail, audience **External**.
+3. **Audience → Test users**: je eigen YouTube-account toevoegen. Vergeet je dit, dan krijg je `Error 403: access_denied`.
+4. **Data Access**: scope `youtube.upload` toevoegen.
+5. **Clients → Create client → Desktop app** → JSON bewaren als `~/.config/bakmark/youtube-client.json`.
+
+Dan:
+
+~~~
+SITE_URL=https://bakmark.nl npm run chapters -- <slug> > videos/<slug>/youtube-beschrijving.txt
+scripts/youtube-upload.py <slug> --check     # laat zien wat er omhoog gaat
+scripts/youtube-upload.py <slug>             # echte upload, vraagt eenmalig om toestemming
+~~~
+
+Wat je moet weten:
+
+1. **1600 van de 10.000 quota per upload.** Zes per dag is het maximum.
+2. **Niet-geaudit project → uploads blijven privé.** Openbaar zetten doe je in Studio; de API mag dat niet.
+3. **Testing-mode token verloopt na 7 dagen.** Daarna één keer opnieuw autoriseren.
+4. **Een kanaal zonder verificatie weigert video's boven 15 minuten en custom thumbnails.** Beide werken pas na verificatie.
+
 ### Twee valkuilen die tijd kosten
 
 1. **melt negeert het profiel van het project** bij avformat-exports. Zonder `s=` en `r=` krijg je 720x576 op 25 fps. Altijd beide meegeven.

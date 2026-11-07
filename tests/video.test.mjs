@@ -76,3 +76,12 @@ test("the page shows the poster, not a YouTube request", {
 		assert.match(html, new RegExp(`watch\\?v=${id}&amp;t=${seconds}s`));
 	});
 });
+
+test("the overview shows the poster a recipe has", async () => {
+	await withServer(async ({ base }) => {
+		const html = await (await fetch(`${base}/recepten`)).text();
+		assert.match(html, /class="recipe-card-photo"/, "a recipe with a poster shows the photo");
+		assert.match(html, /src="\/posters\/[a-z-]+\.jpg"/);
+		assert.match(html, /class="placeholder-box"/, "one without a poster keeps the placeholder");
+	});
+});

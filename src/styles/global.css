@@ -1315,6 +1315,22 @@
 }
 
 
+	/* The card photo and the video poster are the same file, cropped to the
+	   card's own ratio so a 16:9 still fills a 16:10 slot without bars. */
+	.recipe-card-photo {
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		border-radius: var(--radius);
+		background: var(--wash-a);
+	}
+
+	.recipe-card-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
 	/* Click to play: the poster is ours, so nothing is fetched from YouTube
 	   until someone presses play. Same aspect box as the placeholder. */
 	.recipe-video {

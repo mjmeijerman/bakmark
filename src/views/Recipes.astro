@@ -11,6 +11,7 @@ import {
 	difficultyWord,
 	publishedValue,
 	recipeChips,
+	recipePoster,
 	recipeTiming,
 	roleLabel,
 	searchText,
@@ -280,6 +281,7 @@ const uiStrings = {
 						title={recipe.title}
 						description={recipe.subtitle}
 						imageLabel={`${recipe.title.toLowerCase()}, close-up`}
+						poster={recipePoster(recipe.slug)}
 						chips={recipeChips(recipe, lang)}
 						difficulty={recipe.difficulty}
 						concept={!recipe.verified}

@@ -59,11 +59,17 @@ if (start) embed.searchParams.set("start", String(start));
 			const start = seconds ? Math.round(seconds) : 0;
 			if (start) url.searchParams.set("start", String(start));
 			url.searchParams.set("autoplay", "1");
+			// The player only accepts commands from an origin it was told about.
+			url.searchParams.set("origin", window.location.origin);
 			const frame = document.createElement("iframe");
 			frame.src = url.toString();
 			frame.title = title;
 			frame.allow =
 				"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+			// The page sends no referrer by default (see Layout). YouTube answers
+			// an embed without one with "configuration error 153", so this frame
+			// asks for the origin back, and nothing more.
+			frame.referrerPolicy = "strict-origin-when-cross-origin";
 			frame.allowFullscreen = true;
 			box.replaceChildren(frame);
 			facade.classList.add("is-playing");
@@ -84,17 +90,22 @@ if (start) embed.searchParams.set("start", String(start));
 
 		facade.querySelector("[data-video-play]")?.addEventListener("click", () => load(0));
 
-		// A step's "watch this moment" link seeks the player when it is already
-		// there, and stays a plain YouTube link when it is not: no dead end.
+		// A step's link plays that moment here, on the page. Only without
+		// JavaScript does the href take over and open YouTube, so the link is
+		// never a dead end either way.
 		document.addEventListener("click", (event) => {
 			const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
 				"[data-seek]",
 			);
-			if (!link || !player()) return;
+			if (!link) return;
 			const seconds = Number(link.dataset.seek);
 			if (!Number.isFinite(seconds)) return;
 			event.preventDefault();
-			seek(seconds);
+			if (player()) {
+				seek(seconds);
+			} else {
+				load(seconds);
+			}
 			facade.scrollIntoView({ behavior: "smooth", block: "center" });
 		});
 	}

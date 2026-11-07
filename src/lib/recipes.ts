@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parseTimestamp } from "./frames.ts";
 import { DEFAULT_LANG, type Lang } from "./i18n.ts";
@@ -92,6 +92,17 @@ export interface Video {
 export const videoWatchUrl = (video: Pick<Video, "youtube_id" | "start">): string => {
 	const id = encodeURIComponent(video.youtube_id ?? "");
 	return `https://www.youtube.com/watch?v=${id}${video.start ? `&t=${video.start}s` : ""}`;
+};
+
+/**
+ * The image we host for a recipe, or nothing.
+ *
+ * One file per recipe at `public/posters/<slug>.jpg`: the card on the overview
+ * and the poster behind the video both use it, so the two never disagree.
+ */
+export const recipePoster = (slug: string): string | null => {
+	const file = join(process.cwd(), "public", "posters", `${slug}.jpg`);
+	return existsSync(file) ? `/posters/${slug}.jpg` : null;
 };
 
 /**

@@ -2,6 +2,8 @@
 
 Shotcut is free, open source, **no watermark, no paid tier, no export limits**. Nothing is ever stamped on your video.
 
+> **Lees §14 eerst.** Een groot deel van dit handwerk — projecten opzetten, titels, filters, exporteren — kan Pi voor je doen zonder dat je in Shotcut klikt. Dat scheelt uren.
+
 ---
 
 ## 1. Install
@@ -267,3 +269,125 @@ But the single hard problem in baking videos is **mixer and kitchen noise**, and
 Switch when: you commit to 10+ episodes, or you find yourself unable to get a zoom or speed ramp to feel smooth. Until then the extra quality is invisible to viewers on a kitchen video.
 
 If you do switch, `ffmpeg` still does your loudness check and audio extraction — keep it installed either way.
+---
+
+## 14. Wat Pi voor je kan doen (zonder dat je klikt)
+
+Een Shotcut-project is platte XML (`.mlt`). Alles wat je met de muis doet, staat daar in — dus het meeste kan ook geschreven worden. Getest met Shotcut 25.03.31 / MLT 7.30.0.
+
+Vuistregel: **jij beslist, Pi typt.** Je zegt wat je wil, Pi past het `.mlt` aan, jij doet **File → Open** en kijkt.
+
+### Wat Pi doet zonder dat jij klikt
+
+1. **Project opzetten.** Tracks (V2/V1/A1/A2), clips op de tijdlijn met in/out, volgorde, projectprofiel. Een nieuw Shotcut-project heeft **nul tracks** — daarom lijkt "Add Video Track" soms niets te doen. Pi zet ze direct in het bestand.
+2. **Titel- en eindkaarten.** Gerenderd met ffmpeg in huisstijl (#a1471b, crème #fffaf1, 4K, 3 s, fade in/out). Zes kant-en-klare kaarten staan in `videos/titels/`.
+3. **Filters.** Logo (Size/Position/Opacity, Screen-blend), tekst over beeld, Gain/Volume (-20 dB muziek), High Pass 120 Hz, Reduce Noise, Speed 1000% voor 10×-secties, keyframes voor zoom en pan.
+4. **Transities en markers.** Crossfades bij de join, markers voor YouTube-chapters.
+5. **Exporteren, zonder GUI.** Dit werkt en is getest:
+
+~~~
+melt project.mlt -consumer avformat:out.mp4 \
+  vcodec=libx264 crf=18 preset=medium pix_fmt=yuv420p r=30 \
+  acodec=aac ab=192k ar=48000 channels=2 rescale=bicubic
+~~~
+
+   **`r=30` is verplicht.** Zonder die vlag rendert melt 25 fps en klopt de duur niet meer.
+6. **Audio nameten** (LUFS, peaks), **SRT** genereren, **thumbnail** (1280×720) uit een frame renderen.
+7. **Schermafbeelding van je Shotcut-venster.** `scripts/shotcut-window.py` zoekt het venster zelf op — geen coördinaten, werkt ook na verslepen of op een ander scherm.
+8. **Bronmateriaal klaarzetten.** VFR → CFR (anders blijft Shotcut om "Convert to edit-friendly" vragen), proxies, rotatie, nette bestandsnamen.
+
+Bewijs uit deze aflevering: 5 clips geconverteerd naar CFR 30, 6 titelkaarten gerenderd, 4 tracks in het project gezet, clip in V1, twee test-renders met melt. Nul klikken.
+
+### Wat Pi niet doet
+
+1. **Bepalen wat eruit moet.** Knippen is creatief. Pi kan een contactsheet van frames maken of stilstaande secties opsporen, jij kiest.
+2. **Audio op gehoor beoordelen.** Niveaus meten kan; "klinkt hol" niet.
+3. **YouTube-upload en thumbnail-keuze.**
+4. **Werken in een project dat open staat.** Shotcut overschrijft het `.mlt` bij opslaan. Volgorde: **Ctrl+S → Shotcut sluiten → Pi patcht → File → Open.**
+
+### Valkuil: transparante overlays
+
+Een transparante PNG (logo) op een bovenste track rendert met melt correct, maar Shotcut's eigen preview schildert hem als een zwart vlak over de hele video. Het beeld lijkt dan weg terwijl het geluid doorspeelt. Zet zulke overlays dus niet op de tijdlijn; brand ze in bij de export.
+
+Algemene les: een melt-render bewijst dat het bestand klopt, niet dat Shotcut het goed toont. Controleer visueel in Shotcut zelf voordat je iets "klaar" noemt.
+
+### Projectstructuur van een `.mlt`
+
+~~~
+<mlt producer="main_bin">
+  <profile width="3840" height="2160" frame_rate_num="30" frame_rate_den="1"/>
+  <chain id="chain0">…</chain>            <!-- bronclip; shotcut:hash koppelt de proxy -->
+  <playlist id="main_bin">…</playlist>    <!-- het Playlist-panel -->
+  <playlist id="playlist0">               <!-- V1 -->
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V1</property>
+    <entry producer="chain0" in="00:00:00.000" out="00:21:42.833"/>
+  </playlist>
+  <playlist id="playlist1">…V2…</playlist>
+  <playlist id="playlist2">…A1…</playlist>
+  <playlist id="playlist3">…A2…</playlist>
+  <tractor id="tractor0" out="00:21:42.833">   <!-- de tijdlijn -->
+    <track producer="background"/>
+    <track producer="playlist0"/>   <!-- V1 -->
+    <track producer="playlist1"/>   <!-- V2 -->
+    <track producer="playlist2"/>   <!-- A1 -->
+    <track producer="playlist3"/>   <!-- A2 -->
+    <transition …mlt_service=mix, b_track=1…/>
+    <transition …mlt_service=frei0r.cairoblend, b_track=1, disable=1…/>
+    …
+  </tractor>
+</mlt>
+~~~
+
+Regels die je moet respecteren:
+
+1. Volgorde in de tractor is **onder → boven**: background, V1, V2, A1, A2. In de UI staat V2 bovenaan.
+2. Per track één mix-transitie **en** één frei0r.cairoblend-transitie, anders doen audio en compositing het niet.
+3. Alleen width, height, frame_rate_num en frame_rate_den van het profile tellen. `description` is cosmetisch.
+4. Proxy's staan in `<project>/proxies/<shotcut:hash>.mp4`. Die hash is niet reproduceerbaar — laat Shotcut ze bouwen (Settings → Proxy → Use Proxy Files, één keer aanzetten).
+
+### Export-pijplijn die werkt (4K)
+
+Nooit blind de hele render starten. Drie stappen:
+
+1. **Sample eerst.** Tien seconden uit het midden van de tijdlijn, en kijk één frame na:
+   ~~~
+   melt project.mlt in=600 out=899 -consumer avformat:/tmp/sample.mp4 f=mp4 \
+     vcodec=libx264 crf=18 preset=medium pix_fmt=yuv420p s=3840x2160 progressive=1 r=30 \
+     acodec=aac ab=256k ar=48000 channels=2 rescale=lanczos
+   ~~~
+   Zwart beeld, geen audio, verkeerde resolutie? Niet doorrenderen, eerst fixen.
+2. **Volledige render naar een tussenbestand** (crf 16, 4K). Dit is de tijdlijn mét titel en muziek, zonder logo.
+3. **Logo + loudness in één ffmpeg-pass**: logo overlay (PNG met alpha, 576 px, 72 px marge, 80% opacity) en loudnorm twee-pass met I=-14 LUFS en TP=-1 dB. Video opnieuw encoderen (NVENC of x264), audio AAC 192 kbps.
+
+Twee encode-stappen kost één generatie kwaliteit. Bij crf 16 voor de tussenstap is dat onzichtbaar.
+
+### Twee valkuilen die tijd kosten
+
+1. **melt negeert het profiel van het project** bij avformat-exports. Zonder `s=` en `r=` krijg je 720x576 op 25 fps. Altijd beide meegeven.
+2. **Een transparante PNG als clip op een track wordt zwart** — in Shotcut's preview én in melt zodra de consumer-afmeting van het profiel afwijkt. Een logo hoort dus niet op de tijdlijn; brand het in met ffmpeg.
+
+### Tijdschatting
+
+| Aanpak | Tijd |
+|---|---|
+| Pi bouwt de aflevering op, jij kijkt en keurt | 10–20 min wachten op renders + 5 min keuzes |
+| Zelf klikken volgens de hoofdstukken 2–13 | ≈ 4 uur de eerste keer |
+
+---
+
+## 15. Waar de bestanden staan
+
+~~~
+videos/
+  bron/          5 bronclips
+    edit/        CFR 30 H.264 4K — deze gebruik je in Shotcut
+  titels/        6 titelkaarten, 4K, 3 s, huisstijl
+  muziek/        23 TungArt7-tracks (-20 dB)
+  banketbakkersroom/banketbakkersroom/
+    banketbakkersroom.mlt     het project
+    proxies/                  door Shotcut gebouwde proxy's
+~~~
+
+De 0-byte stubs `videos/zwitserse-room/part1-slagroom.mlt` en `raw/01-slagroom.mp4` zijn resten van een ouder plan; negeren of opruimen.
+

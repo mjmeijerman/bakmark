@@ -195,7 +195,13 @@ test("the extract hint follows the number of pods, in both languages", async () 
 	});
 });
 
-test("the hint follows the weight, in both languages", async () => {
+test("the hint follows the weight, in both languages", {
+	// Banketbakkersroom used to bind with 80 g of egg yolks, which made it the
+	// only recipe with a per-piece ingredient. Roompoeder binds instead, so no
+	// recipe carries `each` any more and there is no page left to assert on.
+	// The maths stays covered by the approxText and approxPieces tests above.
+	skip: "no recipe has a per-piece ingredient any more",
+}, async () => {
 	await withServer(async ({ base }) => {
 		const dutch = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
 		assert.match(dutch, /data-each="17\.5" data-each-name="eidooier"/);

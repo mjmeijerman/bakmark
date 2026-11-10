@@ -4,9 +4,11 @@
 # Usage: scripts/make-titles.sh
 set -euo pipefail
 
-BASE="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$BASE/videos/bron/edit"
-OUT="$BASE/videos/titels"
+# Footage lives outside the repo, so that a project tree stays safe to delete.
+# Override FOOTAGE_DIR when the footage sits somewhere else.
+FOOTAGE_DIR="${FOOTAGE_DIR:-$HOME/bakmark-footage}"
+SRC="$FOOTAGE_DIR/bron/edit"
+OUT="$FOOTAGE_DIR/titels"
 SANS=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
 BOLD=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
 mkdir -p "$OUT"

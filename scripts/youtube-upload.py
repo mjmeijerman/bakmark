@@ -7,10 +7,10 @@
 Reads, and never writes back into, these:
     ~/.config/bakmark/youtube-client.json    OAuth desktop client (not in the repo)
     ~/.config/bakmark/youtube-token.json     cached token, made on the first run
-    videos/<slug>/<slug>-4k.mp4              the render
-    videos/<slug>/thumb-youtube-final-1280x720.jpg
-    videos/<slug>/transcript.srt             as Dutch subtitles
-    videos/<slug>/youtube-beschrijving.txt   printed by: npm run chapters -- <slug>
+    $FOOTAGE_DIR/<slug>/<slug>-4k.mp4        the render
+    $FOOTAGE_DIR/<slug>/thumb-youtube-final-1280x720.jpg
+    $FOOTAGE_DIR/<slug>/transcript.srt       as Dutch subtitles
+    $FOOTAGE_DIR/<slug>/youtube-beschrijving.txt   printed by: npm run chapters -- <slug>
     recipes/<slug>.json                      title, subtitle, tags
 
 Quota: one upload costs 1600 of the 10,000 units a day, so six a day at most.
@@ -20,10 +20,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
+# Renders and footage live outside the repo, so deleting the checkout never
+# takes the videos with it. Same default as scripts/make-titles.sh.
+FOOTAGE = Path(os.environ.get("FOOTAGE_DIR") or Path.home() / "bakmark-footage")
 CONF = Path.home() / ".config" / "bakmark"
 CLIENT = CONF / "youtube-client.json"
 TOKEN = CONF / "youtube-token.json"
@@ -47,7 +51,7 @@ def first_existing(*paths: Path) -> Path | None:
 
 
 def plan(slug: str) -> dict:
-    folder = BASE / "videos" / slug
+    folder = FOOTAGE / slug
     recipe_path = BASE / "recipes" / f"{slug}.json"
     if not recipe_path.exists():
         fail(f"no recipe at {recipe_path}")

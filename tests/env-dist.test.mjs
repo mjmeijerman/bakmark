@@ -17,6 +17,12 @@ const namesIn = (text) => {
 	const found = new Set();
 	for (const match of text.matchAll(/process\.env\.([A-Z][A-Z0-9_]*)/g)) found.add(match[1]);
 	for (const match of text.matchAll(/process\.env\["([A-Z][A-Z0-9_]*)"\]/g)) found.add(match[1]);
+	// Python scripts read the same environment as the Node ones.
+	for (const match of text.matchAll(/os\.environ\.get\(\s*["']([A-Z][A-Z0-9_]*)["']/g)) found.add(match[1]);
+	for (const match of text.matchAll(/os\.environ\[\s*["']([A-Z][A-Z0-9_]*)["']/g)) found.add(match[1]);
+	// Shell: only the documented-default form, so a script's own $LOCALS do not
+	// turn into variables someone has to put in env.dist.
+	for (const match of text.matchAll(/\$\{([A-Z][A-Z0-9_]*):-/g)) found.add(match[1]);
 	return found;
 };
 
@@ -25,7 +31,7 @@ const files = (dir) => {
 	for (const entry of readdirSync(dir)) {
 		const path = join(dir, entry);
 		if (statSync(path).isDirectory()) out.push(...files(path));
-		else if (/\.(ts|astro|mjs|js)$/.test(entry)) out.push(path);
+		else if (/\.(ts|astro|mjs|js|py|sh)$/.test(entry)) out.push(path);
 	}
 	return out;
 };
@@ -46,6 +52,8 @@ test("every variable the app reads is documented in env.dist", () => {
 
 	// NODE_ENV is set by the container, not by a person; it needs no entry.
 	used.delete("NODE_ENV");
+	// DISPLAY is set by the X server that runs the editing helper.
+	used.delete("DISPLAY");
 
 	const dist = readFileSync(join(ROOT, "env.dist"), "utf8");
 	const documented = new Set(
@@ -74,6 +82,7 @@ test("env.dist documents nothing the code no longer reads", () => {
 		...[...deploy.matchAll(/\$\{?([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]),
 	]);
 	used.add("NODE_ENV");
+	used.add("DISPLAY");
 
 	const dist = readFileSync(join(ROOT, "env.dist"), "utf8");
 	const documented = [...dist.matchAll(/^#?\s*([A-Z][A-Z0-9_]*)=/gm)].map((m) => m[1]);

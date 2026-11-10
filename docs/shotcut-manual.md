@@ -19,7 +19,7 @@ Also install `ffmpeg` — needed for some codecs and for extracting audio.
 
 ## 2. Project setup (do this first, every video)
 
-1. Make a folder `~/footage/bakken-aflevering-01/` and put in it: raw footage, `logo.png` (transparent PNG), `music.mp3`, the `.mlt` project file. **Footage never goes inside the git checkout** — a repo has to stay safe to delete. `FOOTAGE_DIR` overrides the location; the scripts default to `~/footage`.
+1. Make a folder `~/bakmark-footage/bakken-aflevering-01/` and put in it: raw footage, `logo.png` (transparent PNG), `music.mp3`, the `.mlt` project file. **Footage never goes inside the git checkout** — a repo has to stay safe to delete. `FOOTAGE_DIR` overrides the location; the scripts default to `~/bakmark-footage`.
 2. Open Shotcut → **New Project** → save the `.mlt` into that folder.
 3. Settings → **Video Mode** → `UHD 2160p 30 fps`. Your source is 4K — a 4K timeline keeps the full zoom range (see §8). Set this before dragging anything in; changing it later shifts every clip.
 4. Settings → **Proxy → Use Proxy Files**, and **Preview Scaling → 540p**. Builds half-res copies so 4K scrubs without stutter. Preview only — the export always uses your originals. Proxies build in the background after import; wait for the task bar to finish before judging playback.
@@ -180,7 +180,7 @@ You want each part as its own upload **and** all three merged. That flips the us
 
 1. One folder, four projects:
 ```
-~/footage/zwitserse-room/
+~/bakmark-footage/zwitserse-room/
   raw/                      01-slagroom.mp4  02-banketbakkersroom.mp4  03-zwitserse-room.mp4
   part1-slagroom.mlt
   part2-banketbakkersroom.mlt
@@ -280,7 +280,7 @@ Vuistregel: **jij beslist, Pi typt.** Je zegt wat je wil, Pi past het `.mlt` aan
 ### Wat Pi doet zonder dat jij klikt
 
 1. **Project opzetten.** Tracks (V2/V1/A1/A2), clips op de tijdlijn met in/out, volgorde, projectprofiel. Een nieuw Shotcut-project heeft **nul tracks** — daarom lijkt "Add Video Track" soms niets te doen. Pi zet ze direct in het bestand.
-2. **Titel- en eindkaarten.** Gerenderd met ffmpeg in huisstijl (#a1471b, crème #fffaf1, 4K, 3 s, fade in/out). Zes kant-en-klare kaarten staan in `~/footage/titels/`.
+2. **Titel- en eindkaarten.** Gerenderd met ffmpeg in huisstijl (#a1471b, crème #fffaf1, 4K, 3 s, fade in/out). Zes kant-en-klare kaarten staan in `~/bakmark-footage/titels/`.
 3. **Filters.** Logo (Size/Position/Opacity, Screen-blend), tekst over beeld, Gain/Volume (-20 dB muziek), High Pass 120 Hz, Reduce Noise, Speed 1000% voor 10×-secties, keyframes voor zoom en pan.
 4. **Transities en markers.** Crossfades bij de join, markers voor YouTube-chapters.
 5. **Exporteren, zonder GUI.** Dit werkt en is getest:
@@ -377,7 +377,7 @@ Eenmalig, alleen jij kunt dit doen:
 Dan:
 
 ~~~
-SITE_URL=https://bakmark.nl npm run chapters -- <slug> > ~/footage/<slug>/youtube-beschrijving.txt
+SITE_URL=https://bakmark.nl npm run chapters -- <slug> > ~/bakmark-footage/<slug>/youtube-beschrijving.txt
 scripts/youtube-upload.py <slug> --check     # laat zien wat er omhoog gaat
 scripts/youtube-upload.py <slug>             # echte upload, vraagt eenmalig om toestemming
 ~~~
@@ -405,13 +405,13 @@ Wat je moet weten:
 
 ## 15. Waar de bestanden staan
 
-Buiten de repo: `~/footage`. Het git-checkout moet veilig weg te gooien zijn, en een
-render of project hoort daar niet in. `FOOTAGE_DIR` verzet de hele map; de scripts
-(`scripts/make-titles.sh`, `scripts/youtube-upload.py`) gebruiken die variabele of
-vallen terug op `~/footage`.
+Buiten de repo: `~/bakmark-footage`. Het git-checkout moet veilig weg te gooien zijn,
+en een render of project hoort daar niet in. `FOOTAGE_DIR` verzet de hele map; de
+scripts (`scripts/make-titles.sh`, `scripts/youtube-upload.py`) gebruiken die variabele
+of vallen terug op `~/bakmark-footage`.
 
 ~~~
-~/footage/
+~/bakmark-footage/
   bron/          5 bronclips
     edit/        CFR 30 H.264 4K — deze gebruik je in Shotcut
   titels/        6 titelkaarten, 4K, 3 s, huisstijl
@@ -421,5 +421,5 @@ vallen terug op `~/footage`.
     proxies/                  door Shotcut gebouwde proxy's
 ~~~
 
-De 0-byte stubs `~/footage/zwitserse-room/part1-slagroom.mlt` en `raw/01-slagroom.mp4` zijn resten van een ouder plan; negeren of opruimen.
+De 0-byte stubs `~/bakmark-footage/zwitserse-room/part1-slagroom.mlt` en `raw/01-slagroom.mp4` zijn resten van een ouder plan; negeren of opruimen.
 

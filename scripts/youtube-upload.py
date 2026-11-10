@@ -27,7 +27,7 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent.parent
 # Renders and footage live outside the repo, so deleting the checkout never
 # takes the videos with it. Same default as scripts/make-titles.sh.
-FOOTAGE = Path(os.environ.get("FOOTAGE_DIR") or Path.home() / "footage")
+FOOTAGE = Path(os.environ.get("FOOTAGE_DIR") or Path.home() / "bakmark-footage")
 CONF = Path.home() / ".config" / "bakmark"
 CLIENT = CONF / "youtube-client.json"
 TOKEN = CONF / "youtube-token.json"

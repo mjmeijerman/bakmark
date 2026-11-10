@@ -31,11 +31,11 @@ pnpm-debug.log*
 tests/snapshots/confirmation.nl.html
 tests/snapshots/confirmation.nl.png
 
-# Footage and Shotcut projects live outside the repo entirely (~/footage, see
+# Footage and Shotcut projects live outside the repo entirely (~/bakmark-footage, see
 # docs/shotcut-manual.md). These entries are belt and braces for the case where
 # someone drops a render back in here: raw footage is far too large for git.
 videos/
-footage/
+bakmark-footage/
 
 # media files anywhere in the repo (belt and braces, in case footage moves)
 *.mp4

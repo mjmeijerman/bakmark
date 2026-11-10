@@ -6,7 +6,7 @@ set -euo pipefail
 
 # Footage lives outside the repo, so that a project tree stays safe to delete.
 # Override FOOTAGE_DIR when the footage sits somewhere else.
-FOOTAGE_DIR="${FOOTAGE_DIR:-$HOME/footage}"
+FOOTAGE_DIR="${FOOTAGE_DIR:-$HOME/bakmark-footage}"
 SRC="$FOOTAGE_DIR/bron/edit"
 OUT="$FOOTAGE_DIR/titels"
 SANS=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf

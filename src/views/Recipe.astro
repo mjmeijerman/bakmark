@@ -18,7 +18,9 @@ import {
 	recipeTiming,
 	resolveRecipe,
 	usedIn,
+	TIP_AMOUNTS,
 	TIP_ANCHOR,
+	tipUrl,
 	videoWatchUrl,
 	type Recipe,
 } from "../lib/recipes";
@@ -116,7 +118,8 @@ const copy = {
 		tipText:
 			"De recepten en video's zijn gratis. Wie er iets aan heeft, kan een fooi achterlaten. Wie dat niet doet, merkt daar niets van.",
 		tipOwn: "Eigen bedrag",
-		tipPlaceholder: "Placeholder: de betaallink komt er bij de eerste video.",
+		tipLinkLabel: (amount: string) => `${amount} fooi geven via PayPal`,
+		tipOwnLabel: "Zelf een bedrag kiezen en via PayPal geven",
 		newsletterHeading: "Nieuwsbrief",
 	},
 	en: {
@@ -193,7 +196,8 @@ const copy = {
 		tipText:
 			"The recipes and videos are free. If they helped you, you can leave a tip. If you don't, you notice nothing of it.",
 		tipOwn: "Own amount",
-		tipPlaceholder: "Placeholder: the payment link arrives with the first video.",
+		tipLinkLabel: (amount: string) => `Leave a ${amount} tip via PayPal`,
+		tipOwnLabel: "Choose your own amount and pay via PayPal",
 		newsletterHeading: "Newsletter",
 	},
 }[lang];
@@ -792,13 +796,31 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			<h2>{copy.tipHeading}</h2>
 			<p>{copy.tipText}</p>
 			<ul class="tips">
-				<li><span class="tip-amount">€3</span></li>
-				<li><span class="tip-amount">€7</span></li>
-				<li><span class="tip-amount">€15</span></li>
-				<li><span class="tip-amount">€25</span></li>
-				<li><span class="tip-amount">{copy.tipOwn}</span></li>
+				{TIP_AMOUNTS.map((amount) => (
+					<li>
+						<a
+							class="tip-amount"
+							href={tipUrl(amount)}
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={copy.tipLinkLabel(`€${amount}`)}
+						>
+							€{amount}
+						</a>
+					</li>
+				))}
+				<li>
+					<a
+						class="tip-amount"
+						href={tipUrl()}
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label={copy.tipOwnLabel}
+					>
+						{copy.tipOwn}
+					</a>
+				</li>
 			</ul>
-			<p class="form-note">{copy.tipPlaceholder}</p>
 		</section>
 	</article>
 

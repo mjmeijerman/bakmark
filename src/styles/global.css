@@ -694,6 +694,14 @@
 		background: var(--surface);
 		border: 1px solid var(--border-strong);
 		border-radius: 999px;
+		text-decoration: none;
+	}
+
+	a.tip-amount:hover,
+	a.tip-amount:focus-visible {
+		color: var(--surface);
+		background: var(--accent-deep);
+		border-color: var(--accent-deep);
 	}
 
 	/* Newsletter */

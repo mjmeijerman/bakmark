@@ -471,10 +471,6 @@
 		margin-top: var(--space-4);
 	}
 
-	.hero .hero-more {
-		margin-top: var(--space-4);
-	}
-
 	/* Newest recipes as a plain list: the cards live on /recepten. */
 	.newest-list {
 		display: grid;

@@ -135,6 +135,17 @@ export const videoMomentUrl = (
 /** The anchor the tip block carries, so a printed sheet can point at it. */
 export const TIP_ANCHOR = "een-fooi";
 
+/**
+ * Where a tip goes. PayPal.Me never expires and takes the amount in the path,
+ * so one link covers every button: `tipUrl(3)` → …/bakmark1/3.
+ */
+export const TIP_URL = "https://www.paypal.com/paypalme/bakmark1";
+
+/** The amounts the tip buttons offer, in euro. */
+export const TIP_AMOUNTS = [3, 7, 15, 25] as const;
+
+export const tipUrl = (amount?: number) => (amount ? `${TIP_URL}/${amount}` : TIP_URL);
+
 export interface Recipe {
 	slug: string;
 	title: string;

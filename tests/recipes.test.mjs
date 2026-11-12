@@ -169,6 +169,48 @@ test("English overlays translate words and never touch a number", () => {
 	}
 });
 
+test("every Dutch line has an English overlay", () => {
+	// The overlay is optional per field, which makes forgetting one silent: the
+	// English page keeps showing the old Dutch-derived text, or nothing at all.
+	// Coverage is the part a machine can check. Wording is not.
+	for (const file of readdirSync(EN).filter((name) => name.endsWith(".json"))) {
+		const slug = file.replace(/\.json$/, "");
+		const overlay = loadEn(slug);
+		const base = recipes.get(slug);
+		assert.ok(base, `en/${file} has no Dutch source recipe`);
+
+		for (const step of base.steps ?? []) {
+			assert.ok(
+				overlay.steps?.[step.id]?.text,
+				`en/${file}: step ${step.id} has no translated text`,
+			);
+		}
+		for (const ingredient of base.ingredients ?? []) {
+			if (!ingredient.id) continue;
+			assert.ok(
+				overlay.ingredients?.[ingredient.id],
+				`en/${file}: ingredient "${ingredient.id}" is not translated`,
+			);
+		}
+		for (const tool of base.tools ?? []) {
+			const name = typeof tool === "string" ? tool : tool.name;
+			assert.ok(overlay.tools?.[name], `en/${file}: tool "${name}" is not translated`);
+		}
+		const questions = (base.faq ?? []).length;
+		assert.equal(
+			Object.keys(overlay.faq ?? {}).length,
+			questions,
+			`en/${file}: ${Object.keys(overlay.faq ?? {}).length} of ${questions} questions translated`,
+		);
+		const failures = (base.mislukt ?? []).length;
+		assert.equal(
+			Object.keys(overlay.mislukt ?? {}).length,
+			failures,
+			`en/${file}: ${Object.keys(overlay.mislukt ?? {}).length} of ${failures} failures translated`,
+		);
+	}
+});
+
 test("a composed recipe does not repeat a failure or a question", () => {
 	for (const slug of slugs) {
 		const tree = walk(slug).filter((node) => node.slug !== slug);

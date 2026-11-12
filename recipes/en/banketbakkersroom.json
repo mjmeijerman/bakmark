@@ -144,18 +144,23 @@
 	"mislukt": {
 		"0": {
 			"symptoom": "lumps in the cream",
-			"oorzaak": "not tempered, or the cornflour was not stirred smooth",
-			"fix": "a third of the hot milk first, stir the cornflour into the yolks beforehand"
+			"oorzaak": "the powder was not made into a paste first",
+			"fix": "first make a smooth paste of the powder, the sugar and a splash of milk"
 		},
 		"1": {
-			"symptoom": "split cream",
-			"oorzaak": "cooked too long or too hot",
-			"fix": "one bubble and off the heat at once; split? stick blender"
-		},
-		"2": {
 			"symptoom": "cream too thin",
 			"oorzaak": "not thickened for long enough",
-			"fix": "stir until it bubbles once, do not stop sooner"
+			"fix": "keep stirring until it really boils and shows bubbles"
+		},
+		"2": {
+			"symptoom": "cream too thick",
+			"oorzaak": "cooked for too long",
+			"fix": "stir a splash of extra milk through it when you use it"
+		},
+		"3": {
+			"symptoom": "skin on the cream",
+			"oorzaak": "not covered on the cream itself",
+			"fix": "cling film directly on the surface, not over the rim"
 		}
 	}
 }

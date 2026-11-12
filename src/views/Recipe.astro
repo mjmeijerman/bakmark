@@ -79,8 +79,6 @@ const copy = {
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
 		usedIn: "Gebruikt in",
-		usedInLede:
-			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
 		via: (title: string) => `, via ${title}`,
 		colPart: "Onderdeel",
 		ingredients: "Ingrediënten",
@@ -161,8 +159,6 @@ const copy = {
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
 		usedIn: "Used in",
-		usedInLede:
-			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
 		via: (title: string) => `, via ${title}`,
 		colPart: "Part",
 		ingredients: "Ingredients",
@@ -474,7 +470,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 		{
 			usedBy.length ? (
 				<RecipeSection title={copy.usedIn} noPrint>
-					<p class="section-lede">{copy.usedInLede}</p>
 					<ul class="parts">
 						{usedBy.map(({ recipe: user, via }) => (
 							<li>

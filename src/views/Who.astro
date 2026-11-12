@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const copy = {
 	nl: {
 		title: "Over mij",
-		description: "Wie de video's maakt, en waarom zonder knippen.",
+		description: "Wie Bakmark maakt, en waarom.",
 		h1: "Over mij",
 		photoAlt: "Mark Meijerman in de keuken waar de video's worden opgenomen.",
 		heading: "Waar dit begon",
@@ -20,44 +20,10 @@ const copy = {
 			"Het smaakte altijd goed, maar nooit zoals bij de bakker. Ik zocht uit waar dat aan lag, en de conclusie was simpel: goede bakkersrecepten zijn lastig te vinden. Voor één product bekeek ik al snel meerdere filmpjes en recepten. Het resultaat was goed, maar ik schreef niets op — dus begon ik de volgende keer aan precies dezelfde zoektocht.",
 			"Dat moest anders. Ik wilde één overzichtelijke catalogus met de recepten die ik zelf heb uitgezocht en gemaakt, met duidelijke filmpjes als ondersteuning. In eerste instantie bouwde ik deze site voor mezelf. Dat anderen er nu ook wat aan hebben, is mooi meegenomen.",
 		],
-		sections: [
-			{
-				h: "Alles in één take",
-				p: [
-					"Het wachten, het roeren, het rijzen: het zit er allemaal in, in de tijd die het echt kost. Wat je ziet is wat er in de keuken gebeurt, in dezelfde tijd als bij jou thuis.",
-				],
-			},
-			{
-				h: "Mijn eigen keuzes",
-				p: [
-					"Bakmark is van mij. Ik kies zelf welke producten en merken er in een recept staan, en niemand koopt een plek. Sluit je het tabblad, dan ben je weg en kijkt er niets mee.",
-				],
-			},
-			{
-				h: "Wel eerlijke affiliate-links",
-				p: [
-					"Soms link ik naar gereedschap of ingrediënten dat ik zelf gebruik. Zo'n link is gemarkeerd als affiliate-link. Koop je via die link, dan krijg ik een klein bedrag van de winkel; voor jou wordt het niet duurder.",
-					"Een product komt in een recept omdat het werkt. Staat er geen link, dan vond ik het de moeite niet waard.",
-				],
-			},
-			{
-				h: "Vrij te lezen",
-				p: [
-					"Recepten zijn vrij te lezen, te printen en te bewaren, zonder eerst een adres in te vullen. De nieuwsbrief is er voor wie een bericht wil bij een nieuwe video.",
-				],
-			},
-			{
-				h: "Gratis, met een fooi als je wilt",
-				p: [
-					"De recepten en video's zijn gratis, zonder account. Wie het wat waard vindt, legt een fooi neer; wie dat niet doet, kijkt net zo makkelijk verder.",
-					"Komt er ooit iets bij, zoals een cursus, dan staat dat los van wat hier staat. De recepten en video's blijven vrij.",
-				],
-			},
-		],
 	},
 	en: {
 		title: "About me",
-		description: "Who makes the videos, and why without cuts.",
+		description: "Who makes Bakmark, and why.",
 		h1: "About me",
 		photoAlt: "Mark Meijerman in the kitchen where the videos are recorded.",
 		heading: "Where this started",
@@ -65,40 +31,6 @@ const copy = {
 			"I am Mark. Ever since I was a child I have loved turning a few ingredients into something tasty — I made my first chocolate cake early on. Later I started experimenting more and more with tarts, cakes and pastries.",
 			"It always tasted good, but never quite like the bakery's. I set out to find out why, and the conclusion was simple: good bakery recipes are hard to find. For a single product I would soon be watching several videos and reading several recipes. The result was good, but I wrote nothing down — so the next time I started the exact same search.",
 			"That had to change. I wanted one clear catalogue of the recipes I had picked out and baked myself, with clear videos supporting them. At first I built this site for myself. That others get something out of it too is a nice bonus.",
-		],
-		sections: [
-			{
-				h: "All in one take",
-				p: [
-					"The waiting, the stirring, the proving: it is all there, in the time it really takes. What you see is what happens in the kitchen, in the same time as in yours.",
-				],
-			},
-			{
-				h: "My own choices",
-				p: [
-					"Bakmark is mine. I choose which products and brands end up in a recipe, and nobody buys a place. Close the tab and you are gone; nothing follows you.",
-				],
-			},
-			{
-				h: "Honest affiliate links, though",
-				p: [
-					"Sometimes I link to tools or ingredients I use myself. Such a link is marked as an affiliate link. Buy through it and I receive a small amount from the shop; it never costs you more.",
-					"A product is in a recipe because it works. If there is no link, I did not think it was worth one.",
-				],
-			},
-			{
-				h: "Free to read",
-				p: [
-					"Recipes are free to read, print and keep, without filling in an address first. The newsletter is there for anyone who wants a message when a new video is out.",
-				],
-			},
-			{
-				h: "Free, with a tip if you like",
-				p: [
-					"The recipes and videos are free, without an account. If you find it worth something, leave a tip; if you don't, you read on just as easily.",
-					"If something is ever added, such as a course, it stands apart from what is here. The recipes and videos stay free.",
-				],
-			},
 		],
 	},
 }[lang];
@@ -128,17 +60,4 @@ const copy = {
 			))
 		}
 	</section>
-
-	<hr class="rule" />
-
-	{
-		copy.sections.map((section) => (
-			<section class="section">
-				<h2>{section.h}</h2>
-				{section.p.map((paragraph) => (
-					<p>{paragraph}</p>
-				))}
-			</section>
-		))
-	}
 </Layout>

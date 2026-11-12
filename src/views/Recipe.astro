@@ -7,7 +7,7 @@ import RecipeSteps from "../components/RecipeSteps.astro";
 import RecipeVideo from "../components/RecipeVideo.astro";
 import {
 	DIFFICULTY_SCALE,
-	allRecipes,
+	publicRecipes,
 	formatDate,
 	formatMinutes,
 	localize,
@@ -340,7 +340,7 @@ const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
 }));
-const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
+const titles = new Map(publicRecipes(lang).map((r) => [r.slug, r.title]));
 
 // Oven and wait only show when a part fills them in; the total is derived, so
 // the four numbers under the title always add up.

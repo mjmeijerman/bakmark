@@ -7,9 +7,9 @@ import {
 	CATEGORIES,
 	DIFFICULTY_SCALE,
 	ROLE_LABELS,
-	allRecipes,
 	categoryLabel,
 	difficultyWord,
+	publicRecipes,
 	publishedValue,
 	recipeChips,
 	recipePoster,
@@ -47,6 +47,7 @@ const copy = {
 		activeTemplate: "{n} actief",
 		sortLabel: "Volgorde",
 		empty: "Geen recepten met deze combinatie. Wis een filter of trefwoord om breder te zoeken.",
+		none: "Er staat nog geen recept op de site. De eerste komt eraan.",
 		reverted: "Die combinatie levert geen recepten op. De laatste keuze is teruggedraaid.",
 		noHits: "Geen recepten met dit trefwoord. Wis het zoekveld of een filter om breder te zoeken.",
 		difficultyAria: (level: number) => `moeilijkheid ${level} van ${DIFFICULTY_SCALE}`,
@@ -76,6 +77,7 @@ const copy = {
 		activeTemplate: "{n} active",
 		sortLabel: "Order",
 		empty: "No recipes with this combination. Clear a filter or keyword to search wider.",
+		none: "There are no recipes on the site yet. The first one is on its way.",
 		reverted: "That combination leaves no recipes. Your last choice has been undone.",
 		noHits: "No recipes with this keyword. Clear the search field or a filter to search wider.",
 		difficultyAria: (level: number) => `difficulty ${level} of ${DIFFICULTY_SCALE}`,
@@ -85,7 +87,7 @@ const copy = {
 	},
 }[lang];
 
-const recipes = allRecipes(lang);
+const recipes = publicRecipes(lang);
 const sorts = sortOptions(lang);
 const buckets = timeBuckets(lang);
 const locale = lang === "en" ? "en" : "nl";
@@ -146,6 +148,12 @@ const uiStrings = {
 		<h2 class="section-title">{copy.catalog}</h2>
 	</section>
 
+	{
+		/* An empty catalogue is a real state: production hides every concept, so a
+		   release without a verified recipe has nothing to list. Filters over a
+		   list of zero are noise, so they step aside. */
+	}
+	{recipes.length > 0 && (
 	<div class="filter-bar" data-filter-bar>
 		<details class="filter-panel" data-filter-panel>
 			<summary>
@@ -264,6 +272,7 @@ const uiStrings = {
 			</label>
 		</p>
 	</div>
+	)}
 
 	<section class="section" data-results-section>
 		<ul class="card-grid" data-results>
@@ -292,6 +301,7 @@ const uiStrings = {
 			))}
 		</ul>
 		<p class="form-note" data-empty hidden>{copy.empty}</p>
+		{recipes.length === 0 && <p class="form-note">{copy.none}</p>}
 	</section>
 
 	<hr class="rule" />

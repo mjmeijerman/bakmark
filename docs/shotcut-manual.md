@@ -165,7 +165,7 @@ One artist for the whole series, so every episode sounds like the same channel:
 - Solo piano, modern classical, instrumental, no vocals. Exactly what sits under a talking baking video without masking words.
 - First pick: **Long distance love** (4:00). Save it as `TungArt7-Long-Distance-Love.mp3`.
 - Grab **two more** from that same page and rotate one per section (ingredienten / banketbakkersroom / zwitserse room). One 4-minute track cannot cover a 10-minute episode without looping audibly.
-- Level it at **-20 dB**, not -18. Piano occupies the same frequencies as speech and masks it sooner than pads or strings do.
+- Level it at **-15 dB**, not -12. Piano occupies the same frequencies as speech and masks it sooner than pads or strings do. This is what the banketbakkersroom project actually uses: every music clip carries a Gain/Volume keyframe at -15 dB with a 2 s fade in from -60 dB and a 2 s fade out back to it.
 - Licence: **Pixabay Content License** — commercial use, no credit required, but you may not re-upload the track standalone as a music video.
 - Artist name in the filename (`TungArt7-Long-Distance-Love.mp3`) is your credits record, for free. Keep it.
 - Solo nostalgic piano is the most common style on cooking channels — safe rather than distinctive. That is the correct trade if the goal is "no trouble".
@@ -281,7 +281,7 @@ Vuistregel: **jij beslist, Pi typt.** Je zegt wat je wil, Pi past het `.mlt` aan
 
 1. **Project opzetten.** Tracks (V2/V1/A1/A2), clips op de tijdlijn met in/out, volgorde, projectprofiel. Een nieuw Shotcut-project heeft **nul tracks** — daarom lijkt "Add Video Track" soms niets te doen. Pi zet ze direct in het bestand.
 2. **Titel- en eindkaarten.** Gerenderd met ffmpeg in huisstijl (#a1471b, crème #fffaf1, 4K, 3 s, fade in/out). Zes kant-en-klare kaarten staan in `~/bakmark-footage/titels/`.
-3. **Filters.** Logo (Size/Position/Opacity, Screen-blend), tekst over beeld, Gain/Volume (-20 dB muziek), High Pass 120 Hz, Reduce Noise, Speed 1000% voor 10×-secties, keyframes voor zoom en pan.
+3. **Filters.** Logo (Size/Position/Opacity, Screen-blend), tekst over beeld, Gain/Volume (-15 dB muziek, 2 s fade in/out), High Pass 120 Hz, Reduce Noise, Speed 1000% voor 10×-secties, keyframes voor zoom en pan.
 4. **Transities en markers.** Crossfades bij de join, markers voor YouTube-chapters.
 5. **Exporteren, zonder GUI.** Dit werkt en is getest:
 
@@ -415,7 +415,7 @@ of vallen terug op `~/bakmark-footage`.
   bron/          5 bronclips
     edit/        CFR 30 H.264 4K — deze gebruik je in Shotcut
   titels/        6 titelkaarten, 4K, 3 s, huisstijl
-  muziek/        23 TungArt7-tracks (-20 dB)
+  muziek/        TungArt7-tracks, leveled at -15 dB in the project
   banketbakkersroom/banketbakkersroom/
     banketbakkersroom.mlt     het project
     proxies/                  door Shotcut gebouwde proxy's

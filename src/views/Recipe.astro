@@ -79,7 +79,6 @@ const copy = {
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
 		usedIn: "Gebruikt in",
-		via: (title: string) => `, via ${title}`,
 		colPart: "Onderdeel",
 		ingredients: "Ingrediënten",
 		onTop: "Bovenop de basisrecepten hierboven, plus:",
@@ -157,7 +156,6 @@ const copy = {
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
 		usedIn: "Used in",
-		via: (title: string) => `, via ${title}`,
 		colPart: "Part",
 		ingredients: "Ingredients",
 		onTop: "On top of the base recipes above, plus:",
@@ -332,7 +330,6 @@ const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
 }));
-const titles = new Map(publicRecipes(lang).map((r) => [r.slug, r.title]));
 
 // Oven and wait only show when a part fills them in; the total is derived, so
 // the four numbers under the title always add up.
@@ -467,12 +464,11 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 			usedBy.length ? (
 				<RecipeSection title={copy.usedIn} noPrint>
 					<ul class="parts">
-						{usedBy.map(({ recipe: user, via }) => (
+						{usedBy.map(({ recipe: user }) => (
 							<li>
 								<a href={path(lang, "recipe", user.slug)}>{user.title}</a>
 								<span class="muted">
 									{user.result.value} {user.result.unit}
-									{via ? copy.via(titles.get(via) ?? via) : ""}
 								</span>
 							</li>
 						))}

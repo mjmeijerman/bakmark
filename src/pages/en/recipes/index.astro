@@ -1,5 +1,6 @@
 ---
-import Recipes from "../../../views/Recipes.astro";
----
+// See /recepten: the catalogue is the front page now.
+export const prerender = false;
 
-<Recipes lang="en" />
+return Astro.redirect("/en", 301);
+---

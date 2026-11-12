@@ -16,15 +16,15 @@ const currentPath = Astro.url.pathname;
 const current = lang === DEFAULT_LANG ? currentPath : currentPath.replace(/^\/en(?=\/|$)/, "") || "/";
 
 const links: { route: RouteKey; label: string }[] = [
-	{ route: "home", label: t(lang, "nav.home") },
-	{ route: "recipes", label: t(lang, "nav.recipes") },
+	{ route: "home", label: t(lang, "nav.recipes") },
 	{ route: "who", label: t(lang, "nav.who") },
 	{ route: "contact", label: t(lang, "nav.contact") },
 ];
 
 const isCurrent = (route: RouteKey) => {
 	const href = path(lang, route);
-	if (route === "recipes") return current.startsWith(path(DEFAULT_LANG, "recipes"));
+	// The catalogue is the front page, so a recipe page keeps that link lit.
+	if (route === "home") return current === href || current.startsWith(path(DEFAULT_LANG, "recipe"));
 	return current === href;
 };
 ---

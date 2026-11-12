@@ -278,7 +278,7 @@ export const weeklyMail = ({
 		// the next begins, the same as the rule in the html part.
 		plainEntries.join("\n\n---\n\n"),
 		"",
-		`${text.browse}: ${base}${path(lang, "recipes")}`,
+		`${text.browse}: ${base}${path(lang, "home")}`,
 		"",
 		text.closing,
 		"",
@@ -361,7 +361,7 @@ export const weeklyMail = ({
 						</tr>
 						<tr>
 							<td style="padding:12px 24px 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;">
-								<a href="${escapeHtml(base + path(lang, "recipes"))}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.browse)}</a>
+								<a href="${escapeHtml(base + path(lang, "home"))}" style="color:#8a3b1e;text-decoration:underline;">${escapeHtml(text.browse)}</a>
 							</td>
 						</tr>
 						<tr>

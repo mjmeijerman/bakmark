@@ -15,7 +15,6 @@ export const isLang = (value: string | undefined): value is Lang =>
 /** English URL segments where the Dutch word would read as noise. */
 const ROUTES = {
 	home: { nl: "/", en: "/" },
-	recipes: { nl: "/recepten", en: "/recipes" },
 	recipe: { nl: "/recepten/", en: "/recipes/" },
 	who: { nl: "/wie", en: "/who" },
 	contact: { nl: "/contact", en: "/contact" },
@@ -26,7 +25,7 @@ const ROUTES = {
 
 export type RouteKey = keyof typeof ROUTES;
 
-/** `path("en", "recipes")` → `/en/recipes`; `param` appends a recipe slug. */
+/** `path("en", "who")` → `/en/who`; `param` appends a recipe slug. */
 export const path = (lang: Lang, route: RouteKey, param?: string): string => {
 	const segment = ROUTES[route][lang] + (param ?? "");
 	return lang === DEFAULT_LANG ? segment : `/en${segment}`;
@@ -42,8 +41,7 @@ export const alternatePath = (pathname: string, lang: Lang): string => {
 		if (key === "recipe" && bare.startsWith(from) && bare !== from) {
 			return path(other, "recipe", bare.slice(from.length));
 		}
-		if (key === "recipes" && bare === from) return path(other, "recipes");
-		if (key !== "recipe" && key !== "recipes" && bare === from) return path(other, key);
+		if (key !== "recipe" && bare === from) return path(other, key);
 	}
 	return path(other, "home");
 };
@@ -62,10 +60,6 @@ const nl: Dict = {
 	"nav.who": "Over mij",
 	"nav.contact": "Contact",
 	"footer.privacy": "Privacy",
-	"home.title": "Welkom bij Bakmark",
-	"home.description":
-		"Duidelijke recepten in een overzichtelijke catalogus, met een video bij elk recept. Gratis te lezen, met een fooi als je wilt.",
-	"home.newest": "Nieuwste recepten",
 	"newsletter.heading": "Schrijf je in voor de nieuwsbrief",
 	"newsletter.label": "Je e-mailadres",
 	"newsletter.button": "Inschrijven",
@@ -94,10 +88,6 @@ const en: Dict = {
 	"nav.who": "About me",
 	"nav.contact": "Contact",
 	"footer.privacy": "Privacy",
-	"home.title": "Welcome to Bakmark",
-	"home.description":
-		"Clear recipes in an orderly catalogue, with a video for every recipe. Free to read, with a tip if you like.",
-	"home.newest": "Latest recipes",
 	"newsletter.heading": "Subscribe to the newsletter",
 	"newsletter.label": "Your email address",
 	"newsletter.button": "Subscribe",

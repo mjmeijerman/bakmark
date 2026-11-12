@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
 import type { Lang } from "../lib/i18n";
 
 interface Props {
@@ -63,4 +64,8 @@ const copy = {
 			<a href={`mailto:${contactAddress}`}>{contactAddress}</a>{copy.otherQuestions.after}
 		</p>
 	</section>
+
+	<hr class="rule" />
+
+	<NewsletterForm lang={lang} />
 </Layout>

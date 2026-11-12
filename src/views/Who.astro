@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
 import type { Lang } from "../lib/i18n";
 
 interface Props {
@@ -60,4 +61,8 @@ const copy = {
 			))
 		}
 	</section>
+
+	<hr class="rule" />
+
+	<NewsletterForm lang={lang} />
 </Layout>

@@ -9,7 +9,8 @@ Reads, and never writes back into, these:
     ~/.config/bakmark/youtube-token.json     cached token, made on the first run
     $FOOTAGE_DIR/<slug>/<slug>-4k.mp4        the render
     $FOOTAGE_DIR/<slug>/thumb-youtube-final-1280x720.jpg
-    $FOOTAGE_DIR/<slug>/transcript.srt       as Dutch subtitles
+    $FOOTAGE_DIR/<slug>/transcript.srt       as Dutch subtitles (language "nl")
+    $FOOTAGE_DIR/<slug>/transcript.<lang>.srt  any further track, e.g. transcript.en.srt
     $FOOTAGE_DIR/<slug>/youtube-beschrijving.txt   printed by: npm run chapters -- <slug>
     recipes/<slug>.json                      title, subtitle, tags
 
@@ -38,6 +39,16 @@ SCOPES = [
 ]
 CATEGORY_HOWTO = "26"
 
+# The language code in the filename is the only thing that decides the track;
+# the name is what a viewer sees in the YouTube subtitle menu.
+CAPTION_LANGUAGES = {
+    "nl": "Nederlands",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español",
+}
+
 
 def fail(message: str) -> None:
     raise SystemExit(f"[youtube] {message}")
@@ -50,6 +61,24 @@ def first_existing(*paths: Path) -> Path | None:
     return None
 
 
+def caption_tracks(folder: Path) -> list[dict]:
+    """Every transcript in the folder: transcript.srt is Dutch, transcript.<lang>.srt the rest."""
+    tracks: list[dict] = []
+    default = folder / "transcript.srt"
+    if default.exists():
+        tracks.append({"path": default, "language": "nl", "name": CAPTION_LANGUAGES["nl"]})
+    seen = {track["language"] for track in tracks}
+    for path in sorted(folder.glob("transcript.*.srt")):
+        language = path.name.split(".")[1].lower()
+        if language in seen:
+            continue
+        seen.add(language)
+        tracks.append(
+            {"path": path, "language": language, "name": CAPTION_LANGUAGES.get(language, language)}
+        )
+    return tracks
+
+
 def plan(slug: str) -> dict:
     folder = FOOTAGE / slug
     recipe_path = BASE / "recipes" / f"{slug}.json"
@@ -59,7 +88,7 @@ def plan(slug: str) -> dict:
 
     video = first_existing(folder / f"{slug}-4k.mp4", folder / f"{slug}-1080p.mp4")
     thumbnail = first_existing(folder / "thumb-youtube-final-1280x720.jpg")
-    captions = first_existing(folder / "transcript.srt")
+    captions = caption_tracks(folder)
     description_file = first_existing(folder / "youtube-beschrijving.txt")
 
     missing = [
@@ -166,22 +195,23 @@ def upload(info: dict, privacy: str) -> str:
         print(f"[youtube] thumbnail NOT set: {error}", flush=True)
 
     if info["captions"]:
-        try:
-            youtube.captions().insert(
-                part="snippet",
-                body={
-                    "snippet": {
-                        "videoId": video_id,
-                        "language": "nl",
-                        "name": "Nederlands",
-                        "isDraft": False,
-                    }
-                },
-                media_body=MediaFileUpload(str(info["captions"])),
-            ).execute()
-            print("[youtube] subtitles set", flush=True)
-        except Exception as error:  # noqa: BLE001 - reported, not raised
-            print(f"[youtube] subtitles NOT set: {error}", flush=True)
+        for track in info["captions"]:
+            try:
+                youtube.captions().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "videoId": video_id,
+                            "language": track["language"],
+                            "name": track["name"],
+                            "isDraft": False,
+                        }
+                    },
+                    media_body=MediaFileUpload(str(track["path"])),
+                ).execute()
+                print(f"[youtube] subtitles {track['language']} set", flush=True)
+            except Exception as error:  # noqa: BLE001 - reported, not raised
+                print(f"[youtube] subtitles {track['language']} NOT set: {error}", flush=True)
     else:
         print("[youtube] no transcript.srt, skipping subtitles", flush=True)
 
@@ -203,7 +233,8 @@ def main() -> None:
     print(f"[youtube] title:       {info['title']}")
     print(f"[youtube] render:      {info['video']}")
     print(f"[youtube] thumbnail:   {info['thumbnail']}")
-    print(f"[youtube] subtitles:   {info['captions'] or '-'}")
+    tracks = ", ".join(track["language"] for track in info["captions"]) or "-"
+    print(f"[youtube] subtitles:   {tracks}")
     print(f"[youtube] description: {len(info['description'])} chars, "
           f"{info['description'].count(chr(10) + '0') + info['description'].count(chr(10) + '1') + info['description'].count(chr(10) + '2')} chapters")
     print(f"[youtube] tags:        {', '.join(info['tags'][:5])}")

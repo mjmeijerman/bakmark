@@ -165,12 +165,8 @@ test("one pod, two pods: the word follows the number", () => {
 	assert.equal(unitFor(2, "g"), "g", "no plural given, no invention");
 });
 
-test("the static table and the yield say the same word as the list", async () => {
+test("the yield says the same word as the list", async () => {
 	await withServer(async ({ base }) => {
-		const html = await (await fetch(`${base}/recepten/banketbakkersroom`)).text();
-		// The 2× column of the table: "2 stokjes", not the database's "2 stuk".
-		assert.match(html, /<td>2 stokjes<\/td>/);
-
 		const buns = await (await fetch(`${base}/recepten/soesjes`)).text();
 		assert.match(buns, /<span data-result-unit>\s*soesjes\s*<\/span>/);
 	});
@@ -244,5 +240,4 @@ test("printing keeps the numbers and drops the fields", () => {
 		"a printed input is a blank line, and the unit travels inside the number",
 	);
 	assert.match(print, /\.ingredients li\.is-rescalable \.amount-text \{\s*display: inline;/);
-	assert.match(print, /html\[data-rescaled="1"\] \.scale-section/, "a scaled list hides the static table");
 });

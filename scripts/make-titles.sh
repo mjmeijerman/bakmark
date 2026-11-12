@@ -30,9 +30,9 @@ fade=t=in:st=0:d=0.6,fade=t=out:st=2.4:d=0.6" \
 }
 
 mk banketbakkersroom "Banketbakkersroom" 01-banketbakkersroom-cfr30.mp4 00:05:30
-mk slagroom "Slagroom" 03-slagroom-b-cfr30.mp4 00:02:00
+mk slagroom "Slagroom" 02-slagroom-cfr30.mp4 00:02:00
 mk soezenbeslag "Soezenbeslag" 04-soezenbeslag-cfr30.mp4 00:06:00
 mk soesjes "Soesjes" 05-soesjes-portret-cfr30.mp4 00:00:50
-mk zwitserse-room "Zwitserse room" 03-slagroom-b-cfr30.mp4 00:04:00
+mk zwitserse-room "Zwitserse room" 03-zwitserse-room-cfr30.mp4 00:04:00
 mk soesjes-met-zwitserse-room "Soesjes met room" 05-soesjes-portret-cfr30.mp4 00:09:30
 echo "klaar"

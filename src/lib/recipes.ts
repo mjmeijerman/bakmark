@@ -414,9 +414,38 @@ export function allRecipes(lang: Lang = DEFAULT_LANG): Recipe[] {
 		.sort((a, b) => a.title.localeCompare(b.title, lang === "en" ? "en" : "nl"));
 }
 
+/**
+ * Concepts stay visible while you work and on staging; the public site does not
+ * show them.
+ *
+ * Decided at build time, because the pages are prerendered: a runtime flag
+ * cannot delete HTML that was already written. Production is the only build
+ * that sets SITE_INDEXABLE=1, so that is the signal — one switch for "the
+ * public may see this", and it cannot drift from the one that decides whether
+ * the site is findable at all.
+ */
+export const conceptsHidden = process.env.SITE_INDEXABLE === "1";
+
+/**
+ * What the public site may show: every recipe unless concepts are hidden.
+ *
+ * A recipe that is built from a concept is a concept too, by consequence: its
+ * part page is not written, so publishing it would link to a 404.
+ */
+export function publicRecipes(lang: Lang = DEFAULT_LANG): Recipe[] {
+	const all = allRecipes(lang);
+	if (!conceptsHidden) return all;
+
+	const verified = new Set(all.filter((recipe) => recipe.verified).map((recipe) => recipe.slug));
+	return all.filter(
+		(recipe) =>
+			recipe.verified && (recipe.components ?? []).every((link) => verified.has(link.ref)),
+	);
+}
+
 /** Recipes plus the alias slugs they answer to. */
 export function recipeRoutes(): { slug: string; recipe: Recipe; canonical: string }[] {
-	return allRecipes().flatMap((recipe) => [
+	return publicRecipes().flatMap((recipe) => [
 		{ slug: recipe.slug, recipe, canonical: recipe.slug },
 		...(recipe.aliases ?? []).map((alias) => ({ slug: alias, recipe, canonical: recipe.slug })),
 	]);
@@ -784,7 +813,7 @@ export const recipeChips = (r: Recipe, lang: Lang = DEFAULT_LANG) => [
  * and through another component. This is the navigation no recipe site has.
  */
 export function usedIn(slug: string): { recipe: Recipe; via: string | null }[] {
-	const all = allRecipes();
+	const all = publicRecipes();
 	const found: { recipe: Recipe; via: string | null }[] = [];
 	const seen = new Set([slug]);
 	let frontier = [slug];

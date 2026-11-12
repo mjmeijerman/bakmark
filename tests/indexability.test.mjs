@@ -11,7 +11,7 @@
  */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -83,6 +83,25 @@ test("an indexable build carries no noindex tag", () => {
 		const html = readFileSync(join(work, "dist", "client", "index.html"), "utf8");
 		assert.doesNotMatch(html, /<meta name="robots"[^>]*noindex/, "no noindex when the site is meant to be found");
 		assert.match(html, /<link rel="canonical" href="https:\/\/bakmark\.nl\//, "canonical must carry the public origin");
+
+		// A concept has no page on the public site. The list is read from the
+		// checkout, so this test keeps testing something when every recipe is
+		// verified and nothing is a concept.
+		const concepts = readdirSync(join(work, "recipes"))
+			.filter((name) => name.endsWith(".json"))
+			.map((name) => JSON.parse(readFileSync(join(work, "recipes", name), "utf8")))
+			.filter((recipe) => recipe.verified === false)
+			.map((recipe) => recipe.slug);
+
+		const sitemap = readFileSync(join(work, "dist", "client", "sitemap-0.xml"), "utf8");
+		for (const slug of concepts) {
+			assert.equal(
+				existsSync(join(work, "dist", "client", "recepten", slug)),
+				false,
+				`${slug} is a concept and must not be in a public build`,
+			);
+			assert.doesNotMatch(sitemap, new RegExp(`/recepten/${slug}/`), `${slug} must not be in the sitemap`);
+		}
 	} finally {
 		rmSync(work, { recursive: true, force: true });
 	}

@@ -14,10 +14,9 @@ interface Props {
 	poster: string;
 	title: string;
 	playLabel: string;
-	note: string;
 }
 
-const { youtubeId, start = 0, poster, title, playLabel, note } = Astro.props;
+const { youtubeId, start = 0, poster, title, playLabel } = Astro.props;
 
 const embed = new URL(`https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}`);
 embed.searchParams.set("rel", "0");
@@ -40,7 +39,6 @@ if (start) embed.searchParams.set("start", String(start));
 			<span aria-hidden="true"></span>
 		</button>
 	</div>
-	<figcaption>{note}</figcaption>
 </figure>
 
 <script>

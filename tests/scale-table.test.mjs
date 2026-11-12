@@ -1,14 +1,14 @@
 /**
- * The ½× / 1× / 2× table.
+ * The ½× / 1× / 2× numbers behind the rescaler.
  *
- * Two things it must get right and one it must not: halve and double the
+ * Two things they must get right and one they must not: halve and double the
  * amounts, leave `scale: false` alone, and never show a false precision like
- * "0.5 vanilla pod".
+ * "0.5 vanilla pod". The page no longer prints a static table — the rescaler is
+ * the only way to scale — but the arithmetic is the same.
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SCALE_FACTORS, formatAmount, scaledIngredients } from "../src/lib/recipes.ts";
-import { withServer } from "./helpers/server.mjs";
 
 /** Only the fields these functions read. */
 const ingredient = (overrides = {}) => ({
@@ -47,35 +47,3 @@ test("amounts round to something a scale can show, in the reader's decimals", ()
 	assert.equal(formatAmount(scaledIngredients([salt], 0.5)[0]), "0,8 g", "no 0,75 g on a kitchen scale");
 });
 
-test("the page prints the table with three columns of the same ingredient", async () => {
-	await withServer(async ({ base }) => {
-		const html = await (await fetch(`${base}/recepten/soesjes`)).text();
-		assert.match(html, /<table class="scale-table">/);
-		for (const column of ["½×", "1×", "2×"]) {
-			assert.ok(html.includes(`<th scope="col">${column}</th>`), `column ${column}`);
-		}
-
-		// Melk is 100 g in the base recipe: 50 / 100 / 200 in one row.
-		assert.match(
-			html,
-			/<th scope="row">volle melk<\/th><td>50 g<\/td><td>100 g<\/td><td>200 g<\/td>/,
-		);
-		// Salt does not scale, so all three cells are the same.
-		assert.match(
-			html,
-			/<th scope="row">zout<\/th><td>1,5 g<\/td><td>1,5 g<\/td><td>1,5 g<\/td>/,
-		);
-	});
-});
-
-test("the English page uses a dot and an English header", async () => {
-	await withServer(async ({ base }) => {
-		const html = await (await fetch(`${base}/en/recipes/soesjes`)).text();
-		assert.ok(html.includes('<th scope="col">Ingredient</th>'));
-		assert.match(
-			html,
-			/<th scope="row">sugar \(optional\)<\/th><td>2\.5 g<\/td><td>5 g<\/td><td>10 g<\/td>/,
-		);
-		assert.match(html, /<th scope="row">salt<\/th><td>1\.5 g<\/td><td>1\.5 g<\/td><td>1\.5 g<\/td>/, "no comma on the English page");
-	});
-});

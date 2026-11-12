@@ -7,8 +7,7 @@ import RecipeSteps from "../components/RecipeSteps.astro";
 import RecipeVideo from "../components/RecipeVideo.astro";
 import {
 	DIFFICULTY_SCALE,
-	allRecipes,
-	formatAmount,
+	publicRecipes,
 	formatDate,
 	formatMinutes,
 	localize,
@@ -18,8 +17,6 @@ import {
 	recipePoster,
 	recipeTiming,
 	resolveRecipe,
-	SCALE_FACTORS,
-	scaledIngredients,
 	usedIn,
 	TIP_ANCHOR,
 	videoWatchUrl,
@@ -51,7 +48,6 @@ const copy = {
 		videoAria: (title: string) => `Placeholder: video van ${title} in één take`,
 		videoLabel: (title: string) => `Video: ${title} in één take`,
 		videoPlay: "Video afspelen",
-		videoNote: "Eén take, in echte tijd: geen knip, geen versnelling.",
 		videoMoment: (stamp: string) => `Bekijk dit moment · ${stamp}`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} actief · moeilijkheid ${level}/${DIFFICULTY_SCALE}${published ? ` · geplaatst ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
@@ -82,15 +78,12 @@ const copy = {
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "Een fooi? Scan en kies zelf.",
 		qrLabel: (caption: string) => `QR-code: ${caption}`,
+		usedIn: "Gebruikt in",
 		usedInLede:
 			"Deze pagina is de bron. Elk recept hieronder gebruikt dit basisrecept, dus een wijziging hier werkt daar direct door.",
 		via: (title: string) => `, via ${title}`,
 		colPart: "Onderdeel",
 		ingredients: "Ingrediënten",
-		scale: "Schaal",
-		scaleWhat: "Ingrediënt",
-		scaleLede:
-			"Halve, hele of dubbele batch. Wat niet meeschaalt, staat in alle drie de kolommen gelijk.",
 		onTop: "Bovenop de basisrecepten hierboven, plus:",
 		gathered: (name: string) => `${name} verzameld`,
 		moreAbout: (name: string) => `Meer over ${name}`,
@@ -137,7 +130,6 @@ const copy = {
 		videoAria: (title: string) => `Placeholder: video of ${title} in one take`,
 		videoLabel: (title: string) => `Video: ${title} in one take`,
 		videoPlay: "Play the video",
-		videoNote: "One take, in real time: no cuts, no speed-up.",
 		videoMoment: (stamp: string) => `Watch this moment · ${stamp}`,
 		printLine: (active: string, level: number, published: string, oven: number | null) =>
 			`${active} active · difficulty ${level}/${DIFFICULTY_SCALE}${published ? ` · published ${published}` : ""}${oven ? ` · ${oven} °C` : ""}`,
@@ -168,15 +160,12 @@ const copy = {
 		qrVideo: (title: string) => `Video: ${title}`,
 		qrTip: "A tip? Scan and choose.",
 		qrLabel: (caption: string) => `QR code: ${caption}`,
+		usedIn: "Used in",
 		usedInLede:
 			"This page is the source. Every recipe below uses this base recipe, so a change here lands there immediately.",
 		via: (title: string) => `, via ${title}`,
 		colPart: "Part",
 		ingredients: "Ingredients",
-		scale: "Scale",
-		scaleWhat: "Ingredient",
-		scaleLede:
-			"Half, whole or double batch. What does not scale shows the same amount in all three columns.",
 		onTop: "On top of the base recipes above, plus:",
 		gathered: (name: string) => `${name} gathered`,
 		moreAbout: (name: string) => `More about ${name}`,
@@ -288,25 +277,6 @@ const partTiming = (partSlug: string) => {
 };
 
 /*
- * The same ingredients at half, one and double.
- *
- * Static, not interactive (#266 is the rescaler): a table is what survives
- * print, and it still answers the only question a reader has mid-recipe — how
- * much is a half batch of this one.
- */
-const scaleTable = groups
-	.filter((group) => group.ingredients.length > 0)
-	.map((group) => ({
-		title: `${group.recipe.title}${group.variantLabel ?? ""}`,
-		rows: group.ingredients.map((ingredient) => ({
-			name: ingredient.name,
-			amounts: SCALE_FACTORS.map((factor) =>
-				formatAmount(scaledIngredients([ingredient], factor, lang)[0]),
-			),
-		})),
-	}));
-
-/*
  * What a printed sheet carries as a QR code.
  *
  * One per part that has a published video, so a page built from three base
@@ -370,7 +340,7 @@ const usedBy = usedIn(slug).map((entry) => ({
 	...entry,
 	recipe: localize(entry.recipe, lang),
 }));
-const titles = new Map(allRecipes(lang).map((r) => [r.slug, r.title]));
+const titles = new Map(publicRecipes(lang).map((r) => [r.slug, r.title]));
 
 // Oven and wait only show when a part fills them in; the total is derived, so
 // the four numbers under the title always add up.
@@ -448,7 +418,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					poster={videoPoster}
 					title={copy.videoLabel(recipe.title.toLocaleLowerCase(lang))}
 					playLabel={copy.videoPlay}
-					note={copy.videoNote}
 				/>
 			) : (
 				<div
@@ -654,33 +623,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					))
 			}
 			<p class="form-note no-print">{copy.affiliateIngredient}</p>
-		</RecipeSection>
-
-		<RecipeSection title={copy.scale} className="scale-section">
-			<p class="section-lede">{copy.scaleLede}</p>
-			{scaleTable.map((group) => (
-				<table class="scale-table">
-					{composed && <caption>{group.title}</caption>}
-					<thead>
-						<tr>
-							<th scope="col">{copy.scaleWhat}</th>
-							<th scope="col">½×</th>
-							<th scope="col">1×</th>
-							<th scope="col">2×</th>
-						</tr>
-					</thead>
-					<tbody>
-						{group.rows.map((row) => (
-							<tr>
-								<th scope="row">{row.name}</th>
-								{row.amounts.map((amount) => (
-									<td>{amount}</td>
-								))}
-							</tr>
-						))}
-					</tbody>
-				</table>
-			))}
 		</RecipeSection>
 
 		{

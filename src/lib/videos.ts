@@ -11,6 +11,7 @@
  */
 import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { conceptsHidden } from "./recipes.ts";
 
 export interface ReportVideo {
 	slug: string;
@@ -28,6 +29,7 @@ interface RecipeVideoFile {
 	slug?: string;
 	title?: string;
 	published?: string;
+	verified?: boolean;
 	video?: { status?: string; youtube_id?: string | null };
 }
 
@@ -60,6 +62,10 @@ export const videosIn = (
 
 		const video = recipe.video;
 		if (!video) continue;
+
+		// A concept has no page on the public site, so mailing its link would mail
+		// a 404. The preview keeps them: that is the point of a test mail.
+		if (!includeUnpublished && conceptsHidden && recipe.verified === false) continue;
 
 		const status = video.status ?? "concept";
 		const youtubeId = video.youtube_id ?? null;

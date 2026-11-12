@@ -3,8 +3,8 @@
 	"title": "Banketbakkersroom",
 	"subtitle": "De basisroom voor soesjes, tompoezen en Zwitserse room, gebonden met roompoeder.",
 	"role": "basis",
-	"verified": true,
-	"verified_note": "Getimed in de video: 17 min tot de kook, daarna 2 min binden.",
+	"verified": false,
+	"verified_note": "Wordt nog aangepast: de verhoudingen en de tijden gaan opnieuw gemeten worden.",
 	"video": {
 		"status": "gepubliceerd",
 		"youtube_id": "kVI-8Glxg6s"

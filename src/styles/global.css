@@ -471,7 +471,10 @@
 		margin-top: var(--space-4);
 	}
 
-	/* Newest recipes as a plain list: the cards live on /recepten. */
+	/* The catalogue heading sits under the brand heading, above the filters. */
+	.hero .section-title {
+		margin-top: var(--space-4);
+	}
 	/* Headings with a short accent rule above */
 	.section h2:first-child,
 	.section-title {

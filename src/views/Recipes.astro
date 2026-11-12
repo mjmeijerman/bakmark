@@ -141,8 +141,9 @@ const uiStrings = {
 ---
 
 <Layout title={copy.title} description={copy.description} lang={lang}>
-	<section class="hero">
+	<section class="hero hero-tight">
 		<h1>{copy.h1}</h1>
+		<h2 class="section-title">{copy.catalog}</h2>
 	</section>
 
 	<div class="filter-bar" data-filter-bar>
@@ -265,7 +266,6 @@ const uiStrings = {
 	</div>
 
 	<section class="section" data-results-section>
-		<h2 class="section-title">{copy.catalog}</h2>
 		<ul class="card-grid" data-results>
 			{recipes.map((recipe) => (
 				<li

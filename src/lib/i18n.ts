@@ -67,10 +67,7 @@ const nl: Dict = {
 	"home.title": "Welkom bij Bakmark",
 	"home.description":
 		"Duidelijke recepten in een overzichtelijke catalogus, met een video bij elk recept. Gratis te lezen, met een fooi als je wilt.",
-	"home.lead":
-		"Duidelijke recepten in een overzichtelijke catalogus, met een video bij elk recept.",
 	"home.newest": "Nieuwste recepten",
-	"home.browse": "Bekijk de recepten",
 	"newsletter.heading": "Schrijf je in voor de nieuwsbrief",
 	"newsletter.label": "Je e-mailadres",
 	"newsletter.button": "Inschrijven",
@@ -103,9 +100,7 @@ const en: Dict = {
 	"home.title": "Welcome to Bakmark",
 	"home.description":
 		"Clear recipes in an orderly catalogue, with a video for every recipe. Free to read, with a tip if you like.",
-	"home.lead": "Clear recipes in an orderly catalogue, with a video for every recipe.",
 	"home.newest": "Latest recipes",
-	"home.browse": "Browse the recipes",
 	"newsletter.heading": "Subscribe to the newsletter",
 	"newsletter.label": "Your email address",
 	"newsletter.button": "Subscribe",

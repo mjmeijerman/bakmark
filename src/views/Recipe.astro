@@ -103,8 +103,6 @@ const copy = {
 		bakeAfter: "Nadrogen",
 		bakeAfterValue: (duration: string) => `${duration}, deur op een kier`,
 		steps: "Stappen",
-		stepsNote:
-			"Tijden en temperaturen zijn startwaarden. De definitieve versie komt uit de opname, met de echte tijden en de volgorde van de video.",
 		whyTips: "Waarom en tips",
 		whyLabel: "Waarom:",
 		failed: "Als het mislukt",
@@ -185,8 +183,6 @@ const copy = {
 		bakeAfter: "Drying out",
 		bakeAfterValue: (duration: string) => `${duration}, door ajar`,
 		steps: "Steps",
-		stepsNote:
-			"Times and temperatures are starting values. The final version comes from the recording, with the real times and the order of the video.",
 		whyTips: "Why and tips",
 		whyLabel: "Why:",
 		failed: "When it goes wrong",
@@ -754,7 +750,6 @@ const ovenTemperature = bakeGroups.length ? Number(bakeGroups[0].recipe.bake?.te
 					);
 				})
 			}
-			<p class="form-note no-print">{copy.stepsNote}</p>
 		</section>
 
 		{

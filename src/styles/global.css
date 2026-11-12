@@ -472,30 +472,6 @@
 	}
 
 	/* Newest recipes as a plain list: the cards live on /recepten. */
-	.newest-list {
-		display: grid;
-		gap: var(--space-2);
-		margin: var(--space-4) 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.newest-list li {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2);
-	}
-
-	.newest-list a {
-		font-weight: 600;
-	}
-
-	.newest-list .newest-meta {
-		color: var(--muted);
-		font-size: var(--text-sm);
-	}
-
 	/* Headings with a short accent rule above */
 	.section h2:first-child,
 	.section-title {

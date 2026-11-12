@@ -1,5 +1,7 @@
 ---
-import Recipes from "../../views/Recipes.astro";
----
+// The catalogue lives on the front page now. A real 301 keeps the old URL
+// usable for links and bookmarks that already point here.
+export const prerender = false;
 
-<Recipes lang="nl" />
+return Astro.redirect("/", 301);
+---
